@@ -18,3 +18,25 @@ This repo contains the code to the racing game that will be integrated with an X
 ### Technical
 - Engine: Godot
 - Languages: C# and GDScript
+
+### How to Set Up Godot 
+
+# Python Environment(if you don't already have one):
+```bash
+conda create -n ar-kart python=3.11 -y
+conda activate ar-kart
+```
+
+# Install Packages
+```bash
+pip install numpy opencv-python-headless pupil-apriltags pyinstaller pygame
+python -c "import cv2, numpy, pupil_apriltags, PyInstaller; print('OK')"
+```
+
+# generate and move script
+```bash
+cd xrpfall2025/Scripts
+pyinstaller --onefile --clean --collect-all pupil_apriltags --name laptop_fusion laptop_fusion.py
+cd ..
+mv Scripts/dist/laptop_fusion . 
+```
