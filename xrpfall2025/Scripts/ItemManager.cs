@@ -18,7 +18,7 @@ public partial class ItemManager : Node
 
 	//list of all items generated
 	private List<Node> items = null;
-	private Track track = null;
+	private Path3D trackPath = null;
 
 	[Export] private int itemLocations = 1;
 	[Export] private int itemsPerLocation = 1;
@@ -28,7 +28,7 @@ public partial class ItemManager : Node
 	{
 		//set up all the item nodes before the scene starts
 		items = new List<Node>();
-		itemLocations = track.Path3D.Curve.PointCount;
+		itemLocations = trackPath.Curve.PointCount;
 
 		GenerateItems(/*player*/cars);
 	}
@@ -43,10 +43,10 @@ public partial class ItemManager : Node
 	/// </summary>
 	/// <param name="cars">List of all cars</param>
 	/// <param name="t">Reference to the track</param>
-	public void Init(List<Car> cars, Track t)
+	public void Init(List<Car> cars, Path3D tp)
 	{
 		this.cars = cars;
-		track = t;
+		trackPath = tp;
 
 	}
 
@@ -61,7 +61,9 @@ public partial class ItemManager : Node
 		{
 			//calculate where on the track we want to generate this row of items
 			//double theta = Mathf.DegToRad(i * 360 / itemLocations);
-			Vector3 spawnPos = track.Path3D.Curve.GetPointPosition(i + 1) + new Vector3(0, 1, 0);
+			//TODO: this 50 is hardcoded for now, but should pull (or be based on) the scaling for loaded tracks
+			//see: track_loader.gd this could also potentially be changed to go from local to global position
+			Vector3 spawnPos = trackPath.Curve.GetPointPosition(i + 1) * 50 + new Vector3(0, 1, 0);
 
 			//get direction vector towards the origin from this point
 			Vector3 dir = (Vector3.Zero - spawnPos).Normalized();

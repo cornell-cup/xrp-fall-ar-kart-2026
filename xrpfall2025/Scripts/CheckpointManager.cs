@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using Godot.Collections;
 
 
 public delegate void CheckpointCollisionDelegate(Checkpoint chpt, Car car);
@@ -11,7 +12,7 @@ public partial class CheckpointManager : Node
 {
 	private PackedScene checkpointPrefab = ResourceLoader.Load<PackedScene>("res://Scenes/Prefabs/checkpoint.tscn");
 	private List<Car> cars;
-	private List<Checkpoint> checkpointList = new List<Checkpoint>();
+	private Array<Checkpoint> checkpointList = new Array<Checkpoint>();
 
 	/// <summary>
 	/// How many checkpoints are on the track.
@@ -27,7 +28,7 @@ public partial class CheckpointManager : Node
 	/// and finally init checkpoint manager
 	/// </summary>
 	/// <param name="checkpoints">Global locations of where checkpoints will spawn at.</param>
-	public void SpawnCheckpoints(List<Vector3> checkpoints)
+	public void SpawnCheckpoints(Array<Vector3> checkpoints)
 	{
 		for (int i = 0; i < checkpoints.Count; i++)
 		{
@@ -53,7 +54,7 @@ public partial class CheckpointManager : Node
 	/// </summary>
 	/// <param name="cars">Reference to list of all existing cars</param>
 	/// <param name="checkpoints">List of points where we want to instantiate our checkpoints</param>
-	public void Init(List<Car> cars, List<Vector3> checkpoints)
+	public void Init(List<Car> cars, Array<Vector3> checkpoints)
 	{
 		this.cars = cars;
 		Checkpoint temp;

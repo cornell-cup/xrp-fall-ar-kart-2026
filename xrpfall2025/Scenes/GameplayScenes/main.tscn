@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://bd4sj4dkmbaqg"]
+[gd_scene load_steps=12 format=3 uid="uid://bd4sj4dkmbaqg"]
 
 [ext_resource type="PackedScene" uid="uid://sdm8yxrkofoh" path="res://Scenes/Prefabs/item_manager.tscn" id="1_evp6a"]
 [ext_resource type="PackedScene" uid="uid://dnkv3f1fu5fc8" path="res://Scenes/Prefabs/scene_manager.tscn" id="1_hx62u"]
@@ -8,14 +8,16 @@
 [ext_resource type="PackedScene" uid="uid://dry5xxoksd4yr" path="res://Scenes/Prefabs/kill_plane.tscn" id="3_33oou"]
 [ext_resource type="PackedScene" uid="uid://dqemkqrkjrxoy" path="res://Scenes/Prefabs/checkpoint_manager.tscn" id="5_hbpqu"]
 [ext_resource type="PackedScene" uid="uid://b0pyubict3ifh" path="res://Scenes/Prefabs/finishline.tscn" id="5_t5l7q"]
-[ext_resource type="Script" path="res://Scripts/ar_manager.gd" id="8_t5l7q"]
+[ext_resource type="Script" uid="uid://bonnmavfkfsmn" path="res://Scenes/GameplayScenes/track_loader.gd" id="5_v66ti"]
+[ext_resource type="Script" uid="uid://c1j7guo5s7en2" path="res://Scripts/ar_manager.gd" id="8_t5l7q"]
 [ext_resource type="Script" uid="uid://cwl05w7v58gy5" path="res://Scenes/GameplayScenes/camera_feed.gd" id="9_t5l7q"]
 
 [node name="Node" type="Node"]
 
-[node name="SceneManager" parent="." node_paths=PackedStringArray("carManager", "track", "itemManager", "killPlane", "finishline", "checkpointManager") instance=ExtResource("1_hx62u")]
+[node name="SceneManager" parent="." node_paths=PackedStringArray("carManager", "track", "track_loader", "itemManager", "killPlane", "finishline", "checkpointManager") instance=ExtResource("1_hx62u")]
 carManager = NodePath("../CarManager")
 track = NodePath("../Track")
+track_loader = NodePath("../TrackLoader")
 itemManager = NodePath("../ItemManager")
 killPlane = NodePath("../killPlane")
 finishline = NodePath("../Finishline")
@@ -26,6 +28,17 @@ checkpointManager = NodePath("../Checkpoint Manager")
 [node name="ItemManager" parent="." instance=ExtResource("1_evp6a")]
 
 [node name="Track" parent="." instance=ExtResource("2_hx62u")]
+
+[node name="TrackLoader" type="Node" parent="."]
+script = ExtResource("5_v66ti")
+filePath = "res://test_save5.tscn"
+scale = 50.0
+
+[node name="FileDialog" type="FileDialog" parent="TrackLoader"]
+title = "Open a File"
+ok_button_text = "Open"
+file_mode = 0
+filters = PackedStringArray("*.tscn;text/tscn")
 
 [node name="Checkpoint Manager" parent="." instance=ExtResource("5_hbpqu")]
 

@@ -94,7 +94,8 @@ Right click to pan
 F to flip piece
 D to delete piece
 S to save
-Red piece is \"Root\" and cannot be deleted"
+Q to return to main menu
+Red piece is \"Root\" and cannot be moved or deleted"
 label_settings = SubResource("LabelSettings_i2bqm")
 
 [node name="Backdrop" type="StaticBody3D" parent="."]
@@ -116,13 +117,11 @@ title = "Save Track"
 position = Vector2i(520, 335)
 size = Vector2i(756, 360)
 dialog_hide_on_ok = true
-filters = PackedStringArray(".tscn")
 
 [node name="Track" type="Node3D" parent="."]
 
 [node name="RootPart" parent="Track" instance=ExtResource("2_dthog")]
 unique_name_in_owner = true
-placed = true
 
 [node name="Straight Road Model" parent="Track/RootPart" index="0"]
 material_override = SubResource("StandardMaterial3D_i2bqm")
@@ -135,6 +134,24 @@ shape = null
 
 [node name="Final Path" type="Path3D" parent="Track"]
 curve = SubResource("Curve3D_i2bqm")
+
+[node name="CSGPolygon3D" type="CSGPolygon3D" parent="Track"]
+layers = 0
+use_collision = true
+collision_layer = 3
+collision_mask = 3
+polygon = PackedVector2Array(-0.2, 0, -0.2, 0.01, 0.2, 0.01, 0.2, 0)
+mode = 2
+path_node = NodePath("../Final Path")
+path_interval_type = 1
+path_interval = 0.33
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
 
 [connection signal="button_down" from="Control/Straight Button" to="Control/Straight Button" method="_on_button_down"]
 [connection signal="button_down" from="Control/15 Button" to="Control/15 Button" method="_on_button_down"]

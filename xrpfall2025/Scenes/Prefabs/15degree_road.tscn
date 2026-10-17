@@ -14,7 +14,7 @@ radius = 0.15
 
 [sub_resource type="Curve3D" id="Curve3D_08qu3"]
 _data = {
-"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.052967, 0, -0.423425, 0, 0, 0, 0, 0, 0, -0.228739, 0, -0.852744),
+"points": PackedVector3Array(0, 0, 0, 0.03, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.052967, 0, -0.423425, 0, 0, 0, 0, 0, 0, -0.228739, 0, -0.852744),
 "tilts": PackedFloat32Array(0, 0, 0)
 }
 point_count = 3
@@ -30,6 +30,8 @@ skeleton = NodePath("../Drag Box")
 
 [node name="Drag Box" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, -0.0605973, 0, -0.44058)
+collision_layer = 8
+collision_mask = 8
 
 [node name="Drag shape" type="CollisionShape3D" parent="Drag Box"]
 transform = Transform3D(0.395228, 0, 0, 0, -1.7276e-08, -0.395228, 0, 0.395228, -1.7276e-08, -0.0423114, 0.0248992, 0.034999)
@@ -49,6 +51,25 @@ collision_layer = 4
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Snap Point 2"]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 shape = SubResource("SphereShape3D_231pb")
+
+[node name="CollisionShape" type="CSGPolygon3D" parent="."]
+process_mode = 4
+transform = Transform3D(1, 0, 5.74873e-15, 0, 1, 0, -5.74873e-15, 0, 1, 0, 0, 0)
+layers = 0
+collision_layer = 3
+collision_mask = 3
+polygon = PackedVector2Array(-0.16, 0, -0.16, 0.01, 0.16, 0.01, 0.16, 0)
+mode = 2
+path_node = NodePath("../Path3D")
+path_interval_type = 1
+path_interval = 0.33
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = false
+path_u_distance = 1.0
+path_joined = false
 
 [node name="Path3D" type="Path3D" parent="."]
 curve = SubResource("Curve3D_08qu3")

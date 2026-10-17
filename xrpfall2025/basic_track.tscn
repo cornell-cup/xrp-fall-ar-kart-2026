@@ -1,0 +1,154 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/Prefabs/straight_road.tscn" id="1_11gpj"]
+[ext_resource type="Script" path="res://Scripts/track builder piece.gd" id="2_myw6g"]
+[ext_resource type="ArrayMesh" path="res://Assets/3dmodels/Roady_straight.tres" id="3_qpftf"]
+[ext_resource type="PackedScene" path="res://Scenes/Prefabs/45degree_road.tscn" id="4_22a2v"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i2bqm"]
+albedo_color = Color(0.729412, 0, 0, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_dthog"]
+size = Vector3(0.817627, 0.034729, 2.25568)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_ft2qa"]
+radius = 0.15
+
+[sub_resource type="Curve3D" id="Curve3D_231pb"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.448, 0, 0, 0, 0, 0, 0, 0, 0, -0.9),
+"tilts": PackedFloat32Array(0, 0, 0)
+}
+point_count = 3
+
+[sub_resource type="Curve3D" id="Curve3D_lpaph"]
+closed = true
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.553728, 0, 0, 0, 0, 0, 0, 0, 0, -1.1124, 0, 0, 0, 0, 0, 0, -0.138829, -3.55271e-15, -1.55067, 0, 0, 0, 0, 0, 0, -0.702872, 0, -1.80752, 0, 0, 0, 0, 0, 0, -1.2566, 0, -1.80752, 0, 0, 0, 0, 0, 0, -1.81527, 0, -1.80752, 0, 0, 0, 0, 0, 0, -2.25354, -3.55271e-15, -1.66869, 0, 0, 0, 0, 0, 0, -2.51039, 0, -1.10465, 0, 0, 0, 0, 0, 0, -2.51039, 0, -0.550921, 0, 0, 0, 0, 0, 0, -2.51039, 0, 0.00775111, 0, 0, 0, 0, 0, 0, -2.37156, -3.55271e-15, 0.446022, 0, 0, 0, 0, 0, 0, -1.80752, 0, 0.702872, 0, 0, 0, 0, 0, 0, -1.25379, 0, 0.702872, 0, 0, 0, 0, 0, 0, -0.695121, 0, 0.702872, 0, 0, 0, 0, 0, 0, -0.25685, -3.55271e-15, 0.564043, 0, 0, 0, 0, 0, 0, 3.57628e-07, 0, -3.57628e-07),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+}
+point_count = 17
+
+[node name="Track" type="Node3D"]
+
+[node name="RootPart" parent="." node_paths=PackedStringArray("next_piece") instance=ExtResource("1_11gpj")]
+unique_name_in_owner = true
+transform = Transform3D(1.236, 0, 0, 0, 1.236, 0, 0, 0, 1.236, 0, 0, 0)
+script = ExtResource("2_myw6g")
+placed = true
+next_piece = NodePath("../45deg Road")
+
+[node name="Straight Road Model" parent="RootPart" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.45)
+material_override = SubResource("StandardMaterial3D_i2bqm")
+mesh = ExtResource("3_qpftf")
+skeleton = NodePath("../Drag Box")
+
+[node name="Drag Box" parent="RootPart" index="1"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -0.45)
+collision_layer = 8
+collision_mask = 8
+
+[node name="Drag shape" parent="RootPart/Drag Box" index="0"]
+transform = Transform3D(0.395228, 0, 0, 0, -1.7276e-08, -0.395228, 0, 0.395228, -1.7276e-08, 0.000820175, 0.000354302, -0.0045238)
+shape = SubResource("BoxShape3D_dthog")
+
+[node name="Snap Point 1" parent="RootPart" index="2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.9)
+collision_layer = 4
+
+[node name="CollisionShape3D" parent="RootPart/Snap Point 1" index="0"]
+shape = SubResource("SphereShape3D_ft2qa")
+
+[node name="Snap Point 2" parent="RootPart" index="3"]
+process_mode = 4
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+collision_layer = 4
+
+[node name="CollisionShape3D" parent="RootPart/Snap Point 2" index="0"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+
+[node name="CSGPolygon3D" parent="RootPart" index="4"]
+process_mode = 4
+layers = 0
+collision_layer = 3
+collision_mask = 3
+polygon = PackedVector2Array(-0.16, 0, -0.16, 0.01, 0.16, 0.01, 0.16, 0)
+mode = 2
+path_node = NodePath("../Path3D")
+path_interval_type = 0
+path_interval = 1.0
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+
+[node name="Path3D" parent="RootPart" index="5"]
+curve = SubResource("Curve3D_231pb")
+
+[node name="Final Path" type="Path3D" parent="."]
+curve = SubResource("Curve3D_lpaph")
+
+[node name="CSGPolygon3D" type="CSGPolygon3D" parent="."]
+layers = 0
+use_collision = true
+collision_layer = 3
+collision_mask = 3
+polygon = PackedVector2Array(-0.2, 0, -0.2, 0.01, 0.2, 0.01, 0.2, 0)
+mode = 2
+path_node = NodePath("../Final Path")
+path_interval_type = 1
+path_interval = 0.33
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+
+[node name="45deg Road" type="Node3D" parent="." node_paths=PackedStringArray("next_piece", "previous_piece") instance=ExtResource("4_22a2v")]
+transform = Transform3D(1.236, 0, 0, 0, 1.236, 0, 0, 0, 1.236, 0, 0, -1.1124)
+script = ExtResource("2_myw6g")
+next_piece = NodePath("../Straight Road")
+previous_piece = NodePath("../RootPart")
+
+[node name="Straight Road" type="Node3D" parent="." node_paths=PackedStringArray("next_piece", "previous_piece") instance=ExtResource("1_11gpj")]
+transform = Transform3D(-5.40273e-08, 0, 1.236, 0, 1.236, 0, -1.236, 0, -5.40273e-08, -0.702872, 0, -1.80752)
+script = ExtResource("2_myw6g")
+next_piece = NodePath("../@Node3D@110")
+previous_piece = NodePath("../45deg Road")
+
+[node name="@Node3D@110" type="Node3D" parent="." node_paths=PackedStringArray("next_piece", "previous_piece") instance=ExtResource("4_22a2v")]
+transform = Transform3D(-5.40273e-08, 0, 1.236, 0, 1.236, 0, -1.236, 0, -5.40273e-08, -1.81527, 0, -1.80752)
+script = ExtResource("2_myw6g")
+next_piece = NodePath("../@Node3D@111")
+previous_piece = NodePath("../Straight Road")
+
+[node name="@Node3D@111" type="Node3D" parent="." node_paths=PackedStringArray("next_piece", "previous_piece") instance=ExtResource("1_11gpj")]
+transform = Transform3D(-1.236, 0, -1.86631e-07, 0, 1.236, 0, 1.86631e-07, 0, -1.236, -2.51039, 0, -1.10465)
+script = ExtResource("2_myw6g")
+next_piece = NodePath("../@Node3D@112")
+previous_piece = NodePath("../@Node3D@110")
+
+[node name="@Node3D@112" type="Node3D" parent="." node_paths=PackedStringArray("next_piece", "previous_piece") instance=ExtResource("4_22a2v")]
+transform = Transform3D(-1.236, 0, -1.86631e-07, 0, 1.236, 0, 1.86631e-07, 0, -1.236, -2.51039, 0, 0.00775111)
+script = ExtResource("2_myw6g")
+next_piece = NodePath("../@Node3D@113")
+previous_piece = NodePath("../@Node3D@111")
+
+[node name="@Node3D@113" type="Node3D" parent="." node_paths=PackedStringArray("next_piece", "previous_piece") instance=ExtResource("1_11gpj")]
+transform = Transform3D(2.40658e-07, 0, -1.236, 0, 1.236, 0, 1.236, 0, 2.40658e-07, -1.80752, 0, 0.702872)
+script = ExtResource("2_myw6g")
+next_piece = NodePath("../@Node3D@114")
+previous_piece = NodePath("../@Node3D@112")
+
+[node name="@Node3D@114" type="Node3D" parent="." node_paths=PackedStringArray("previous_piece") instance=ExtResource("4_22a2v")]
+transform = Transform3D(2.40658e-07, 0, -1.236, 0, 1.236, 0, 1.236, 0, 2.40658e-07, -0.695121, 0, 0.702872)
+script = ExtResource("2_myw6g")
+previous_piece = NodePath("../@Node3D@113")
+
+[editable path="RootPart"]
