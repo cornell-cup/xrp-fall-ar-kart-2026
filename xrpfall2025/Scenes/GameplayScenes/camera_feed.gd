@@ -16,5 +16,6 @@ func _ready() -> void:
 	video_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
 func _process(_delta: float) -> void:
+	video_rect.visible = not NetworkReceiver.ar_enabled
 	if NetworkReceiver.video_texture != null:
 		video_rect.texture = NetworkReceiver.video_texture
