@@ -1,5 +1,30 @@
-# IMPORTANT: env vars must be set BEFORE `import cv2`. TCP transport
-# gives a clean image with retransmits.
+"""
+laptop_fusion_test.py
+
+Standalone test version of laptop_fusion. Same EKF + AprilTag pipeline,
+but no Godot integration — instead:
+
+  - Opens a live OpenCV window showing the RTSP feed with AprilTag
+    overlays (bounding box, ID, axes, distance)
+  - Prints raw tag pose and fused EKF state side-by-side on every
+    sensor packet
+  - Optionally logs CSV: time, x_fused, y_fused, theta_fused,
+                        x_tag, y_tag, theta_tag
+  - No gamepad relay, no TCP video server, no JSON output
+
+Use this for tuning the EKF, calibrating the camera-to-world transform,
+verifying AprilTag detection rates, etc., without needing Godot or any
+game scene running.
+
+The XRP still needs to be running and broadcasting raw sensors — the
+EKF has nothing to predict from otherwise.
+
+Usage:
+  python laptop_fusion_test.py [PI_IP]
+
+Press ESC or 'q' in the video window to quit.
+"""
+
 import os
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = (
     "rtsp_transport;tcp"
@@ -15,9 +40,8 @@ os.environ["AV_LOG_FORCE_NOCOLOR"] = "1"
 import sys
 import time
 import math
-import json
+import csv
 import socket
-import struct
 import threading
 from contextlib import contextmanager
 
@@ -25,95 +49,127 @@ import numpy as np
 import cv2
 from pupil_apriltags import Detector
 
-from ackermann_simple_ekf import ackermann_simple_ekf
+from new_ackermann_simple_ekf import ackermann_simple_ekf
 
-"""
-laptop_fusion.py
 
-Single laptop-side fusion + routing node. Combines:
 
-    1. RTSP video grab from the Pi (background thread)
-    2. AprilTag detection + camera->world transform (background thread)
-    3. EKF predict + correct + camera_correction from XRP raw sensors
-    4. Forwards fused state to Godot (UDP 6000, JSON {x, y, angle})
-    5. Streams raw RGB video frames to Godot (TCP 6001)
-    6. Forwards Godot gamepad packets to the XRP (UDP 4003 -> XRP:4002)
-    7. NEW: Forwards AprilTag detections to Godot (UDP 6002, JSON ar_tags)
-       for AR UI overlays — labels above each detected tag in-game.
+BALL_DIAMETER_MM = 112
 
-Architecture:
-    XRP   --RAW,enc_l,enc_r,heading-UDP:5005--> us
-    Pi    --RTSP-----------------------------> us
-    us    --{x,y,angle} JSON--UDP:6000-------> Godot (kart pose)
-    us    --raw RGB frames---TCP:6001--------> Godot (video backdrop)
-    us    --ar_tags JSON-----UDP:6002--------> Godot (AR overlays)
-    Godot --gamepad bytes----UDP:4003--------> us --UDP:4002--> XRP
-"""
+# camera_matrix = np.array([
+#     [1.41722835e+03, 0.00000000e+00, 9.48431225e+02],  # [fx,  0, cx]  (Example values for a 640x480 frame)
+#     [0.00000000e+00, 1.42951113e+03, 5.13535423e+02],  # [ 0, fy, cy]
+#     [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]   # [ 0,  0,  1]
+# ])
+
+camera_matrix = np.array([
+    [1.37839461e+03,   0.0, 9.87902678e+02],  # [fx,  0, cx]  (Example values for a 640x480 frame)
+    [  0.0, 1.37803661e+03, 4.54808963e+02],  # [ 0, fy, cy]
+    [  0.0,   0.0,   1.0]                     # [ 0,  0,  1]
+])
+
+distortion_matrix = np.array([[-0.3525383, 0.08318022, 0.00181599, -0.00182542, 0.02471334]])
+
+fx = camera_matrix[0, 0]
+fy = camera_matrix[1, 1]
+cx = camera_matrix[0, 2]
+cy = camera_matrix[1, 2]
+
+# ---------------- CAMERA GLOBAL POSE ----------------
+
+# Replace these with your actual camera pose
+#R_camera_to_world = np.eye(3)
+R_camera_to_world = np.array([
+    [0, 1,  0],
+    [1, 0,  0],
+    [0,  0, -1]
+])
+
+T_camera_to_world = np.array([
+    [709.6],
+    [0.0],
+    [-2281.1]
+])
+
+class PositionSmoother:
+    """Lightweight constant-velocity Kalman filter for a 2D (X, Y) point."""
+
+    def __init__(self, process_var=25.0, meas_var=9.0):
+        self.kf = cv2.KalmanFilter(4, 2)
+        self.kf.transitionMatrix = np.array([
+            [1, 0, 1, 0],
+            [0, 1, 0, 1],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ], dtype=np.float32)
+        self.kf.measurementMatrix = np.array([
+            [1, 0, 0, 0],
+            [0, 1, 0, 0]
+        ], dtype=np.float32)
+        self.kf.processNoiseCov = np.eye(4, dtype=np.float32) * process_var
+        self.kf.measurementNoiseCov = np.eye(2, dtype=np.float32) * meas_var
+        self.initialized = False
+
+    def update(self, x, y):
+        measurement = np.array([[np.float32(x)], [np.float32(y)]])
+        if not self.initialized:
+            self.kf.statePre = np.array([[x], [y], [0], [0]], dtype=np.float32)
+            self.kf.statePost = np.array([[x], [y], [0], [0]], dtype=np.float32)
+            self.initialized = True
+        self.kf.predict()
+        corrected = self.kf.correct(measurement)
+        return float(corrected[0, 0]), float(corrected[1, 0])
+
+
+smoother = PositionSmoother()
+
+lower_color = np.array([160, 40, 20])
+upper_color = np.array([179, 255, 255])
+
+cap = cv2.VideoCapture(0)
+
+ball_x = 0
+ball_y = 0
+
 
 # ============================================================
 # Config
 # ============================================================
+# PI_IP = sys.argv[1] if len(sys.argv) > 1 else "10.42.0.1"
+PI_IP = sys.argv[1] if len(sys.argv) > 1 else "192.168.4.95"
 
-# Where to look for the Pi's camera. The first address that answers on
-# the RTSP port wins, so the same build works whether the Pi is running
-# its own hotspot or is on CornellCup-Web. An address passed on the
-# command line (Godot's PI_IP) is tried first.
-PI_CANDIDATES = [a for a in sys.argv[1:2] if a] + [
-    "cornellcup2.local",   # works on any network (mDNS name)
-    "10.42.0.1",           # Pi hotspot
-    "192.168.4.95",        # last known CornellCup-Web address
-]
-RTSP_PORT = 8554
+# PI_IP = sys.argv[1] if len(sys.argv) > 1 else "192.168.0.193"
+
+RTSP_URL = f"rtsp://{PI_IP}:8554/cam"
 
 SENSOR_PORT = 5005
 
-GODOT_HOST = "127.0.0.1"
-GODOT_POSE_PORT = 6000
-GODOT_VIDEO_PORT = 6001
-GODOT_AR_TAGS_PORT = 6002    # NEW: AR overlay events
+XRP_IP = "192.168.4.8"
+YAW_CORRECTION_PORT = 5007
 
-GAMEPAD_RELAY_PORT = 4003
-XRP_GAMEPAD_PORT = 4002
+yaw_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# Set to None to disable CSV logging. Otherwise: file path.
+CSV_LOG_PATH = "fusion_log.csv"
+
+# Apply camera correction to the EKF? Disable to compare encoder+IMU
+# only against the raw tag pose, which is useful for debugging.
+APPLY_CAMERA_CORRECTION = True
 
 TAG_FRESHNESS_S = 0.2
 
-# How often the status lines print (seconds).
-PRINT_EVERY_S = 2.0
-
-# Raw RGB to Godot is ~0.9 MB per frame and Godot decodes it on its main
-# thread. Cap it so a 60 fps camera doesn't slow the game down. The
-# detector still gets every frame.
-VIDEO_MAX_FPS = 30
-
-# fx, fy, cx, cy - calibrated for the camera's 640x480 cropped mode. If tag
-# distances come out ~2.4x too far, the Pi is using the wide mode instead.
+# ----- Camera intrinsics -----
 Camera_params = [1.26828550e+03, 1.25414697e+03, 3.61108041e+02, 2.97975274e+02]
-TAG_SIZE = 0.06339   # meters
+TAG_SIZE_TAG3 = 0.06503
+TAG_SIZE_TAG0 = 0.08584
 
-# Per-tag display names for the AR overlay. IDs not in here still get
-# tracked for localization but show up generically. Add or rename as
-# you set up the physical tags.
-TAG_LABELS = {
-    0: "TAG 0",
-    1: "TAG 1",
-    2: "TAG 2",
-    3: "TAG 3",
-    4: "TAG 4",
-    5: "TAG 5",
-    6: "TAG 6",
-    7: "TAG 7",
-}
-
-# Frame dimensions used by the AR side. Send the actual capture size
-# so Godot can convert tag corners (in pixel coords) to backdrop coords.
-FRAME_W_DEFAULT = 640
-FRAME_H_DEFAULT = 480
+POSITIVE_Y = 1
+X_THRESHOLD = 0.4572
+FAR_FROM_ORIGIN = 0
 
 # ============================================================
 # Frame transforms (from pi_detect_aprilTag.py)
 # ============================================================
-
-_theta_mount = np.radians(25)
+_theta_mount = np.radians(0)
 s_theta = np.sin(_theta_mount); c_theta = np.cos(_theta_mount)
 h1, l1, d = 0.03047, 0.007625, 0.02792
 trans_R_C = np.array([
@@ -123,49 +179,83 @@ trans_R_C = np.array([
     [0,        0,         0,        1                          ],
 ])
 
-h3, l3 = 0.02483, 0.02155
-trans_H_A = np.array([
-    [1, 0, 0,   0  ], [0, 1, 0, -h3 ], [0, 0, 1, -l3 ], [0, 0, 0, 1],
+h3_tag3, l3_tag3 = 0.02483, 0.02155
+trans_H_A_tag3 = np.array([
+    [1, 0, 0,   0  ], [0, 1, 0, -h3_tag3 ], [0, 0, 1, -l3_tag3 ], [0, 0, 0, 1],
 ])
 
-alpha = np.radians(10)
-c_alpha, s_alpha = np.cos(alpha), np.sin(alpha)
-l4 = 0.01895
-trans_g_H = np.array([
+h3_tag0, l3_tag0 = -0.0047, 0
+trans_H_A_tag0 = np.array([
+    [1, 0, 0,   0  ], [0, 1, 0, -h3_tag3 ], [0, 0, 1, -l3_tag3 ], [0, 0, 0, 1],
+])
+
+alpha_tag3 = np.radians(0)
+c_alpha_tag3, s_alpha_tag3 = np.cos(alpha_tag3), np.sin(alpha_tag3)
+l4_tag3 = 0.01895
+trans_g_H_tag3 = np.array([
     [1, 0,        0,         0 ],
-    [0, c_alpha, -s_alpha,    0 ],
-    [0, s_alpha,  c_alpha,  -l4],
+    [0, c_alpha_tag3, -s_alpha_tag3,    0 ],
+    [0, s_alpha_tag3,  c_alpha_tag3,  -l4_tag3],
     [0, 0,        0,          1],
 ])
 
-x1, y1, x2, y2 = 0.6096, 1.524, 0.6096, 1.0668
-x3, y3 = (x1+x2)/2, (y1+y2)/2
-h4 = 0.352425
-if x1 == x2:
-    beta = np.radians(90) if y1 > y2 else np.radians(270)
+alpha_tag0 = np.radians(0)
+c_alpha_tag0, s_alpha_tag0 = np.cos(alpha_tag0), np.sin(alpha_tag0)
+l4_tag0 = 0.01187
+trans_g_H_tag0 = np.array([
+    [1, 0,        0,         0 ],
+    [0, c_alpha_tag0, -s_alpha_tag0,    0 ],
+    [0, s_alpha_tag0,  c_alpha_tag0,  -l4_tag0],
+    [0, 0,        0,          1],
+])
+
+x1_tag3, y1_tag3, x2_tag3, y2_tag3 = -1, 0.6096, 1, 0.6096
+x3_tag3, y3_tag3 = (x1_tag3+x2_tag3)/2, (y1_tag3+y2_tag3)/2
+h4_tag3 = 0.352425
+if x1_tag3 == x2_tag3:
+    beta_tag3 = np.radians(90) if y1_tag3 > y2_tag3 else np.radians(270)
 else:
-    beta = np.arctan((y1-y2)/(x2-x1))
-    if x1 <= x2 and y1 >= y2: beta = beta
-    elif x1 > x2:             beta = beta + np.radians(180)
-    else:                     beta = beta + np.radians(270)
-c_beta, s_beta = np.cos(beta), np.sin(beta)
-trans_G_g = np.array([
-    [ c_beta, 0,  s_beta, x3],
-    [-s_beta, 0,  c_beta, y3],
-    [ 0,     -1,  0,      h4],
+    beta_tag3 = np.arctan((y1_tag3-y2_tag3)/(x2_tag3-x1_tag3))
+    if x1_tag3 <= x2_tag3 and y1_tag3 >= y2_tag3: beta_tag3 = beta_tag3
+    elif x1_tag3 > x2_tag3:             beta_tag3 = beta_tag3 + np.radians(180)
+    else:                     beta_tag3 = beta_tag3 + np.radians(270)
+c_beta_tag3, s_beta_tag3 = np.cos(beta_tag3), np.sin(beta_tag3)
+trans_G_g_tag3 = np.array([
+    [ c_beta_tag3, 0,  s_beta_tag3, x3_tag3],
+    [-s_beta_tag3, 0,  c_beta_tag3, y3_tag3],
+    [ 0,     -1,  0,      h4_tag3],
     [ 0,      0,  0,       1],
 ])
-trans_G_A = trans_G_g @ trans_g_H @ trans_H_A
-print(f"[Transforms] beta = {math.degrees(beta):.1f}°")
+trans_G_A_tag3= trans_G_g_tag3 @ trans_g_H_tag3 @ trans_H_A_tag3
+print(f"[Transforms] beta_tag3 = {math.degrees(beta_tag3):.1f}")
+
+x1_tag0, y1_tag0, x2_tag0, y2_tag0 = 1.4144, -0.5, 0.5856, -0.5
+x3_tag0, y3_tag0 = (x1_tag0+x2_tag0)/2, (y1_tag0+y2_tag0)/2
+h4_tag0 = 0.352425
+if x1_tag0 == x2_tag0:
+    beta_tag0 = np.radians(90) if y1_tag0 > y2_tag0 else np.radians(270)
+else:
+    beta_tag0 = np.arctan((y1_tag0-y2_tag0)/(x2_tag0-x1_tag0))
+    if x1_tag0 <= x2_tag0 and y1_tag0 >= y2_tag0: beta_tag0 = beta_tag0
+    elif x1_tag0 > x2_tag0:             beta_tag0 = beta_tag0 + np.radians(180)
+    else:                     beta_tag0 = beta_tag0 + np.radians(270)
+c_beta_tag0, s_beta_tag0 = np.cos(beta_tag0), np.sin(beta_tag0)
+trans_G_g_tag0 = np.array([
+    [ c_beta_tag0, 0,  s_beta_tag0, x3_tag0],
+    [-s_beta_tag0, 0,  c_beta_tag0, y3_tag0],
+    [ 0,     -1,  0,      h4_tag0],
+    [ 0,      0,  0,       1],
+])
+trans_G_A_tag0 = trans_G_g_tag0 @ trans_g_H_tag0 @ trans_H_A_tag0
+print(f"[Transforms] beta_tag0 = {math.degrees(beta_tag0):.1f}")
 
 # ============================================================
 # EKF
 # ============================================================
-# TODO measure: xrpgodot.py used radius 0.033. Wrong values make the kart's
-# in-game position drift out of scale.
-WHEEL_RADIUS = 0.026   # meters (wheel diameter / 2)
-TRACK_WIDTH  = 0.109   # meters between the two driven wheels
-r_xy = 5e-2
+# WHEEL_RADIUS = 0.026
+WHEEL_RADIUS = 0.052
+TRACK_WIDTH  = 0.109
+r_xy = 0.4
 r_th = 5e-2
 q_th = math.radians(1.0) ** 2
 
@@ -176,10 +266,7 @@ theta_zero = None
 # ============================================================
 # Detector
 # ============================================================
-# nthreads: use several CPU cores. quad_decimate 2.0 roughly halves
-# detection time; set it back to 1.0 if far-away tags stop being found.
-detector = Detector(families="tag36h11", nthreads=4, quad_decimate=2.0)
-
+detector = Detector(families="tag36h11")
 
 @contextmanager
 def suppress_stderr():
@@ -190,26 +277,24 @@ def suppress_stderr():
     finally:
         os.dup2(orig, 2); os.close(orig); os.close(devnull)
 
-
 # ============================================================
-# Shared state
+# Shared state — between threads and the GUI
 # ============================================================
 latest_frame = None
 latest_frame_id = 0
 latest_frame_lock = threading.Lock()
 
+# Detector publishes (annotated_frame, robot_pose_dict) so the GUI thread
+# can show the same frame with overlays drawn on it.
+latest_display_frame = None
+display_frame_lock = threading.Lock()
+
 latest_robot_pose_world = None
 latest_robot_pose_lock = threading.Lock()
 
-# NEW: list of every visible tag this frame (for AR overlay).
-# Refreshed by the detector thread on each processed frame.
-# Each entry: {"id": int, "corners": [[x,y]*4], "center": [x,y], "name": str}
-latest_visible_tags = []
-latest_visible_tags_lock = threading.Lock()
-latest_visible_tags_time = 0.0
-
-xrp_ip = None
-xrp_ip_lock = threading.Lock()
+# Latest fused EKF state for the GUI overlay
+latest_fused = None  # {"x": ..., "y": ..., "theta": ...}
+latest_fused_lock = threading.Lock()
 
 running = True
 
@@ -225,35 +310,9 @@ def open_rtsp(url):
     return cap
 
 
-def find_pi():
-    """Return the IP of the first candidate whose RTSP port answers."""
-    # IPv4 only: on the hotspot, cornellcup2.local can resolve to an IPv6
-    # link-local address (fe80::...), which FFmpeg can't put in an RTSP URL.
-    for host in PI_CANDIDATES:
-        try:
-            infos = socket.getaddrinfo(host, RTSP_PORT, socket.AF_INET, socket.SOCK_STREAM)
-        except OSError:
-            continue
-        for info in infos:
-            ip = info[4][0]
-            try:
-                with socket.create_connection((ip, RTSP_PORT), timeout=1.5):
-                    pass
-                print(f"[Camera] Pi found at {host} ({ip})")
-                return ip
-            except OSError:
-                pass
-    return None
-
-
-def grabber_thread():
+def grabber_thread(rtsp_url):
     global latest_frame, latest_frame_id, running
     while running:
-        pi_ip = find_pi()
-        if pi_ip is None:
-            print(f"[Camera] Pi not reachable at any of {PI_CANDIDATES}, retrying in 3s...")
-            time.sleep(3); continue
-        rtsp_url = f"rtsp://{pi_ip}:{RTSP_PORT}/cam"
         print(f"[Camera] Connecting to {rtsp_url}")
         cap = open_rtsp(rtsp_url)
         if not cap.isOpened():
@@ -278,14 +337,41 @@ def grabber_thread():
 
 
 # ============================================================
-# Detection thread — runs AprilTag, publishes BOTH
-#   (a) world-frame robot pose for EKF
-#   (b) per-tag corners for AR overlay
+# AprilTag axes drawing (from pi_detect_aprilTag.py)
+# ============================================================
+def draw_axes(frame, tag, camera_params, tag_size):
+    fx, fy, cx, cy = camera_params
+    axis = np.float32([
+        [0, 0, 0],
+        [tag_size, 0, 0],
+        [0, tag_size, 0],
+        [0, 0, -tag_size],
+    ])
+    R = tag.pose_R
+    t = tag.pose_t
+    pts = []
+    for point in axis:
+        world = R @ point + t.flatten()
+        if abs(world[2]) < 1e-6:
+            pts.append((0, 0))
+            continue
+        x = (world[0] / world[2]) * fx + cx
+        y = (world[1] / world[2]) * fy + cy
+        pts.append((int(x), int(y)))
+    origin = pts[0]
+    cv2.line(frame, origin, pts[1], (0, 0, 255), 2)   # X red
+    cv2.line(frame, origin, pts[2], (0, 255, 0), 2)   # Y green
+    cv2.line(frame, origin, pts[3], (255, 0, 0), 2)   # Z blue
+
+
+# ============================================================
+# Detection thread — draws overlays AND publishes pose
 # ============================================================
 def detector_thread():
-    global latest_robot_pose_world, latest_visible_tags, latest_visible_tags_time, running
+    global latest_robot_pose_world, latest_display_frame, running, POSITIVE_Y, X_THRESHOLD, FAR_FROM_ORIGIN
 
-    trans_C_A = np.identity(4)
+    trans_C_A_tag3 = np.identity(4)
+    trans_C_A_tag0 = np.identity(4)
     last_processed_id = -1
     fps_n = 0
     fps_t = time.time()
@@ -295,7 +381,7 @@ def detector_thread():
             if latest_frame is None or latest_frame_id == last_processed_id:
                 frame = None
             else:
-                frame = latest_frame
+                frame = latest_frame.copy()    # copy so we can draw on it
                 last_processed_id = latest_frame_id
 
         if frame is None:
@@ -303,337 +389,481 @@ def detector_thread():
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         with suppress_stderr():
-            results = detector.detect(
-                gray, estimate_tag_pose=True,
-                camera_params=Camera_params, tag_size=TAG_SIZE,
-            )
+
+            if FAR_FROM_ORIGIN:
+                results = detector.detect(
+                    gray, estimate_tag_pose=True,
+                    camera_params=Camera_params, tag_size=TAG_SIZE_TAG0,
+                )
+            else:
+                results = detector.detect(
+                    gray, estimate_tag_pose=True,
+                    camera_params=Camera_params, tag_size=TAG_SIZE_TAG3,
+                )
+
+            # if POSITIVE_Y:
+            #     results = detector.detect(
+            #         gray, estimate_tag_pose=True,
+            #         camera_params=Camera_params, tag_size=TAG_SIZE_TAG0,
+            #     )
+            # else:
+            #     results = detector.detect(
+            #         gray, estimate_tag_pose=True,
+            #         camera_params=Camera_params, tag_size=TAG_SIZE_TAG3,
+            #     )
 
         valid = [t for t in results if 0 <= t.tag_id <= 7]
 
-        # ---- Build per-tag overlay info ----
-        # The AR side just needs the corners so it can position labels
-        # in 2D. The EKF side needs the world-frame pose from the
-        # closest tag. We compute both from the same detection list.
-        overlay_tags = []
+        # Draw all valid detections on the display frame
         for tag in valid:
-            corners = tag.corners.tolist()      # [[x,y]*4]
-            center = tag.center.tolist()        # [x,y]
-            overlay_tags.append({
-                "id": int(tag.tag_id),
-                "name": TAG_LABELS.get(int(tag.tag_id), f"TAG {int(tag.tag_id)}"),
-                "corners": corners,
-                "center": center,
-            })
+            corners = tag.corners.astype(int)
+            for i in range(4):
+                cv2.line(frame, tuple(corners[i]),
+                         tuple(corners[(i+1) % 4]), (0, 255, 0), 2)
+            center = tuple(tag.center.astype(int))
+            cv2.circle(frame, center, 5, (0, 0, 255), -1)
+            cv2.putText(frame, f"id {tag.tag_id}",
+                        (center[0] + 10, center[1] - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+            tz = tag.pose_t[2][0]
+            cv2.putText(frame, f"{tz:.2f}m",
+                        (center[0] + 10, center[1] + 15),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 2)
+            draw_axes(frame, tag, Camera_params, TAG_SIZE_TAG3)
 
-        with latest_visible_tags_lock:
-            latest_visible_tags = overlay_tags
-            latest_visible_tags_time = time.time()
-
-        # ---- Localization update from closest tag ----
+        # Pick the closest tag for pose update
         if valid:
             tag = min(valid, key=lambda t: abs(t.pose_t[2][0]))
-            trans_C_A[:3, :3] = tag.pose_R
-            trans_C_A[0, 3] = tag.pose_t[0][0]
-            trans_C_A[1, 3] = tag.pose_t[1][0]
-            trans_C_A[2, 3] = tag.pose_t[2][0]
-            try:
-                trans_A_C = np.linalg.inv(trans_C_A)
-                trans_R_G = trans_G_A @ trans_A_C @ trans_R_C
-                r_x = float(trans_R_G[0, 3])
-                r_y = float(trans_R_G[1, 3])
-                r_theta = math.atan2(trans_R_G[1, 0], trans_R_G[0, 0])
-                with latest_robot_pose_lock:
-                    latest_robot_pose_world = {
-                        "x": r_x, "y": r_y, "theta": r_theta,
-                        "tag_id": int(tag.tag_id), "time": time.time(),
-                    }
-            except np.linalg.LinAlgError:
-                pass
+            if tag.tag_id == 3:
+                trans_C_A_tag3[:3, :3] = tag.pose_R
+                trans_C_A_tag3[0, 3] = tag.pose_t[0][0]
+                trans_C_A_tag3[1, 3] = tag.pose_t[1][0]
+                trans_C_A_tag3[2, 3] = tag.pose_t[2][0]
+                try:
+                    trans_A_C_tag3 = np.linalg.inv(trans_C_A_tag3)
+                    trans_R_G_tag3 = trans_G_A_tag3 @ trans_A_C_tag3 @ trans_R_C
+                    r_x = float(trans_R_G_tag3[0, 3])
+                    r_y = float(trans_R_G_tag3[1, 3])
+                    #r_theta = -(math.atan2(trans_R_G_tag3[1, 0], trans_R_G_tag3[0, 0]) - np.pi/2)
+                    r_theta = (math.atan2(trans_R_G_tag3[1, 0], trans_R_G_tag3[0, 0]))
+                    with latest_robot_pose_lock:
+                        latest_robot_pose_world = {
+                            "x": r_x, "y": r_y, "theta": r_theta,
+                            "tag_id": tag.tag_id, "time": time.time(),
+                        }
+                except np.linalg.LinAlgError:
+                    pass
+            if tag.tag_id == 0:
+                trans_C_A_tag0[:3, :3] = tag.pose_R
+                trans_C_A_tag0[0, 3] = tag.pose_t[0][0]
+                trans_C_A_tag0[1, 3] = tag.pose_t[1][0]
+                trans_C_A_tag0[2, 3] = tag.pose_t[2][0]
+                try:
+                    trans_A_C_tag0 = np.linalg.inv(trans_C_A_tag0)
+                    trans_R_G_tag0 = trans_G_A_tag0 @ trans_A_C_tag0 @ trans_R_C
+                    r_x = float(trans_R_G_tag0[0, 3])
+                    r_y = float(trans_R_G_tag0[1, 3])
+                    r_theta = math.atan2(trans_R_G_tag0[1, 0], trans_R_G_tag0[0, 0])
+                    with latest_robot_pose_lock:
+                        latest_robot_pose_world = {
+                            "x": r_x, "y": r_y, "theta": r_theta,
+                            "tag_id": tag.tag_id, "time": time.time(),
+                        }
+
+                    # Send absolute robot yaw to XRP
+                    msg = "TAG_YAW,{:.6f}".format(r_theta)
+
+
+                    # try:
+                    #     yaw_sock.sendto(msg.encode("utf-8"),(XRP_IP, YAW_CORRECTION_PORT))
+                    # except OSError as e:
+                    #     print("[YAW] UDP send error:", e)
+
+
+                except np.linalg.LinAlgError:
+                    pass
+
+        # Publish the annotated frame for the GUI thread to show
+        with display_frame_lock:
+            latest_display_frame = frame
 
         fps_n += 1
         now = time.time()
-        if now - fps_t >= PRINT_EVERY_S:
-            fps_n = int(fps_n / (now - fps_t))   # report per second
+        if now - fps_t >= 1.0:
             tag_str = "no tag"
-            with latest_robot_pose_lock:
-                pw = latest_robot_pose_world
-            if pw:
-                age = now - pw["time"]
-                tag_str = f"tag {pw['tag_id']} ({'fresh' if age < TAG_FRESHNESS_S else f'STALE {age:.1f}s'})"
-            print(f"[Detect] {fps_n} fps | {tag_str} | visible={len(overlay_tags)}")
+            if latest_robot_pose_world:
+                age = now - latest_robot_pose_world["time"]
+                tag_str = f"tag {latest_robot_pose_world['tag_id']} ({'fresh' if age < TAG_FRESHNESS_S else f'STALE {age:.1f}s'})"
+            print(f"[Detect] {fps_n} fps | {tag_str}")
             fps_n = 0; fps_t = now
 
 
 # ============================================================
-# AR tag broadcaster — sends overlay info to Godot at ~30 Hz
+# GUI thread — shows the live annotated video
+# OpenCV imshow MUST run on the main thread on macOS, so we'll call it
+# from main() directly. This thread is here for non-mac platforms; on
+# macOS we'll just have the main loop pull frames itself.
 # ============================================================
-def ar_tags_thread():
-    """Push the latest detected tag list to Godot for AR overlays.
-    Runs at ~30 Hz so labels track the tag smoothly even between detections.
-    Sends an empty 'tags' array when nothing is visible so Godot can
-    hide stale labels."""
-    global running
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    target = (GODOT_HOST, GODOT_AR_TAGS_PORT)
-    interval = 1.0 / 30.0
-    print(f"[AR] Broadcasting tag overlays to {target}")
-
-    while running:
-        with latest_visible_tags_lock:
-            tags = list(latest_visible_tags)
-            ts = latest_visible_tags_time
-
-        # If no detection in a while, send empty array so Godot hides labels
-        if time.time() - ts > TAG_FRESHNESS_S:
-            tags = []
-
-        try:
-            payload = json.dumps({
-                "type": "ar_tags",
-                "tags": tags,
-                "frame_w": FRAME_W_DEFAULT,
-                "frame_h": FRAME_H_DEFAULT,
-                "timestamp": time.time(),
-            })
-            sock.sendto(payload.encode(), target)
-        except Exception as e:
-            print("[AR] send error:", e)
-
-        time.sleep(interval)
 
 
 # ============================================================
-# Video forwarder to Godot (raw RGB over TCP)
+# Sensor loop + EKF (runs in main thread on non-mac, separate on mac)
 # ============================================================
-godot_video_conn = None
-
-
-def godot_video_server_thread():
-    global godot_video_conn, running
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server.bind(("0.0.0.0", GODOT_VIDEO_PORT))
-    server.listen(5)
-    server.settimeout(0.5)
-    print(f"[Video] TCP server on {GODOT_VIDEO_PORT}, waiting for Godot...")
-
-    last_sent_id = -1
-    last_sent_t = 0.0
-    min_interval = 1.0 / VIDEO_MAX_FPS
-    while running:
-        if godot_video_conn is None:
-            try:
-                conn, addr = server.accept()
-                conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-                godot_video_conn = conn
-                print(f"[Video] Godot connected from {addr}")
-                last_sent_id = -1
-            except socket.timeout:
-                continue
-
-        if time.time() - last_sent_t < min_interval:
-            time.sleep(0.002)
-            continue
-
-        with latest_frame_lock:
-            if latest_frame is None or latest_frame_id == last_sent_id:
-                frame = None
-            else:
-                frame = latest_frame
-                last_sent_id = latest_frame_id
-
-        if frame is None:
-            time.sleep(0.005)
-            continue
-        last_sent_t = time.time()
-
-        try:
-            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            h, w = rgb.shape[:2]
-            data = rgb.tobytes()
-            header = struct.pack("!III", w, h, len(data))
-            godot_video_conn.sendall(header + data)
-        except (BrokenPipeError, ConnectionResetError, OSError):
-            print("[Video] Godot disconnected")
-            try: godot_video_conn.close()
-            except: pass
-            godot_video_conn = None
-
-
-# ============================================================
-# Gamepad relay
-# ============================================================
-def gamepad_relay_thread():
-    global running
-    relay_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    relay_sock.bind(("127.0.0.1", GAMEPAD_RELAY_PORT))
-    relay_sock.settimeout(0.5)
-
-    forward_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    print(f"[Gamepad] Relay listening on 127.0.0.1:{GAMEPAD_RELAY_PORT}, "
-          f"forwarding to XRP:{XRP_GAMEPAD_PORT}")
-
-    pkt_count = 0
-    last_print = time.time()
-    last_warn_no_xrp = 0
-
-    while running:
-        try:
-            data, _ = relay_sock.recvfrom(256)
-        except socket.timeout:
-            continue
-
-        with xrp_ip_lock:
-            target_ip = xrp_ip
-
-        if target_ip is None:
-            now = time.time()
-            if now - last_warn_no_xrp > 5.0:
-                print("[Gamepad] Got packet from Godot but XRP IP unknown yet")
-                last_warn_no_xrp = now
-            continue
-
-        try:
-            forward_sock.sendto(data, (target_ip, XRP_GAMEPAD_PORT))
-            pkt_count += 1
-        except OSError as e:
-            print(f"[Gamepad] Forward error: {e}")
-
-        now = time.time()
-        if now - last_print >= 5.0:
-            print(f"[Gamepad] Forwarded {pkt_count} packets to {target_ip} in last 5s")
-            pkt_count = 0
-            last_print = now
-
-
-# ============================================================
-# Main: sensor packet loop + EKF + Godot pose output
-# ============================================================
-def main():
-    global ekf, theta_zero, xrp_ip, running
+def sensor_ekf_thread(csv_writer):
+    # global ekf, theta_zero, latest_fused, running, POSITIVE_Y
+    global ekf, theta_zero, latest_fused, running, POSITIVE_Y, X_THRESHOLD, FAR_FROM_ORIGIN
+    global ball_x, ball_y
+    print("[DEBUG] Entered sensor_ekf_thread()", flush=True)
 
     sensor_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sensor_sock.bind(("0.0.0.0", SENSOR_PORT))
     sensor_sock.settimeout(0.5)
     print(f"[Sensor] Listening for XRP raw sensors on UDP {SENSOR_PORT}")
 
-    pose_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    print(f"[Pose] Will send fused state to {GODOT_HOST}:{GODOT_POSE_PORT}")
-
-    threading.Thread(target=grabber_thread, daemon=True).start()
-    threading.Thread(target=detector_thread, daemon=True).start()
-    threading.Thread(target=godot_video_server_thread, daemon=True).start()
-    threading.Thread(target=gamepad_relay_thread, daemon=True).start()
-    threading.Thread(target=ar_tags_thread, daemon=True).start()
-
     pkt_count = 0
     last_print = time.time()
 
+    while running:
+        # print("Running")
+        try:
+            data, addr = sensor_sock.recvfrom(256)
+            # print(f"[DEBUG] Received {data!r} from {addr}", flush=True)
+        except socket.timeout:
+            continue
+
+        try:
+            text = data.decode("utf-8").strip()
+        except UnicodeDecodeError:
+            continue
+
+        parts = text.split(",")
+        if len(parts) != 4 or parts[0] != "RAW":
+            continue
+        try:
+            enc_l = float(parts[1]); enc_r = float(parts[2]); heading = float(parts[3])
+        except ValueError:
+            continue
+
+        if ekf is None:
+            with ekf_lock:
+                if ekf is None:
+                    ekf = ackermann_simple_ekf(
+                        wheel_radius=WHEEL_RADIUS,
+                        distance_between_wheels=TRACK_WIDTH,
+                        initial_position_uncertainty=r_xy,
+                        initial_heading_uncertainty=r_th,
+                        sensor_uncertainty=q_th,
+                        initial_left_encoder_value=enc_l,
+                        initial_right_encoder_value=enc_r,
+                        initial_x=0.0, initial_y=0.0, initial_theta=np.pi/2,
+                    )
+                    theta_zero = heading
+                    print(f"[EKF] Initialized at heading={heading:.3f} rad from {addr[0]}")
+            continue
+
+        with ekf_lock:
+            x_pred, y_pred, th_pred = ekf.predict(enc_l, enc_r)
+            # z_theta = heading - theta_zero
+            # x, y, theta = ekf.correct(z_theta)
+
+            # z_theta = heading - theta_zero
+            x, y, theta = ekf.correct(heading)
+
+            # print("IMU raw: " + str(np.degrees(heading)))
+            # print("EKF corrected: " + str(np.degrees(theta)))
+            # print("\n")
+
+            # if y >= 0:
+            #     POSITIVE_Y = 1
+            # else:
+            #     POSITIVE_Y = 0
+
+            if x >= X_THRESHOLD:
+                FAR_FROM_ORIGIN = 1
+            else:
+                FAR_FROM_ORIGIN = 0
+
+            with latest_robot_pose_lock:
+                pose_w = latest_robot_pose_world
+            tag_is_fresh = (
+                pose_w is not None
+                and (time.time() - pose_w["time"]) < TAG_FRESHNESS_S
+            )
+
+            if tag_is_fresh and APPLY_CAMERA_CORRECTION:
+                try:
+                    x, y, theta = ekf.camera_correction(
+                        pose_w["x"], pose_w["y"], pose_w["theta"],
+                    )
+
+                    # if y >= 0:
+                    #     POSITIVE_Y = 1
+                    # else:
+                    #     POSITIVE_Y = 0
+
+                    if x >= X_THRESHOLD:
+                        FAR_FROM_ORIGIN = 1
+                    else:
+                        FAR_FROM_ORIGIN = 0
+
+                except Exception as e:
+                    print(f"[EKF] camera_correction error: {e}")
+
+        with latest_fused_lock:
+            latest_fused = {"x": x, "y": y, "theta": theta}
+
+        # CSV log
+        if csv_writer is not None:
+            tag_x = pose_w["x"] if (pose_w and tag_is_fresh) else ""
+            tag_y = pose_w["y"] if (pose_w and tag_is_fresh) else ""
+            tag_th = pose_w["theta"] if (pose_w and tag_is_fresh) else ""
+            csv_writer.writerow([
+                time.time(), x, y, theta, tag_x, tag_y, tag_th, ball_x, ball_y
+            ])
+
+        pkt_count += 1
+        now = time.time()
+        if now - last_print >= 1.0:
+            if pose_w is None:
+                tag_info = "no tag yet"
+            else:
+                age = time.time() - pose_w["time"]
+                if age < TAG_FRESHNESS_S:
+                    tag_info = (f"tag x={pose_w['x']:+.2f} y={pose_w['y']:+.2f} "
+                                f"th={math.degrees(pose_w['theta']):+.0f} ({age*1000:.0f}ms)")
+                else:
+                    tag_info = f"tag stale {age:.1f}s"
+            print(f"[EKF] {pkt_count} pkts/s | "
+                  f"FUSED x={x:+.2f} y={y:+.2f} th={math.degrees(theta):+.0f} | {tag_info}")
+            pkt_count = 0; last_print = now
+
+    sensor_sock.close()
+
+
+# ============================================================
+# Main — handles GUI on the main thread (required on macOS)
+# ============================================================
+def main():
+    global running, ball_x, ball_y
+
+    # CSV log
+    csv_file = None
+    csv_writer = None
+    if CSV_LOG_PATH:
+        csv_file = open(CSV_LOG_PATH, "w", newline="")
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow([
+            "time", "x_fused", "y_fused", "theta_fused",
+            "x_tag", "y_tag", "theta_tag", "ball_x", "ball_y"
+        ])
+        print(f"[CSV] Logging to {CSV_LOG_PATH}")
+
+    threading.Thread(target=grabber_thread, args=(RTSP_URL,), daemon=True).start()
+    threading.Thread(target=detector_thread, daemon=True).start()
+    # threading.Thread(target=sensor_ekf_thread, args=(csv_writer,), daemon=True).start()
+
+    sensor_thread = threading.Thread(
+        target=sensor_ekf_thread,
+        args=(csv_writer,),
+        daemon=True,
+        name="SensorEKF"
+    )
+
+    print("[DEBUG] Starting sensor thread", flush=True)
+    sensor_thread.start()
+    print("[DEBUG] Sensor thread started:", sensor_thread.is_alive(), flush=True)
+
+    print("[GUI] Press ESC or 'q' in the video window to quit")
+    cv2.namedWindow("AprilTag Test", cv2.WINDOW_AUTOSIZE)
+
     try:
         while running:
-            try:
-                data, addr = sensor_sock.recvfrom(256)
-            except socket.timeout:
-                continue
 
-            with xrp_ip_lock:
-                if xrp_ip != addr[0]:
-                    xrp_ip = addr[0]
-                    print(f"[XRP] IP captured: {xrp_ip}")
+            ret, frame1 = cap.read()
 
-            try:
-                text = data.decode("utf-8").strip()
-            except UnicodeDecodeError:
-                continue
+            if not ret:
+                break
 
-            parts = text.split(",")
-            if len(parts) != 4 or parts[0] != "RAW":
-                continue
+            h, w = frame1.shape[:2]
 
-            try:
-                enc_l = float(parts[1])
-                enc_r = float(parts[2])
-                heading = float(parts[3])
-            except ValueError:
-                continue
 
-            if ekf is None:
-                with ekf_lock:
-                    if ekf is None:
-                        ekf = ackermann_simple_ekf(
-                            wheel_radius=WHEEL_RADIUS,
-                            distance_between_wheels=TRACK_WIDTH,
-                            initial_position_uncertainty=r_xy,
-                            initial_heading_uncertainty=r_th,
-                            sensor_uncertainty=q_th,
-                            initial_left_encoder_value=enc_l,
-                            initial_right_encoder_value=enc_r,
-                            initial_x=0.0,
-                            initial_y=0.0,
-                            initial_theta=0.0,
-                        )
-                        theta_zero = heading
-                        print(f"[EKF] Initialized at heading={heading:.3f} rad")
-                continue
+            new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, distortion_matrix, (w, h), 1, (w, h))
+            
+            # Undistort using the new matrix
+            undistorted = cv2.undistort(frame1, camera_matrix, distortion_matrix, None, new_camera_matrix)
+        
+            # Optional: Crop the image based on the Region of Interest (ROI)
+            x, y, w, h = roi
+            undistorted = undistorted[y:y+h, x:x+w]
+        
+            # undistorted = cv2.undistort(frame, camera_matrix, distortion_matrix)
+        
+        
+            # Blur image
+            blurred = cv2.GaussianBlur(frame1, (11, 11), 0)
+        
+            # # Blur image
+            # blurred = cv2.GaussianBlur(undistorted, (11, 11), 0)
+        
+            # Convert to HSV
+            hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+        
+            # Isolate ball color
+            mask = cv2.inRange(
+                hsv,
+                lower_color,
+                upper_color
+            )
+        
+            # Remove noise
+            mask = cv2.erode(mask, None, iterations=2)
+            mask = cv2.dilate(mask, None, iterations=2)
+        
+            # Find contours
+            contours, _ = cv2.findContours(
+                mask.copy(),
+                cv2.RETR_EXTERNAL,
+                cv2.CHAIN_APPROX_SIMPLE
+            )
+        
+        
+            if len(contours) > 0:
+        
+                largest_contour = max(contours, key=cv2.contourArea)
+        
+                ((x, y), radius) = cv2.minEnclosingCircle(largest_contour)
+        
+                M = cv2.moments(largest_contour)
+        
+                # print("Radius: " + str(radius))
+        
+        
+                if radius > 10 and M["m00"] != 0:
+        
+                    # --------------------------------
+                    # BALL LOCATION IN IMAGE
+                    # --------------------------------
+        
+                    pixel_center_u = x
+                    pixel_center_v = y
+        
+                    pixel_diameter = radius * 2
+        
+                    # print("Pixel diameter: " + str(pixel_diameter))
+        
+        
+                    # --------------------------------
+                    # ESTIMATE CAMERA-RELATIVE POSITION
+                    # --------------------------------
+        
+                    # r = BALL_DIAMETER_MM / 2
+                    # p = pixel_diameter / 2
+        
+                    # Z_c = np.sqrt((fx * r / p)**2 + r**2)
+        
+                    # Z_c = (
+                    #     BALL_DIAMETER_MM * fx
+                    # ) / pixel_diameter
+        
+                    Z_c = -2451.1 - 58 # camera height minus height from floor to center of "ball"
+        
+                    # Z_c = BALL_DIAMETER_MM/2
+        
+                    X_c = (
+                        (pixel_center_u - cx)
+                        * Z_c
+                    ) / fx
+        
+                    Y_c = (
+                        (pixel_center_v - cy)
+                        * Z_c
+                    ) / fy
+        
+                    camera_coords = np.array([
+                        [X_c],
+                        [Y_c],
+                        [Z_c]
+                    ])
+        
+                    global_coords = (1/1000)*(
+                        R_camera_to_world @ camera_coords
+                        + T_camera_to_world
+                    )
 
-            with ekf_lock:
-                x_pred, y_pred, th_pred = ekf.predict(enc_l, enc_r)
-                z_theta = heading - theta_zero
-                x, y, theta = ekf.correct(x_pred, y_pred, th_pred, z_theta)
+                    ball_x, ball_y = smoother.update(global_coords[0, 0], global_coords[1, 0])
+
+                    # --------------------------------
+                    # DRAW DETECTION
+                    # --------------------------------
+        
+                    center = (
+                        int(pixel_center_u),
+                        int(pixel_center_v)
+                    )
+        
+                    cv2.circle(
+                        frame1,
+                        center,
+                        int(radius),
+                        (0, 255, 255),
+                        2
+                    )
+        
+                    cv2.circle(
+                        frame1,
+                        center,
+                        5,
+                        (0, 0, 255),
+                        -1
+                    )
+        
+            cv2.imshow("Ball Tracking", frame1)
+        
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+
+            with display_frame_lock:
+                frame = None if latest_display_frame is None else latest_display_frame.copy()
+
+            if frame is not None:
+                # Overlay fused EKF state in the corner
+                with latest_fused_lock:
+                    fused = latest_fused
+                if fused is not None:
+                    txt = (f"FUSED  x={fused['x']:+.2f}m  y={fused['y']:+.2f}m  "
+                           f"th={math.degrees(fused['theta']):+.0f}")
+                    cv2.putText(frame, txt, (10, 25),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                else:
+                    cv2.putText(frame, "Waiting for XRP sensors...", (10, 25),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 200, 255), 2)
 
                 with latest_robot_pose_lock:
                     pose_w = latest_robot_pose_world
-
-                tag_is_fresh = (
-                    pose_w is not None
-                    and (time.time() - pose_w["time"]) < TAG_FRESHNESS_S
-                )
-
-                if tag_is_fresh:
-                    try:
-                        x, y, theta = ekf.camera_correction(
-                            x_pred, y_pred, th_pred,
-                            pose_w["x"], pose_w["y"], pose_w["theta"],
-                        )
-                    except Exception as e:
-                        print(f"[EKF] camera_correction error: {e}")
-
-            try:
-                payload = json.dumps({
-                    "x": -(x * 100),
-                    "y": y * 100,
-                    "angle": math.degrees(theta) % 360.0,
-                })
-                pose_sock.sendto(payload.encode(), (GODOT_HOST, GODOT_POSE_PORT))
-            except Exception as e:
-                print("[Pose] send error:", e)
-
-            pkt_count += 1
-            now = time.time()
-            if now - last_print >= PRINT_EVERY_S:
-                if pose_w is None:
-                    tag_info = "no tag yet"
-                else:
+                if pose_w is not None:
                     age = time.time() - pose_w["time"]
-                    if age < TAG_FRESHNESS_S:
-                        tag_info = f"tag fresh ({age*1000:.0f}ms old)"
-                    else:
-                        tag_info = f"tag STALE ({age:.1f}s old)"
-                rate = pkt_count / (now - last_print)
-                print(f"[Sensor] enc_l={enc_l:+.3f} enc_r={enc_r:+.3f} rev | "
-                      f"heading={math.degrees(heading):+.1f}° ({rate:.0f} pkts/s)")
-                print(f"[EKF]    fused x={x:.2f} y={y:.2f} m "
-                      f"th={math.degrees(theta):+.0f}° | {tag_info}")
-                pkt_count = 0
-                last_print = now
+                    color = (0, 255, 0) if age < TAG_FRESHNESS_S else (128, 128, 128)
+                    txt = (f"TAG{pose_w['tag_id']}  x={pose_w['x']:+.2f}  "
+                           f"y={pose_w['y']:+.2f}  th={math.degrees(pose_w['theta']):+.0f}  "
+                           f"({age*1000:.0f}ms)")
+                    cv2.putText(frame, txt, (10, 50),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+
+                cv2.imshow("AprilTag Test", frame)
+
+            key = cv2.waitKey(15) & 0xFF
+            if key == 27 or key == ord('q'):
+                break
 
     except KeyboardInterrupt:
-        print("\n[Main] Interrupted, shutting down...")
+        print("\n[Main] Interrupted")
     finally:
         running = False
         time.sleep(0.3)
-        sensor_sock.close()
-        pose_sock.close()
+        cv2.destroyAllWindows()
+        if csv_file is not None:
+            csv_file.close()
+            print(f"[CSV] Saved to {CSV_LOG_PATH}")
 
 
 if __name__ == "__main__":
