@@ -137,7 +137,7 @@ offset_right = 279.0
 offset_bottom = 186.0
 theme = ExtResource("12_q5g2k")
 theme_override_colors/font_shadow_color = Color(0.4524, 0.61074, 0.78, 1)
-theme_override_font_sizes/font_size = 35
+theme_override_font_sizes/font_size = 60
 text = "Select Map:"
 
 [node name="CarText" type="Label" parent="."]
@@ -148,7 +148,7 @@ offset_right = 825.0
 offset_bottom = 187.0
 theme = ExtResource("12_q5g2k")
 theme_override_colors/font_shadow_color = Color(0.415686, 0.564706, 0.721569, 1)
-theme_override_font_sizes/font_size = 35
+theme_override_font_sizes/font_size = 60
 text = "Select Car:"
 
 [node name="ConfirmButton" type="Button" parent="."]
@@ -158,14 +158,15 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -489.0
-offset_top = -474.0
-offset_right = -86.0
-offset_bottom = -289.0
+offset_left = -428.0
+offset_top = -516.0
+offset_right = -25.0
+offset_bottom = -331.0
 grow_horizontal = 2
 grow_vertical = 0
 theme = ExtResource("1_upek8")
-text = "Go!"
+theme_override_font_sizes/font_size = 70
+text = "RACE!"
 icon = ExtResource("14_wqq3l")
 clip_text = true
 icon_alignment = 1
