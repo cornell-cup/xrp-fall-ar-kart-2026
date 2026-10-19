@@ -4,7 +4,9 @@ import time
 
 FILE_PATH = '/lib/ble/isrunning'
 
-# Always reset the flag so our script runs
+# Always reset the flag so our script runs.
+# (This means XRPCode's Stop button can't prevent auto-run on the next
+#  boot. If uploading ever gets difficult, delete this try/except block.)
 try:
     with open(FILE_PATH, 'r+b') as file:
         file.seek(0)
@@ -29,9 +31,9 @@ try:
 
     if not doNothing:
         time.sleep(5)
-        with open('xrpgodot.py', mode='r') as exfile:
+        with open('xrp_raw_sensors.py', mode='r') as exfile:
             code = exfile.read()
-        execCode = compile(code, 'xrpgodot.py', 'exec')
+        execCode = compile(code, 'xrp_raw_sensors.py', 'exec')
         exec(execCode)
 
 except Exception as e:
