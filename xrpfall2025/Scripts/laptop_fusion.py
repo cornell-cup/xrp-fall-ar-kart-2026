@@ -81,6 +81,13 @@ YAW_CORRECTION_PORT = 5007
 
 yaw_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+
+PI_IP = sys.argv[1] if len(sys.argv) > 1 else "192.168.4.95"
+
+# PI_IP = sys.argv[1] if len(sys.argv) > 1 else "192.168.0.193"
+
+RTSP_URL = f"rtsp://{PI_IP}:8554/cam"
+
 # Set to None to disable CSV logging. Otherwise: file path.
 CSV_LOG_PATH = "fusion_log.csv"
 
@@ -107,6 +114,13 @@ TAG_SIZE_TAG0 = 0.08584
 POSITIVE_Y = 1
 X_THRESHOLD = 0.4572
 FAR_FROM_ORIGIN = 0
+
+x = 0
+y = 0
+theta = np.pi/2
+enc_l = 0
+enc_r = 0
+heading = 0
 
 # Per-tag display names for the AR overlay. IDs not in here still get
 # tracked for localization but show up generically. Add or rename as
@@ -269,7 +283,7 @@ latest_visible_tags = []
 latest_visible_tags_lock = threading.Lock()
 latest_visible_tags_time = 0.0
 
-xrp_ip = None
+xrp_ip = "192.168.4.8"
 xrp_ip_lock = threading.Lock()
 
 running = True
@@ -369,7 +383,7 @@ def grabber_thread(rtsp_url):
 #   (b) per-tag corners for AR overlay
 # ============================================================
 def detector_thread():
-    global latest_robot_pose_world, latest_display_frame, running, POSITIVE_Y, X_THRESHOLD, FAR_FROM_ORIGIN
+    global latest_robot_pose_world, latest_visible_tags, latest_visible_tags_time, latest_display_frame, running, POSITIVE_Y, X_THRESHOLD, FAR_FROM_ORIGIN
     
     trans_C_A_tag3 = np.identity(4)
     trans_C_A_tag0 = np.identity(4)
@@ -410,22 +424,7 @@ def detector_thread():
         # closest tag. We compute both from the same detection list.
         overlay_tags = []
         for tag in valid:
-            # corners = tag.corners.tolist()      # [[x,y]*4]
-
-            corners = tag.corners.astype(int)
-            for i in range(4):
-                cv2.line(frame, tuple(corners[i]),
-                            tuple(corners[(i+1) % 4]), (0, 255, 0), 2)
-            center = tuple(tag.center.astype(int))
-            cv2.circle(frame, center, 5, (0, 0, 255), -1)
-            cv2.putText(frame, f"id {tag.tag_id}",
-                        (center[0] + 10, center[1] - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-            tz = tag.pose_t[2][0]
-            cv2.putText(frame, f"{tz:.2f}m",
-                        (center[0] + 10, center[1] + 15),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 2)
-
+            corners = tag.corners.tolist()      # [[x,y]*4]
             center = tag.center.tolist()        # [x,y]
             overlay_tags.append({
                 "id": int(tag.tag_id),
@@ -546,7 +545,7 @@ def ar_tags_thread():
 def sensor_ekf_thread(csv_writer):
     # global ekf, theta_zero, latest_fused, running, POSITIVE_Y
     global ekf, theta_zero, latest_fused, running, POSITIVE_Y, X_THRESHOLD, FAR_FROM_ORIGIN
-    global ball_x, ball_y
+    global x, y, theta, enc_l, enc_r, heading, xrp_ip_lock, xrp_ip
     print("[DEBUG] Entered sensor_ekf_thread()", flush=True)
 
     sensor_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -561,6 +560,12 @@ def sensor_ekf_thread(csv_writer):
         # print("Running")
         try:
             data, addr = sensor_sock.recvfrom(256)
+
+            with xrp_ip_lock:
+                if xrp_ip != addr[0]:
+                    xrp_ip = addr[0]
+                    print(f"[XRP] IP captured: {xrp_ip}")
+
             # print(f"[DEBUG] Received {data!r} from {addr}", flush=True)
         except socket.timeout:
             continue
@@ -647,13 +652,13 @@ def sensor_ekf_thread(csv_writer):
             latest_fused = {"x": x, "y": y, "theta": theta}
 
         # CSV log
-        if csv_writer is not None:
-            tag_x = pose_w["x"] if (pose_w and tag_is_fresh) else ""
-            tag_y = pose_w["y"] if (pose_w and tag_is_fresh) else ""
-            tag_th = pose_w["theta"] if (pose_w and tag_is_fresh) else ""
-            csv_writer.writerow([
-                time.time(), x, y, theta, tag_x, tag_y, tag_th, ball_x, ball_y
-            ])
+        # if csv_writer is not None:
+        #     tag_x = pose_w["x"] if (pose_w and tag_is_fresh) else ""
+        #     tag_y = pose_w["y"] if (pose_w and tag_is_fresh) else ""
+        #     tag_th = pose_w["theta"] if (pose_w and tag_is_fresh) else ""
+        #     csv_writer.writerow([
+        #         time.time(), x, y, theta, tag_x, tag_y, tag_th, ball_x, ball_y
+        #     ])
 
         pkt_count += 1
         now = time.time()
@@ -782,7 +787,7 @@ def gamepad_relay_thread():
 # Main: sensor packet loop + EKF + Godot pose output
 # ============================================================
 def main():
-    global ekf, theta_zero, xrp_ip, running
+    global ekf, theta_zero, xrp_ip, running, x, y, theta, enc_l, enc_r, heading
 
     # sensor_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     # sensor_sock.bind(("0.0.0.0", SENSOR_PORT))
@@ -792,7 +797,7 @@ def main():
     pose_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     print(f"[Pose] Will send fused state to {GODOT_HOST}:{GODOT_POSE_PORT}")
 
-    threading.Thread(target=grabber_thread, daemon=True).start()
+    threading.Thread(target=grabber_thread, args=(RTSP_URL,), daemon=True).start()
     threading.Thread(target=detector_thread, daemon=True).start()
     threading.Thread(target=godot_video_server_thread, daemon=True).start()
     threading.Thread(target=gamepad_relay_thread, daemon=True).start()
