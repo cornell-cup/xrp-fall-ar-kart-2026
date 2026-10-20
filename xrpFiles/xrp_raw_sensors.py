@@ -4,12 +4,6 @@ xrp_raw_sensors.py
 Slim XRP-side script with persistent logging AND silent-failure
 detection.
 
-Power-related changes for brownout mitigation:
-  - MAX_DRIVE_RPM lowered from 200 to 100 (~half the current draw)
-  - Throttle is RAMPED instead of jumped, so a 0->full transition
-    takes ~250ms instead of being instant. This eliminates the big
-    inrush-current spikes that were browning out the shared 5V rail.
-
 Gamepad protocol from laptop (trimmed):
     [0x55][0x04][1][throttle_byte][2][steer_byte]   = 6 bytes
 
@@ -40,24 +34,18 @@ LAPTOP_BROADCAST_IP = None
 
 SENSOR_PORT = 5005
 GAMEPAD_PORT = 4002
-SEND_RATE_HZ = 50
+SEND_RATE_HZ = 100
 
 # ============================================================
 # Robot config
 # ============================================================
 JOYSTICK_DEADBAND = 0.05
 
-# Lowered from 200 to reduce average motor current draw.
-# Bump back up once power supply is properly isolated.
 MAX_DRIVE_RPM = 200
 
-# Throttle ramping — limits how fast the motor command can change
-# per main-loop tick (~5ms). 0.02 per tick means 0->full takes
-# 50 ticks ~= 250ms, eliminating inrush-current spikes that brown
-# out the Pi.
-# Larger value = snappier response but higher current spikes.
-# Smaller value = smoother current draw but more "lag" in feel.
-THROTTLE_RAMP_PER_TICK = 0.02
+# Main loop pause between passes. Gamepad packets are read once per pass,
+# so this is the most a new command waits on the XRP before it's applied
+LOOP_SLEEP_MS = 1
 
 # From xrpgodot.py (SERVO_CENTER / SERVO_RANGE), the values the kart
 # currently drives straight with.
@@ -188,6 +176,18 @@ def parse_gamepad_bytes(data):
 # ============================================================
 wlan = network.WLAN(network.STA_IF)
 
+# 0xa11140 is the Pico W's "no power saving" setting (PM_NONE in newer firmware)
+WIFI_PM_NONE = getattr(network.WLAN, "PM_NONE", 0xa11140)
+
+def disable_wifi_power_save():
+    """Keep the radio awake. With power saving on it naps between access
+    point beacons, which can delay incoming gamepad packets by tens of ms."""
+    try:
+        wlan.config(pm=WIFI_PM_NONE)
+        log_info("WIFI", "power saving off")
+    except Exception as e:
+        log_warn("WIFI", "could not turn off power saving: " + str(e))
+
 def stop_motors():
     motor_three.set_effort(0)
     motor_four.set_effort(0)
@@ -236,6 +236,7 @@ def connect_wifi():
     if wlan.isconnected():
         ip = wlan.ifconfig()[0]
         log_info("WIFI", "Already connected, IP=" + ip)
+        disable_wifi_power_save()
         return ip
 
     time.sleep(2)
@@ -269,6 +270,7 @@ def connect_wifi():
             ip = wlan.ifconfig()[0]
             log_info("WIFI", "Connected to '{}' attempt={} IP={}".format(
                 ssid, attempt + 1, ip))
+            disable_wifi_power_save()
             return ip
 
         s = wlan.status()
@@ -346,8 +348,8 @@ def create_sockets():
 # Boot
 # ============================================================
 _log_init()
-log_info("BOOT", "starting xrp_raw_sensors.py (MAX_RPM={}, ramp={}/tick)".format(
-    MAX_DRIVE_RPM, THROTTLE_RAMP_PER_TICK))
+log_info("BOOT", "starting xrp_raw_sensors.py (MAX_RPM={}, sensors {} Hz)".format(
+    MAX_DRIVE_RPM, SEND_RATE_HZ))
 
 log_info("IMU", "calibrating (keep XRP still)")
 try:
@@ -367,10 +369,12 @@ log_info("MOTOR", "encoders reset")
 def main():
     global joy_x, joy_y, gamepad_active, gamepad_last_recv, gamepad_ever_received
 
-    # The actually-applied throttle, ramped toward joy_y rather than
-    # jumping to it. Avoids inrush current spikes from instant
-    # 0 -> full transitions.
+    # The throttle currently applied to the motors (for the heartbeat log)
     applied_throttle = 0.0
+
+    # The laptop's IP, learned from its gamepad packets. While it's sending,
+    # sensor packets go straight to it instead of being broadcast
+    laptop_ip = None
 
     ip = connect_wifi()
     if ip is None:
@@ -478,7 +482,8 @@ def main():
         try:
             while True:
                 data, addr = sock_recv.recvfrom(64)
-                parse_gamepad_bytes(data)
+                if parse_gamepad_bytes(data):
+                    laptop_ip = addr[0]
         except OSError:
             pass
 
@@ -491,18 +496,9 @@ def main():
             applied_throttle = 0.0
             log_warn("GAMEPAD", "input timeout, motors stopped")
 
-        # ---- Apply commands with throttle ramping ----
+        # ---- Apply commands immediately ----
         if gamepad_active:
-            target = max(-1.0, min(1.0, joy_y))
-            # Ramp applied_throttle toward target without exceeding
-            # THROTTLE_RAMP_PER_TICK per loop iteration.
-            delta = target - applied_throttle
-            if delta > THROTTLE_RAMP_PER_TICK:
-                applied_throttle += THROTTLE_RAMP_PER_TICK
-            elif delta < -THROTTLE_RAMP_PER_TICK:
-                applied_throttle -= THROTTLE_RAMP_PER_TICK
-            else:
-                applied_throttle = target
+            applied_throttle = max(-1.0, min(1.0, joy_y))
 
             if abs(applied_throttle) < JOYSTICK_DEADBAND:
                 motor_three.set_speed(0.0)
@@ -517,18 +513,6 @@ def main():
             steer_angle = max(STEER_CENTER_DEG - STEER_RANGE_DEG,
                               min(STEER_CENTER_DEG + STEER_RANGE_DEG, steer_angle))
             servo_three.set_angle(steer_angle)
-        else:
-            # No gamepad → also ramp toward 0 instead of jumping
-            if applied_throttle > THROTTLE_RAMP_PER_TICK:
-                applied_throttle -= THROTTLE_RAMP_PER_TICK
-                motor_three.set_speed(applied_throttle * MAX_DRIVE_RPM)
-                motor_four.set_speed(applied_throttle * MAX_DRIVE_RPM)
-            elif applied_throttle < -THROTTLE_RAMP_PER_TICK:
-                applied_throttle += THROTTLE_RAMP_PER_TICK
-                motor_three.set_speed(applied_throttle * MAX_DRIVE_RPM)
-                motor_four.set_speed(applied_throttle * MAX_DRIVE_RPM)
-            else:
-                applied_throttle = 0.0
 
         # ---- Send sensor packet ----
         if time.ticks_diff(now, last_send) >= send_interval_ms:
@@ -538,7 +522,9 @@ def main():
                 enc_r = motor_four.get_position()
                 heading = imu_heading_rad()
                 msg = "RAW,{:.6f},{:.6f},{:.6f}".format(enc_l, enc_r, heading)
-                sock_send.sendto(msg.encode(), dest)
+                # Straight to the laptop while it's driving us, otherwise broadcast
+                target = (laptop_ip, SENSOR_PORT) if gamepad_active and laptop_ip else dest
+                sock_send.sendto(msg.encode(), target)
                 send_count += 1
                 consecutive_send_errors = 0
             except OSError as e:
@@ -553,7 +539,7 @@ def main():
                 error_count += 1
                 log_error("SEND", "{}: {}".format(type(e).__name__, e))
 
-        time.sleep(0.005)
+        time.sleep_ms(LOOP_SLEEP_MS)
 
 
 # ============================================================

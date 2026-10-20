@@ -39,8 +39,11 @@ const POSE_TIMEOUT: float = 8.0
 # ---- Gamepad ----
 var udp_gamepad: PacketPeerUDP = PacketPeerUDP.new()
 var gamepad_connected: bool = false
-const GAMEPAD_SEND_HZ: float = 20.0
+# Packets go out the moment the stick changes; this keepalive resends the
+# current value when it doesn't, so the XRP's 500 ms input timeout never trips
+const GAMEPAD_KEEPALIVE_HZ: float = 50.0
 var gamepad_send_timer: float = 0.0
+var _last_gamepad_packet: PackedByteArray = PackedByteArray()
 const GAMEPAD_HEADER: int = 0x55
 const DEADZONE: float = 0.08
 
@@ -146,8 +149,8 @@ func _ready() -> void:
 
 	# Gamepad output
 	udp_gamepad.set_dest_address(GAMEPAD_RELAY_HOST, GAMEPAD_RELAY_PORT)
-	print("[NetworkReceiver] Gamepad relayed via %s:%d at %d Hz" % [
-		GAMEPAD_RELAY_HOST, GAMEPAD_RELAY_PORT, int(GAMEPAD_SEND_HZ)])
+	print("[NetworkReceiver] Gamepad relayed via %s:%d on every change (keepalive %d Hz)" % [
+		GAMEPAD_RELAY_HOST, GAMEPAD_RELAY_PORT, int(GAMEPAD_KEEPALIVE_HZ)])
 
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
 	var pads = Input.get_connected_joypads()
@@ -633,25 +636,32 @@ func _process_gamepad_send(delta: float) -> void:
 		var pad_name = Input.get_joy_name(0)
 		print("[NetworkReceiver] Gamepad connected: %s" % pad_name)
 
-	gamepad_send_timer += delta
-	if gamepad_send_timer < 1.0 / GAMEPAD_SEND_HZ:
-		return
-	gamepad_send_timer = 0.0
-
 	var ly = _apply_deadzone(Input.get_joy_axis(0, JOY_AXIS_LEFT_Y))
 	var rx = _apply_deadzone(Input.get_joy_axis(0, JOY_AXIS_RIGHT_X))
 	# Hold the real kart still during the race countdown by sending a centered stick
 	if _in_race_countdown():
 		ly = 0.0
 		rx = 0.0
+	_send_gamepad(ly, rx, delta)
 
+
+# Sends the stick state right away when it changed, otherwise only as a keepalive.
+# Returns true if a packet went out
+func _send_gamepad(ly: float, rx: float, delta: float) -> bool:
 	var packet := PackedByteArray()
 	packet.append(GAMEPAD_HEADER)
 	packet.append(4)
 	packet.append(1); packet.append(_encode_axis(ly))
 	packet.append(2); packet.append(_encode_axis(rx))
 
+	gamepad_send_timer += delta
+	if packet == _last_gamepad_packet and gamepad_send_timer < 1.0 / GAMEPAD_KEEPALIVE_HZ:
+		return false
+
+	gamepad_send_timer = 0.0
+	_last_gamepad_packet = packet
 	udp_gamepad.put_packet(packet)
+	return true
 
 
 # True while a race is loaded and its countdown hasn't finished yet
