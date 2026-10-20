@@ -143,7 +143,7 @@ class ackermann_simple_ekf:
         new_state[2][0] = self.wrap_pi(new_state[2][0])
         # print("wrapped theta: " + str(self._theta))
 
-        low_pass_filter(new_state[0][0], new_state[1][0], new_state[2][0])
+        self.low_pass_filter(new_state[0][0], new_state[1][0], new_state[2][0])
         return self._state[0][0], self._state[1][0], self._state[2][0]
 
     def low_pass_filter(self, x, y, theta):
