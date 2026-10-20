@@ -1,7 +1,5 @@
 using Godot;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 #region Enums
 /// <summary>
@@ -27,17 +25,22 @@ public partial class Car : Node
 	protected States current; //current state
 	protected States storedItem = States.Regular;
 
-	//Timer for transitioning between states
-	protected Stopwatch timer;
+	//Seconds left before the current item effect wears off.
+	//Counted down in _PhysicsProcess so it pauses along with the game
+	protected double effectTimeRemaining = 0;
+
+	//How long each item effect lasts, in seconds
+	protected const double FASTDURATION = 5;
+	protected const double SLOWDURATION = 10;
+	protected const double INVERTEDDURATION = 10;
 
 	#region racing related fields
 	// Temporary values
 	protected int place = 1;
 	protected int lap = 1;
 	protected bool finishedRace = false;
-	//flip to true once race countdown ends
-	//TODO: Hook up all cars to the hud's "countdown_finished" signal upon initialization
-	protected bool raceStarted = true; 
+	//flipped to true by the hud's "countdown_finished" signal (hooked up in SceneManager)
+	protected bool raceStarted = false; 
 	protected Path3D track;
 
 	//checkpoints passed for the onFinishline Collision check --> lap increment
@@ -64,8 +67,21 @@ public partial class Car : Node
 	
 	// The downward acceleration when in the air, in meters per second squared.
 	[Export] protected int fallAcceleration = 10;
-	protected Vector3 prevPosition; //tracked just before an object starts falling
-	protected List<Vector3> pathOfFalling;
+	#endregion
+
+	#region track position related fields
+	//Half the width of the road in world units, read from the loaded track by the track loader.
+	//A car whose center is further than this from the middle of the road is off the track
+	public static float RoadHalfWidth = 10;
+	//how high above the track cars are dropped in when spawning or resetting.
+	//Clears the real-size kart's collision box so it settles onto the road
+	protected const float SPAWNHEIGHT = 4;
+
+	//Total distance driven along the track (in the curve's own units), counting every lap. 
+	//Goes down when driving backwards. Used for placements
+	protected float trackProgress = 0;
+	//where along the track the car was last physics frame
+	private float lastTrackOffset = 0;
 	#endregion
 
 	#region car mesh and size related fields
@@ -127,6 +143,22 @@ public partial class Car : Node
 	}
 
 	/// <summary>
+	/// Seconds left before the current item effect wears off. 0 when in States.Regular
+	/// </summary>
+	public double EffectTimeRemaining
+	{
+		get { return effectTimeRemaining; }
+	}
+
+	/// <summary>
+	/// Total length in seconds of the current item effect. Used for the HUD's effect timer
+	/// </summary>
+	public double EffectDuration
+	{
+		get { return GetEffectDuration(current); }
+	}
+
+	/// <summary>
 	/// How many checkpoints has this car passed this lap?
 	/// </summary>
 	public int NumPassedCheckpoints
@@ -168,6 +200,36 @@ public partial class Car : Node
 		get { return halflength; }
 	}
 
+	/// <summary>
+	/// Total distance driven along the track, counting every lap. Used for placements
+	/// </summary>
+	public float TrackProgress
+	{
+		get { return trackProgress; }
+	}
+
+	/// <summary>
+	/// Is the car further from the middle of the road than the road is wide?
+	/// </summary>
+	public bool IsOffTrack
+	{
+		get
+		{
+			if (track == null) return false;
+			Vector3 closest = Utils.SamplePathGlobal(track, Utils.GetClosestOffset(track, GlobalPosition));
+			Vector2 gap = new Vector2(closest.X - GlobalPosition.X, closest.Z - GlobalPosition.Z);
+			return gap.Length() > RoadHalfWidth;
+		}
+	}
+
+	/// <summary>
+	/// Has the race countdown finished? Cars can't move or turn until it has
+	/// </summary>
+	public bool HasRaceStarted
+	{
+		get { return raceStarted; }
+	}
+
 	// making end condition public so it can be reached in HUD
 	public bool FinishedRace
 	{
@@ -185,9 +247,6 @@ public partial class Car : Node
 	{
 		color = new Godot.Color("CYAN");
 		current = States.Regular;
-		timer = new Stopwatch();
-		prevPosition = new Vector3();
-		pathOfFalling = new List<Vector3>();
 		halflength = new Vector3(radius, radius, radius); //TODO
 	}
 
@@ -199,23 +258,18 @@ public partial class Car : Node
 	/// <param name="delta">Delta time</param>
 	public override void _PhysicsProcess(double delta)
 	{
+		UpdateTrackProgress();
+
 		// Vertical velocity
 		if (!charbody3d.IsOnFloor()) // If in the air, fall towards the floor. Literally gravity
 		{
-			//keep adding position before gravity is implemented until impact with kill plane
-			pathOfFalling.Add(charbody3d.GlobalPosition);
 			charbody3d.Position -= charbody3d.GetTransform().Basis.Y * (float)(delta * fallAcceleration);
 			speed = 0;
 		}
-		else
-		{
-			pathOfFalling?.Clear();
-			//GD.Print("Clearing list!");
-		}
 
-		if (timer.ElapsedMilliseconds > 0)
+		if (current != States.Regular)
 		{
-			RevertState(current, speed, delta);
+			RevertState(delta);
 		}
 
 		// Moving the character
@@ -232,11 +286,57 @@ public partial class Car : Node
 	/// <param name="startingPosition">Where is the car going to spawn on the track</param>
 	/// <param name="track">Reference to the underlying path for the current stage's track</param>
 	/// <param name="totalCheckpoints">How many checkpoints exist in the current track</param>
-	public virtual void Init(Vector3 startingPosition, Path3D track, int totalCheckpoints/*, Vector3 facingDirection*/)
+	/// <param name="facingDirection">Which way the car should face, along the track's direction of flow</param>
+	public virtual void Init(Vector3 startingPosition, Path3D track, int totalCheckpoints, Vector3 facingDirection)
 	{
-		charbody3d.GlobalPosition = startingPosition + new Vector3(0, 5, 0);
+		//spawn just above the track and let the car settle onto it
+		charbody3d.GlobalPosition = startingPosition + new Vector3(0, SPAWNHEIGHT, 0);
+		charbody3d.LookAt(charbody3d.GlobalPosition + facingDirection, Vector3.Up);
 		this.track = track;
 		this.totalCheckpoints = totalCheckpoints;
+
+		//cars on the grid behind the start line are at the very end of the loop,
+		//so count them as just behind the start instead of almost a full lap ahead
+		float length = track.Curve.GetBakedLength();
+		lastTrackOffset = Utils.GetClosestOffset(track, charbody3d.GlobalPosition);
+		trackProgress = lastTrackOffset > length / 2 ? lastTrackOffset - length : lastTrackOffset;
+	}
+
+	/// <summary>
+	/// Adds however far the car moved along the track since last frame to its track progress
+	/// </summary>
+	private void UpdateTrackProgress()
+	{
+		if (track == null) return;
+
+		float length = track.Curve.GetBakedLength();
+		float offset = Utils.GetClosestOffset(track, charbody3d.GlobalPosition);
+		float change = offset - lastTrackOffset;
+		//crossing the start line wraps the offset around between the end and 0
+		if (change > length / 2) change -= length;
+		else if (change < -length / 2) change += length;
+
+		trackProgress += change;
+		lastTrackOffset = offset;
+	}
+
+	/// <summary>
+	/// Puts the car back in the middle of the road at the closest point on the 
+	/// track, facing the direction the track flows. For when a car leaves the track
+	/// </summary>
+	public void ResetToTrack()
+	{
+		if (track == null) return;
+
+		float offset = Utils.GetClosestOffset(track, charbody3d.GlobalPosition);
+		Vector3 point = Utils.SamplePathGlobal(track, offset);
+		//a little further along the track, to know which way it flows here
+		Vector3 forward = Utils.SamplePathGlobal(track, offset + 2 / track.GlobalTransform.Basis.Scale.X) - point;
+		forward.Y = 0;
+
+		charbody3d.GlobalPosition = point + new Vector3(0, SPAWNHEIGHT, 0);
+		charbody3d.LookAt(charbody3d.GlobalPosition + forward.Normalized(), Vector3.Up);
+		speed = 0;
 	}
 
 	#region methods regarding the car's state
@@ -247,25 +347,17 @@ public partial class Car : Node
 	/// <param name="state">What state is the car in currently</param>
 	/// <param name="speed">How fast is the car supposedly going</param>
 	/// <returns>The final speed value to be fed to the car</returns>
-	protected double UpdateStateSpeed(States state, double speed)
+	protected virtual double UpdateStateSpeed(States state, double speed)
 	{
 		switch (state)
 		{
 			//multiply speed
-			//quickly accelerate to twice the current speed (like one to 1.5 seconds, whatever feels good)
 			case States.Fast:
-				if (timer.ElapsedMilliseconds >= 0)
-				{
-					speed *= fastMultiplier;
-				}
+				speed *= fastMultiplier;
 				break;
 			//divide speed
-			//cut speed to 50% to 75% of the max speed
 			case States.Slow:
-				if (timer.ElapsedMilliseconds >= 0)
-				{
-					speed *= slowMultiplier;
-				}
+				speed *= slowMultiplier;
 				break;
 			//flip flop controls
 			case States.Inverted:
@@ -280,78 +372,40 @@ public partial class Car : Node
 	}
 
 	/// <summary>
-	/// Transition logic that should happen after the car 
-	/// transitions from States.Regular to any other state.
-	/// After a clear condition is met, the car's current 
-	/// state will revert back to States.Regular.
+	/// Counts down the current item effect. Once it runs 
+	/// out, the car's state reverts back to States.Regular.
 	/// </summary>
-	/// <param name="prevState">The car's current state that is not States.Regular</param>
-	/// <param name="speed">How fast is the car moving right now</param>
 	/// <param name="delta">deltatime</param>
-	protected void RevertState(States prevState, double speed, double delta)
+	protected void RevertState(double delta)
 	{
-		//according to what state was previously, the process to revert back to States.Regular will differ slightly
-		switch (prevState)
+		effectTimeRemaining -= delta;
+		if (effectTimeRemaining <= 0)
 		{
-			//Fast -> Regular
-			//slowly decelerate to the normal max speed (over the course of 5 seconds, whatever feels good)
-			//change state to Regular
-			case States.Fast:
-				//if (timer.ElapsedMilliseconds >= 5000) speed -= acceleration * delta;
-				if (timer.ElapsedMilliseconds >= 5000) //if (speed < maxSpeed)
-				{
-					maxSpeed = MAXSPEED;
-					current = States.Regular;
-					ClearTimer();
-				}
-				break;
-
-			//Slow -> Regular
-			//be slow for about 10s
-			//change state to Regular, acceleration should be as normal
-			case States.Slow:
-				//after 10s, revert the maxSpeed
-				if (timer.ElapsedMilliseconds >= 10000)
-				{
-					maxSpeed = MAXSPEED;
-					current = States.Regular;
-					ClearTimer();
-				}
-
-				break;
-
-			//Inverted to Regular
-			//set timer of 15s, controls are inverted during this time
-			//after 15s, change state to Regular. 
-			case States.Inverted:
-				//after 10s, revert speed's sign to what it was before
-				//change state to Regular
-				if (timer.ElapsedMilliseconds >= 10000)
-				{
-					current = States.Regular;
-					ClearTimer();
-				}
-				break;
+			current = States.Regular;
+			ClearTimer();
 		}
 	}
 
 	/// <summary>
-	/// Starts the timer associated with the state transition logic
-	/// Unsubscribes this method from the OnItemCollision event once called
+	/// How long the given item effect lasts in seconds
 	/// </summary>
-	public void StartTimer(Car c)
+	protected static double GetEffectDuration(States state)
 	{
-		if (c != this) return;
-		timer.Restart();
+		return state switch
+		{
+			States.Fast => FASTDURATION,
+			States.Slow => SLOWDURATION,
+			States.Inverted => INVERTEDDURATION,
+			_ => 0,
+		};
 	}
 
 	/// <summary>
 	/// Resets the timer associated with the state transition logic
-	/// Resubscribes StartTimer method to OnItemCollision event
 	/// </summary>
 	public void ClearTimer()
 	{
-		timer.Reset();
+		effectTimeRemaining = 0;
 	}
 	#endregion
 
@@ -393,15 +447,6 @@ public partial class Car : Node
 		GD.Print("Clearing Checkpoints");
 	}
 
-	/// <summary>
-	/// Calculate how far this car is from the last checkpoint they pressed
-	/// Use in placement tracking logic
-	/// </summary>
-	/// <returns>The distance squared from the last checkpoint</returns>
-	public float DistanceFromLastCheckpoint()
-	{
-		return passedCheckpoints[^1].GlobalPosition.DistanceSquaredTo(GlobalPosition);
-	}
 	#endregion
 
 	/// <summary>
@@ -425,89 +470,37 @@ public partial class Car : Node
 		place = i;
 	}
 
-	/// <summary>
-	/// Logic that happens whenever the car falls off the track and hits the kill plane
-	/// </summary>
-	/// <param name="prevPosition">the position of the car just before falling</param>
-	/// <param name="currentPosition">the position of the car upon impact with the kill plane</param>
-	public void ReturnToTrack(Car c)
-	{
-		if (c != this) return;
-		if (pathOfFalling?.Any() == true)
-		{
-			//GD.Print("Getting back on track!");
-			//GD.Print("First point: " + pathOfFalling[0] + " Last Point: " + pathOfFalling[^1]);
-			//calculate the point which the car is closests to the line. 
-
-			//calculate the projection of the vector between prv and current onto the kill plane
-			Vector3 u = pathOfFalling[^1] - pathOfFalling[0];
-			Vector3 v = new Vector3(pathOfFalling[0].X, pathOfFalling[^1].Y, pathOfFalling[0].Z);
-
-			//get the direction that points towards the origin
-			Vector3 d = (Vector3.Zero - pathOfFalling[0]).Normalized();
-
-			pathOfFalling.Clear(); //empty the list for the next fall
-								   //set the car's global position to the new pt
-			charbody3d.GlobalPosition = -(Utils.ProjUOntoV(u, v).Normalized() - new Vector3(d.X, 5, d.Z))
-				+ Utils.GetClosestAbsolutePosition(track, charbody3d.GlobalPosition);
-
-			//point the car towards the track direction of flow.
-			Vector3 direction = (
-				Utils.GetClosestAbsolutePosition(track, charbody3d.GlobalPosition) -
-				Utils.GetClosestAbsolutePosition(track, charbody3d.GlobalPosition + new Vector3(0.001f, 0, 0.001f))
-				).Normalized();
-			//only consistent if we are driving in the general south direction. Otherwise the direction given is backwards. 
-			charbody3d.LookAt(charbody3d.GlobalTransform.Origin + direction, Vector3.Up);
-
-			//GD.Print("Projection vector: " + Utils.ProjUOntoV(u, v));
-		}
-
-	}
-
-	/// <summary>
-	/// Returns the car to the last point in the bezier curve 
-	/// they passed in the event they fall off the track and hit the kill plane
-	/// </summary>
-	public void ToPreviousCheckpoint(Car c)
-	{
-		if (c != this) return;
-		charbody3d.GlobalPosition = passedCheckpoints[^1].Position + new Vector3(0, 1, 0);
-	}
-
 	virtual protected void ApplySavedCarColor() { }
 	virtual protected void SetCarColor(Color color) { }
 
 	/// <summary>
-	/// Applies the chosen item effect to the player and starts the timer
+	/// Applies the chosen item effect to this car and starts the effect timer.
+	/// Overrides any effect that is already active.
+	/// Fast/Slow are applied through UpdateStateSpeed, so maxSpeed is left alone
+	/// (scaling both used to double the effect and wiped the AI's difficulty speed)
 	/// </summary>
-	private void ApplyItemEffect(States item)
+	public void ApplyItemEffect(States item)
 	{
-		switch (item)
+		if (item == States.Regular)
 		{
-			case States.Fast:
-				current = States.Fast;
-				maxSpeed = MAXSPEED * fastMultiplier;
-				timer.Restart();
-				GD.Print("Activated Fast item");
-				break;
-
-			case States.Slow:
-				current = States.Slow;
-				maxSpeed = MAXSPEED * slowMultiplier;
-				timer.Restart();
-				GD.Print("Activated Slow item");
-				break;
-
-			case States.Inverted:
-				current = States.Inverted;
-				timer.Restart();
-				GD.Print("Activated Inverted item");
-				break;
-
-			default:
-				GD.Print("Invalid item state.");
-				break;
+			GD.Print("Invalid item state.");
+			return;
 		}
+
+		current = item;
+		effectTimeRemaining = GetEffectDuration(item);
+		GD.Print($"{Name}: activated {item} item");
+	}
+
+	/// <summary>
+	/// Takes the stored item out of this car's item slot.
+	/// </summary>
+	/// <returns>The item that was stored, or States.Regular if the slot was empty</returns>
+	public States TakeStoredItem()
+	{
+		States item = storedItem;
+		storedItem = States.Regular;
+		return item;
 	}
 
 	/// <summary>

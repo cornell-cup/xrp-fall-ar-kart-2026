@@ -21,8 +21,7 @@ interface ICharacter
 
     void StartTimer();
     void ClearTimer();
-    void ReturnToTrack();
-    void ToPreviousCheckpoint();
+    void ResetToTrack();
     void IncrementLap();
     void AddCheckpoint(Checkpoint chpt);
     bool CheckCheckpoints();

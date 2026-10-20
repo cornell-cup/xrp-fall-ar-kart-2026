@@ -102,8 +102,8 @@ public partial class Item : Node
 			ClearTimer();
 			ShowModel();
 		}
-		//otherwise read for collisions with the player
-		else if (timer.ElapsedMilliseconds >= 0)
+		//otherwise, while the item is showing, read for collisions with the player
+		else if (!timer.IsRunning)
 		{
 			foreach(Car c in cars)
 			{

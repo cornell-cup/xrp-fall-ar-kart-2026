@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://ct5tj7qusd4kq" path="res://Assets/Images/greenCircle.png" id="3_btcbx"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_onrkg"]
-size = Vector3(1.35065, 1, 3.19904)
+size = Vector3(5.715, 3.16874, 11.43)
 
 [node name="Player" type="Node" node_paths=PackedStringArray("csgBox3D", "charbody3d", "carMesh")]
 script = ExtResource("1_4flbx")
@@ -17,6 +17,7 @@ carMesh = NodePath("Node3D/Player/CollisionShape3D/XRP_Car/SM_Car")
 [node name="Node3D" type="Node3D" parent="."]
 
 [node name="Player" type="CharacterBody3D" parent="Node3D"]
+collision_layer = 16
 
 [node name="Pivot" type="Node3D" parent="Node3D/Player"]
 
@@ -24,15 +25,15 @@ carMesh = NodePath("Node3D/Player/CollisionShape3D/XRP_Car/SM_Car")
 shape = SubResource("BoxShape3D_onrkg")
 
 [node name="XRP_Car" parent="Node3D/Player/CollisionShape3D" instance=ExtResource("2_0ctox")]
-transform = Transform3D(-5, 0, -4.37114e-07, 0, 5, 0, 4.37114e-07, 0, -5, 0, -0.5, 0.3)
+transform = Transform3D(-17.84502, 0, 0, 0, 17.84502, 0, 0, 0, -17.84502, 0, -1.5071, 1.07305)
 
 [node name="triangle" type="Sprite3D" parent="Node3D/Player/CollisionShape3D/XRP_Car"]
-transform = Transform3D(0.5, 8.74227e-08, 7.64273e-15, 0, -2.18557e-08, 1, 8.74227e-08, -0.5, -4.37114e-08, 0, 0.2, 3)
+transform = Transform3D(0.13, 2.27299e-08, 1.98711e-15, 0, -5.68248e-09, 0.26, 2.27299e-08, -0.13, -1.1365e-08, 0, 0.2, 0.78)
 layers = 2
 texture = ExtResource("2_4ntmi")
 
 [node name="circle" type="Sprite3D" parent="Node3D/Player/CollisionShape3D/XRP_Car"]
-transform = Transform3D(-0.25, -3.7749e-08, -6.60024e-15, 0, -1.09278e-08, 1, -3.7749e-08, 0.25, 4.37114e-08, 0, 0.2, 1)
+transform = Transform3D(-0.065, -9.81474e-09, -1.71606e-15, 0, -2.84123e-09, 0.26, -9.81474e-09, 0.065, 1.1365e-08, 0, 0.2, 0.26)
 layers = 2
 texture = ExtResource("3_btcbx")
 
@@ -42,9 +43,8 @@ cull_mask = 1047553
 current = true
 
 [node name="CSGBox3D" type="CSGBox3D" parent="Node3D/Player/CollisionShape3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00164795, -0.124939, -0.00753784)
 visible = false
-size = Vector3(1.35046, 0.750122, 3.1955)
+size = Vector3(5.715, 3.16874, 11.43)
 
 [node name="overheadCamera" type="Camera3D" parent="Node3D/Player"]
 transform = Transform3D(1, 0, 0, 0, 1.19249e-08, 1, 0, -1, 1.19249e-08, 0, 20, -5)

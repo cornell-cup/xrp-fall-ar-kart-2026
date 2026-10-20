@@ -1,24 +1,32 @@
-[gd_scene load_steps=11 format=3 uid="uid://bd4sj4dkmbaqg"]
+[gd_scene load_steps=13 format=3 uid="uid://bd4sj4dkmbaqg"]
 
 [ext_resource type="PackedScene" uid="uid://sdm8yxrkofoh" path="res://Scenes/Prefabs/item_manager.tscn" id="1_evp6a"]
 [ext_resource type="PackedScene" uid="uid://dnkv3f1fu5fc8" path="res://Scenes/Prefabs/scene_manager.tscn" id="1_hx62u"]
 [ext_resource type="PackedScene" uid="uid://bhdc8up14ky8k" path="res://Scenes/Prefabs/track.tscn" id="2_hx62u"]
 [ext_resource type="PackedScene" uid="uid://drsnmi4pkc6t5" path="res://Scenes/Prefabs/hud.tscn" id="2_pw4we"]
 [ext_resource type="PackedScene" uid="uid://cq8d54wgym507" path="res://Scenes/Prefabs/CarManager.tscn" id="2_t5l7q"]
-[ext_resource type="PackedScene" uid="uid://dry5xxoksd4yr" path="res://Scenes/Prefabs/kill_plane.tscn" id="3_33oou"]
 [ext_resource type="PackedScene" uid="uid://dqemkqrkjrxoy" path="res://Scenes/Prefabs/checkpoint_manager.tscn" id="5_hbpqu"]
 [ext_resource type="PackedScene" uid="uid://b0pyubict3ifh" path="res://Scenes/Prefabs/finishline.tscn" id="5_t5l7q"]
 [ext_resource type="Script" uid="uid://bonnmavfkfsmn" path="res://Scenes/GameplayScenes/track_loader.gd" id="5_v66ti"]
 [ext_resource type="Script" uid="uid://cwl05w7v58gy5" path="res://Scenes/GameplayScenes/camera_feed.gd" id="9_t5l7q"]
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
+size = Vector3(400, 1, 400)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.520673, 0.458974, 0.658289, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
+material = SubResource("StandardMaterial3D_ground")
+size = Vector2(400, 400)
+
 [node name="Node" type="Node"]
 
-[node name="SceneManager" parent="." node_paths=PackedStringArray("carManager", "track", "track_loader", "itemManager", "killPlane", "finishline", "checkpointManager") instance=ExtResource("1_hx62u")]
+[node name="SceneManager" parent="." node_paths=PackedStringArray("carManager", "track", "track_loader", "itemManager", "finishline", "checkpointManager") instance=ExtResource("1_hx62u")]
 carManager = NodePath("../CarManager")
 track = NodePath("../Track")
 track_loader = NodePath("../TrackLoader")
 itemManager = NodePath("../ItemManager")
-killPlane = NodePath("../killPlane")
 finishline = NodePath("../Finishline")
 checkpointManager = NodePath("../Checkpoint Manager")
 
@@ -28,10 +36,11 @@ checkpointManager = NodePath("../Checkpoint Manager")
 
 [node name="Track" parent="." instance=ExtResource("2_hx62u")]
 
-[node name="TrackLoader" type="Node" parent="."]
+[node name="TrackLoader" type="Node" parent="." node_paths=PackedStringArray("minimapCamera")]
 script = ExtResource("5_v66ti")
 filePath = "res://test_save5.tscn"
 scale = 50.0
+minimapCamera = NodePath("../MinimapSystem/MarginContainer/SubViewportContainer/SubViewport/minimapCamera")
 
 [node name="FileDialog" type="FileDialog" parent="TrackLoader"]
 title = "Open a File"
@@ -43,7 +52,15 @@ filters = PackedStringArray("*.tscn;text/tscn")
 
 [node name="Finishline" parent="." instance=ExtResource("5_t5l7q")]
 
-[node name="killPlane" parent="." instance=ExtResource("3_33oou")]
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_ground")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+layers = 3
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("PlaneMesh_ground")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.35981, 0.0243341, 0.932709, -0.667748, -0.691474, 0.275637, 0.65165, -0.721991, -0.23255, 0, 18, 0)

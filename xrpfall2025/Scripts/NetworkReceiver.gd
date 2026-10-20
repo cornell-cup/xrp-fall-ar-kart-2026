@@ -74,30 +74,35 @@ const TRAIL_MAX: int = 300
 # ---- AR mode ----
 var ar_enabled: bool = false
 var ar_backdrop_mesh: MeshInstance3D = null
-const AR_BACKDROP_W: float = 500.0
-const AR_BACKDROP_H: float = 350.0
-const AR_BACKDROP_Z: float = -90.0
+var ar_camera: Camera3D = null
+# Size of the backdrop quad, set so it exactly covers the real camera's view
+var ar_backdrop_size: Vector2 = Vector2.ZERO
+# How far in front of the kart camera the backdrop sits. Anything virtual further
+# away than this is hidden behind the video, so keep it past the far side of the track
+const AR_BACKDROP_DIST: float = 1000.0
 # Map of tag_id -> Label3D overlay node.
 var ar_tag_labels: Dictionary = {}
+var _ar_attach_timer: float = 0.0
 
-# ---- Gate event triggering (currently inert; flip ar_events_enabled to wire up) ----
-# Set to true once you want detected tags to fire game events.
-# Per-tag-ID -> action for _trigger_gate to dispatch.
-# Actions, with their States enum ordinal values from Car.cs:
-#     States.Inverted = 0, States.Slow = 1, States.Fast = 2, States.Regular = 3
-# Use ApplyItemEffect(state_int) to give the player an effect, or
-# StoreItem(state_int) to put one in their item slot.
-const AR_EVENTS_ENABLED: bool = false
-const TAG_EVENTS: Dictionary = {
-	# Example mappings — uncomment or edit when you turn AR_EVENTS_ENABLED on:
-	# 0: "checkpoint",   # finish line — increment lap
-	# 1: "speed_boost",  # ApplyItemEffect(Fast)
-	# 2: "store_item",   # StoreItem(random)
-	# 3: "hazard",       # ApplyItemEffect(Slow)
-}
-var _last_gate_fired_at: Dictionary = {}      # tag_id -> last trigger time
-const GATE_COOLDOWN_S: float = 2.0
-var _player_node: Node = null
+# Real camera intrinsics in pixels, at the resolution they were calibrated at.
+# Must match Camera_params in laptop_fusion.py
+const CAM_FX: float = 1268.28550
+const CAM_FY: float = 1254.14697
+const CAM_CX: float = 361.108041
+const CAM_CY: float = 297.975274
+const CAM_CALIB_W: float = 640.0
+const CAM_CALIB_H: float = 480.0
+# The Pi camera is mounted upside down (the picture-in-picture preview flips it
+# both ways too), so the AR backdrop rotates the feed 180°
+const CAM_UPSIDE_DOWN: bool = true
+# How far the real camera is tilted up from level (negative = down). The 25° is
+# _theta_mount in laptop_fusion.py; it points up so it can see the tags on the gates
+const CAM_TILT_UP_DEG: float = 25.0
+
+# In AR mode the real floor and gates are in the video, so these virtual pieces
+# are only drawn on the minimap (render layer 2) and not on the kart camera (layer 1)
+const AR_HIDDEN_NODES: Array[String] = ["Ground", "TrackLoader", "Finishline"]
+const MINIMAP_ONLY_LAYER: int = 2
 
 # ---- Debug ----
 var debug_timer: float = 0.0
@@ -163,6 +168,17 @@ func _process(_delta: float) -> void:
 	_process_pose()
 	_process_ar_tags()
 	_process_gamepad_send(_delta)
+
+	# AR mode attaches to the kart camera of whichever race scene is loaded.
+	# Scene changes (title screen -> race, restart) free the old backdrop, so reattach
+	if ar_enabled:
+		if not is_instance_valid(ar_backdrop_mesh):
+			_ar_attach_timer += _delta
+			if _ar_attach_timer > 0.5:
+				_ar_attach_timer = 0.0
+				_try_attach_ar()
+		else:
+			_update_ar_camera_fov()
 
 	if not tcp_connected:
 		tcp_retry_timer += _delta
@@ -273,9 +289,8 @@ func _on_ar_yes() -> void:
 	ar_enabled = true
 	var dl = get_node_or_null("ARDialogLayer")
 	if dl: dl.queue_free()
-	_setup_camera_backdrop()
-	_hide_world()
-	print("[AR] AR mode active")
+	print("[AR] AR mode on, waiting for a race to attach to")
+	_try_attach_ar()
 
 
 func _on_ar_no() -> void:
@@ -285,20 +300,46 @@ func _on_ar_no() -> void:
 	print("[AR] Normal mode")
 
 
-func _setup_camera_backdrop() -> void:
-	# The backdrop attaches to whatever Camera3D the scene already has.
-	# Adjust the find-by-name if your camera node has a different name.
+# Sets up AR on the current race scene if it has a kart camera. Returns false
+# if there isn't one yet (e.g. still on the title screen); _process retries
+func _try_attach_ar() -> bool:
 	var cam = _find_node_by_name(get_tree().root, "fpsCamera") as Camera3D
 	if cam == null:
-		# Fallback: any Camera3D
-		cam = _find_first_camera3d(get_tree().root)
-	if cam == null:
-		print("[AR] No Camera3D found; AR backdrop disabled")
-		ar_enabled = false
-		return
+		return false
+	ar_camera = cam
+	ar_tag_labels.clear()  # old labels were freed along with the old backdrop
+	_match_real_camera(cam)
+	_setup_camera_backdrop(cam)
+	_update_ar_camera_fov()
+	_hide_world()
+	print("[AR] AR mode active on %s" % cam.get_path())
+	return true
 
+
+# Where the real camera's optical center lands in the displayed image, 0..1 across and down
+func _principal_point() -> Vector2:
+	var pp = Vector2(CAM_CX / CAM_CALIB_W, CAM_CY / CAM_CALIB_H)
+	return Vector2.ONE - pp if CAM_UPSIDE_DOWN else pp
+
+
+# Tilts the kart camera to match the real one, keeping its position on the kart model
+func _match_real_camera(cam: Camera3D) -> void:
+	var forward = -cam.global_transform.basis.z
+	forward.y = 0
+	forward = forward.normalized()
+	var tilt = deg_to_rad(CAM_TILT_UP_DEG)
+	var look = forward * cos(tilt) + Vector3.UP * sin(tilt)
+	cam.global_basis = Basis.looking_at(look, Vector3.UP)
+
+
+func _setup_camera_backdrop(cam: Camera3D) -> void:
+	# Size the quad to the real camera's view at AR_BACKDROP_DIST, so a pixel
+	# in the video lines up with the same direction in the game
+	ar_backdrop_size = Vector2(
+		AR_BACKDROP_DIST * CAM_CALIB_W / CAM_FX,
+		AR_BACKDROP_DIST * CAM_CALIB_H / CAM_FY)
 	var mesh = QuadMesh.new()
-	mesh.size = Vector2(AR_BACKDROP_W, AR_BACKDROP_H)
+	mesh.size = ar_backdrop_size
 
 	# Use the existing live video texture if it's been created already,
 	# or a placeholder if not (will get updated on first frame).
@@ -311,26 +352,53 @@ func _setup_camera_backdrop() -> void:
 	mat.albedo_texture = video_texture
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	if CAM_UPSIDE_DOWN:
+		# uv -> 1 - uv rotates the picture 180°
+		mat.uv1_scale = Vector3(-1, -1, 1)
+		mat.uv1_offset = Vector3(1, 1, 0)
 
 	ar_backdrop_mesh = MeshInstance3D.new()
 	ar_backdrop_mesh.mesh = mesh
 	ar_backdrop_mesh.material_override = mat
 	ar_backdrop_mesh.name = "ARCameraBackdrop"
 	cam.add_child(ar_backdrop_mesh)
-	ar_backdrop_mesh.position = Vector3(0, 0, AR_BACKDROP_Z)
+	# Shift the quad so the camera's optical center sits straight ahead of the game camera
+	var pp = _principal_point()
+	ar_backdrop_mesh.position = Vector3(
+		(0.5 - pp.x) * ar_backdrop_size.x,
+		(pp.y - 0.5) * ar_backdrop_size.y,
+		-AR_BACKDROP_DIST)
+
+
+# Zooms the kart camera so the screen is filled by the video with no gaps,
+# using the same field of view as the real camera so virtual objects line up
+func _update_ar_camera_fov() -> void:
+	if not is_instance_valid(ar_camera):
+		return
+	var pp = _principal_point()
+	# the widest the view can be on each side before running off the edge of the video
+	var half_w = min(pp.x, 1.0 - pp.x) * ar_backdrop_size.x
+	var half_h = min(pp.y, 1.0 - pp.y) * ar_backdrop_size.y
+	var screen = get_viewport().get_visible_rect().size
+	half_w = min(half_w, half_h * screen.x / screen.y)
+	ar_camera.keep_aspect = Camera3D.KEEP_WIDTH
+	ar_camera.fov = rad_to_deg(2.0 * atan(half_w / AR_BACKDROP_DIST))
 
 
 func _hide_world() -> void:
-	var root = get_tree().root
-	var kp = _find_node_by_name(root, "killPlane")
-	if kp: _hide_visual_children(kp)
+	var scene = get_tree().current_scene
+	if scene == null:
+		return
+	for node_name in AR_HIDDEN_NODES:
+		var node = scene.get_node_or_null(node_name)
+		if node: _move_to_minimap_layer(node)
 
 
-func _hide_visual_children(node: Node) -> void:
+func _move_to_minimap_layer(node: Node) -> void:
+	if node is VisualInstance3D:
+		node.layers = MINIMAP_ONLY_LAYER
 	for child in node.get_children():
-		if child is VisualInstance3D: child.visible = false
-		if child is Light3D: child.visible = false
-		_hide_visual_children(child)
+		_move_to_minimap_layer(child)
 
 
 # ============================================================
@@ -357,7 +425,7 @@ func _process_ar_tags() -> void:
 
 
 func _update_ar_labels(tags: Array) -> void:
-	if not ar_enabled or ar_backdrop_mesh == null:
+	if not ar_enabled or not is_instance_valid(ar_backdrop_mesh):
 		# Even if AR isn't active visually, still consume the packets
 		return
 
@@ -383,73 +451,10 @@ func _update_ar_labels(tags: Array) -> void:
 		label.text = name
 		label.visible = true
 
-		# Optional: dispatch a game event for this tag ID.
-		# Inert by default; flip AR_EVENTS_ENABLED when ready.
-		if AR_EVENTS_ENABLED:
-			_trigger_gate(id)
-
 	# Hide labels for tags we didn't see this frame
 	for existing_id in ar_tag_labels.keys():
 		if not seen_ids.has(existing_id):
 			(ar_tag_labels[existing_id] as Label3D).visible = false
-
-
-# ============================================================
-# Game event dispatch — called from _update_ar_labels when a tag is
-# seen. Currently inert (AR_EVENTS_ENABLED = false). When you turn it
-# on, fill out TAG_EVENTS with which IDs do what.
-#
-# Calls into Player.cs / Car.cs:
-#   - ApplyItemEffect was originally private. To call it from GDScript,
-#     change it to `public void ApplyItemEffect(States item)` in Car.cs.
-#   - StoreItem(States) is already public.
-#   - States enum: Inverted=0, Slow=1, Fast=2, Regular=3.
-# ============================================================
-func _trigger_gate(tag_id: int) -> void:
-	if not TAG_EVENTS.has(tag_id):
-		return
-
-	# Cooldown so a tag held in view doesn't fire every frame
-	var now = Time.get_ticks_msec() / 1000.0
-	var last = float(_last_gate_fired_at.get(tag_id, -999.0))
-	if now - last < GATE_COOLDOWN_S:
-		return
-	_last_gate_fired_at[tag_id] = now
-
-	if _player_node == null:
-		_find_player()
-	if _player_node == null:
-		print("[AR] gate fired but no player found")
-		return
-
-	var event = str(TAG_EVENTS[tag_id])
-	match event:
-		"checkpoint":
-			# Finish-line / lap behavior is normally handled by physical
-			# checkpoint trigger volumes in the game world. If you want a
-			# tag to also act as one, hook it up here. For now: just log.
-			print("[AR] tag %d: checkpoint" % tag_id)
-		"speed_boost":
-			# States.Fast = 2
-			_player_node.call("ApplyItemEffect", 2)
-			print("[AR] tag %d: SPEED BOOST" % tag_id)
-		"store_item":
-			# Random one of Inverted/Slow/Fast (0/1/2). Skip Regular.
-			_player_node.call("StoreItem", randi() % 3)
-			print("[AR] tag %d: ITEM stored" % tag_id)
-		"hazard":
-			# States.Slow = 1
-			_player_node.call("ApplyItemEffect", 1)
-			print("[AR] tag %d: HAZARD" % tag_id)
-		_:
-			print("[AR] tag %d: unknown event '%s'" % [tag_id, event])
-
-
-func _find_player() -> void:
-	# Try common locations first, then fall back to a tree search
-	_player_node = get_node_or_null("/root/CarManager/Player")
-	if _player_node == null:
-		_player_node = _find_node_by_name(get_tree().root, "Player")
 
 
 func _create_tag_label(text: String) -> Label3D:
@@ -470,8 +475,14 @@ func _create_tag_label(text: String) -> Label3D:
 func _pixel_to_backdrop(px: float, py: float) -> Vector3:
 	# Convert 2D pixel coordinates (0..frame_w, 0..frame_h) into
 	# 3D positions on the backdrop plane, in the backdrop's local frame.
-	var x = (px / float(ar_frame_w) - 0.5) * AR_BACKDROP_W
-	var y = (0.5 - py / float(ar_frame_h)) * AR_BACKDROP_H
+	var u = px / float(ar_frame_w)
+	var v = py / float(ar_frame_h)
+	if CAM_UPSIDE_DOWN:
+		# same 180° rotation as the backdrop's video
+		u = 1.0 - u
+		v = 1.0 - v
+	var x = (u - 0.5) * ar_backdrop_size.x
+	var y = (0.5 - v) * ar_backdrop_size.y
 	# Tiny z offset so the label sits in front of the backdrop, not behind
 	return Vector3(x, y, 0.5)
 
@@ -488,7 +499,7 @@ func _position_tag_label(label: Label3D, center: Array, corners: Array) -> void:
 		var top_y = min(float(corners[0][1]), float(corners[1][1]))
 		var bot_y = max(float(corners[2][1]), float(corners[3][1]))
 		tag_h_px = bot_y - top_y
-	var lift = (tag_h_px / float(ar_frame_h)) * AR_BACKDROP_H * 0.6 + 8.0
+	var lift = (tag_h_px / float(ar_frame_h)) * ar_backdrop_size.y * 0.6 + 8.0
 
 	label.position = Vector3(pos.x, pos.y + lift, pos.z)
 
@@ -629,6 +640,10 @@ func _process_gamepad_send(delta: float) -> void:
 
 	var ly = _apply_deadzone(Input.get_joy_axis(0, JOY_AXIS_LEFT_Y))
 	var rx = _apply_deadzone(Input.get_joy_axis(0, JOY_AXIS_RIGHT_X))
+	# Hold the real kart still during the race countdown by sending a centered stick
+	if _in_race_countdown():
+		ly = 0.0
+		rx = 0.0
 
 	var packet := PackedByteArray()
 	packet.append(GAMEPAD_HEADER)
@@ -637,6 +652,15 @@ func _process_gamepad_send(delta: float) -> void:
 	packet.append(2); packet.append(_encode_axis(rx))
 
 	udp_gamepad.put_packet(packet)
+
+
+# True while a race is loaded and its countdown hasn't finished yet
+func _in_race_countdown() -> bool:
+	var scene = get_tree().current_scene
+	if scene == null:
+		return false
+	var player = scene.get_node_or_null("CarManager/Player")
+	return player != null and not player.HasRaceStarted
 
 
 # ============================================================
@@ -692,14 +716,4 @@ func _find_node_by_name(node: Node, target: String) -> Node:
 		var r = _find_node_by_name(child, target)
 		if r:
 			return r
-	return null
-
-
-func _find_first_camera3d(node: Node) -> Camera3D:
-	if node is Camera3D:
-		return node
-	for child in node.get_children():
-		var c = _find_first_camera3d(child)
-		if c != null:
-			return c
 	return null

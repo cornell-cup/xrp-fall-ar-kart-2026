@@ -37,6 +37,12 @@ var item_textures = {
 
 var last_item_type: String = ""
 
+# Item effect timer and popups
+@onready var effect_timer_label: Label = $EffectTimerLabel
+@onready var item_popup_label: Label = $ItemPopupLabel
+@onready var off_track_label: Label = $OffTrackLabel
+var item_popup_tween: Tween = null
+
 # Pause menu
 @onready var pause_menu: Control = $PauseMenu
 
@@ -51,10 +57,7 @@ var stopwatch_running: bool = false
 
 # On game start
 func _ready():
-	# When I want it to start at the beginning of the race instead I would add
-	# $HUD.start_countdown() to scene manager script instead
-	#start_countdown() 
-	connect("countdown_finished", Callable(self, "_on_countdown_finished"))
+	# The countdown is started by SceneManager once the race is set up
 
 	
 	#create a default texture for item
@@ -66,6 +69,9 @@ func _ready():
 	pause_menu.visible = false
 	
 	bounce_icon()
+	
+	# Popups for when the player uses an item or gets hit by one
+	get_node("../../CarManager").connect("ItemUsed", Callable(self, "_on_item_used"))
 	
 
 # Constantly updating
@@ -95,15 +101,31 @@ func _process(delta: float) -> void:
 			last_item_type = current_state_name
 			
 			# Update stored item icon
-		var stored_state_name = state_name(player_node.storedItem)  
+		var stored_state_name = state_name(player_node.StoredItem)  
 		update_stored_item_icon(stored_state_name)
+		
+		# Off track warning. The real XRP has to drive back, otherwise the kart can be reset
+		off_track_label.visible = player_node.IsOffTrack and not player_node.FinishedRace
+		if off_track_label.visible:
+			if player_node.IsXrpActive():
+				off_track_label.text = "Off track! Drive back to the road"
+			else:
+				off_track_label.text = "Off track! Press R to get back on"
+		
+		# Time left on the active item effect
+		if current_state_name != "Regular":
+			effect_timer_label.text = "%.1fs" % player_node.EffectTimeRemaining
+			effect_timer_label.visible = true
+		else:
+			effect_timer_label.visible = false
 		
 		# Stopwatch
 		if stopwatch_running and not get_tree().paused:
 			race_time += delta
 			stopwatch_label.text = format_time(race_time)
 		
-			if player_node and player_node.Lap != current_lap:
+			# FinishedRace is checked too because the final crossing doesn't change Lap
+			if player_node.Lap != current_lap or player_node.FinishedRace:
 				record_lap_time()
 
 # Helper functions:
@@ -310,8 +332,7 @@ func format_time(time_sec: float) -> String:
 # Lap button for testing purposes that calls players "IncrementLap"
 func _on_lap_button_pressed() -> void:
 	if player_node:
-		player_node.call("IncrementLap")
-		record_lap_time()
+		player_node.call("IncrementLap", player_node)
 		
 # Simple helper (possibly unnecessary) to hide and reset label
 func _hide_lap_popup():
@@ -327,6 +348,28 @@ func finished_race():
 	get_tree().root.add_child(end_screen)
 
 	get_tree().current_scene.queue_free()
+	
+# Called by CarManager's ItemUsed signal whenever any car uses an item
+func _on_item_used(user, item: int, target) -> void:
+	var item_name = state_name(item)
+	if user == player_node and target == player_node:
+		show_item_popup("%s boost!" % item_name)
+	elif user == player_node:
+		show_item_popup("Hit %s place with %s!" % [get_place_suffix(target.Place), item_name])
+	elif target == player_node:
+		show_item_popup("Hit by %s!" % item_name)
+
+func show_item_popup(text: String) -> void:
+	if item_popup_tween:
+		item_popup_tween.kill()
+	item_popup_label.text = text
+	item_popup_label.visible = true
+	item_popup_label.modulate.a = 1.0
+	
+	item_popup_tween = create_tween()
+	item_popup_tween.tween_interval(1.2)
+	item_popup_tween.tween_property(item_popup_label, "modulate:a", 0.0, 0.5)
+	item_popup_tween.tween_callback(Callable(item_popup_label, "hide"))
 	
 func update_stored_item_icon(item_type: String) -> void:
 	if item_type != "Regular" and item_type in item_textures:
