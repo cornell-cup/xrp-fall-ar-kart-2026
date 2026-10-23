@@ -1,5 +1,41 @@
 # IMPORTANT: env vars must be set BEFORE `import cv2`. TCP transport
 # gives a clean image with retransmits.
+
+import os, sys, tempfile, traceback, threading
+
+def _open_log():
+    if getattr(sys, "frozen", False):
+        here = os.path.dirname(sys.executable)
+    else:
+        here = os.path.dirname(os.path.abspath(__file__))
+
+    for d in (here, os.path.expanduser("~"), tempfile.gettempdir()):
+        try:
+            p = os.path.join(d, "laptop_fusion.log")
+            return open(p, "w", buffering=1), p
+        except OSError:
+            continue
+    return None, None
+
+_log_f, _log_path = _open_log()
+if _log_f:
+    try:
+        os.dup2(_log_f.fileno(), 1)
+        os.dup2(_log_f.fileno(), 2)
+    except OSError:
+        pass
+    sys.stdout = _log_f
+    sys.stderr = _log_f
+    print(f"[BOOT] python={sys.executable} cwd={os.getcwd()} "
+          f"argv={sys.argv} log={_log_path}", flush=True)
+
+    def _thread_excepthook(args):
+        print(f"[THREAD CRASH] {args.thread.name}", file=_log_f)
+        traceback.print_exception(args.exc_type, args.exc_value,
+                                  args.exc_traceback, file=_log_f)
+        _log_f.flush()
+    threading.excepthook = _thread_excepthook
+
 import os
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = (
     "rtsp_transport;tcp"
@@ -772,6 +808,7 @@ def gamepad_relay_thread():
 
         try:
             forward_sock.sendto(data, (target_ip, XRP_GAMEPAD_PORT))
+            # print(f"[Gamepad] Forwarded data: " + str(data))
             pkt_count += 1
         except OSError as e:
             print(f"[Gamepad] Forward error: {e}")
@@ -948,6 +985,10 @@ def main():
 
     except KeyboardInterrupt:
         print("\n[Main] Interrupted, shutting down...")
+
+
+    except Exception:
+        traceback.print_exc()
     finally:
         running = False
         time.sleep(0.3)

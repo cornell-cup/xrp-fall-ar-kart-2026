@@ -155,6 +155,7 @@ func _ready() -> void:
 
 	# Show the AR popup after fusion + video are wired up
 	call_deferred("_show_ar_dialog")
+	#_on_ar_no()
 
 
 func _process(_delta: float) -> void:
@@ -203,6 +204,9 @@ func _process(_delta: float) -> void:
 # Fusion process launcher
 # ============================================================
 
+func _get_launcher_path() -> String:
+	return _get_base_dir().path_join("launch_fusion.command")
+
 func _start_fusion() -> void:
 	_kill_old_fusion()
 	await get_tree().create_timer(1.0).timeout
@@ -211,8 +215,23 @@ func _start_fusion() -> void:
 		push_error("[NetworkReceiver] Fusion binary not found: %s" % fusion_path)
 		return
 	if OS.get_name() == "macOS":
+		# OS.execute("xattr", ["-rd", "com.apple.quarantine", fusion_path])
+		# OS.execute("chmod", ["+x", fusion_path])
+
+		var launcher = _get_launcher_path()
+		if not FileAccess.file_exists(launcher):
+			push_error("[NetworkReceiver] Launcher not found: %s" % launcher)
+			return
 		OS.execute("xattr", ["-rd", "com.apple.quarantine", fusion_path])
+		OS.execute("xattr", ["-d", "com.apple.quarantine", launcher])
 		OS.execute("chmod", ["+x", fusion_path])
+		OS.execute("chmod", ["+x", launcher])
+		# Terminal becomes the process that starts the binary
+		var pid = OS.create_process("open", ["-a", "Terminal", launcher])
+		print("[NetworkReceiver] Launched fusion via Terminal (open pid %d)" % pid)
+		return
+
+
 	fusion_pid = OS.create_process(fusion_path, [PI_IP])
 	if fusion_pid > 0:
 		print("[NetworkReceiver] Fusion started (PID: %d)" % fusion_pid)
@@ -610,7 +629,20 @@ func _apply_deadzone(value: float) -> float:
 		return 0.0
 	return value
 
+# func _process_gamepad_send(delta: float) -> void:
+
+var _gp_dbg_t := 0.0
+var _gp_sent := 0
+
+
 func _process_gamepad_send(delta: float) -> void:
+	_gp_dbg_t += delta
+	if _gp_dbg_t >= 1.0:
+		_gp_dbg_t = 0.0
+		print("[GP] pads=%s xrp_connected=%s focus=%s" % [Input.get_connected_joypads(), xrp_connected, get_window().has_focus()])
+
+
+
 	if Input.get_connected_joypads().is_empty():
 		if gamepad_connected:
 			gamepad_connected = false
@@ -636,7 +668,12 @@ func _process_gamepad_send(delta: float) -> void:
 	packet.append(1); packet.append(_encode_axis(ly))
 	packet.append(2); packet.append(_encode_axis(rx))
 
-	udp_gamepad.put_packet(packet)
+	#udp_gamepad.put_packet(packet)
+
+	var perr = udp_gamepad.put_packet(packet)
+	_gp_sent += 1
+	if _gp_sent % 20 == 0:
+		print("[GP] sent=%d err=%d ly=%.2f rx=%.2f" % [_gp_sent, perr, ly, rx])
 
 
 # ============================================================
