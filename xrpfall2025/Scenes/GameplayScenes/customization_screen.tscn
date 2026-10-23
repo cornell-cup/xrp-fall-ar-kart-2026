@@ -46,10 +46,10 @@ stretch_mode = 4
 
 [node name="CarOptions" type="HBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 612.0
-offset_top = 193.0
-offset_right = 1066.0
-offset_bottom = 311.0
+offset_left = 1341.0
+offset_top = 502.0
+offset_right = 1726.0
+offset_bottom = 602.0
 
 [node name="Car1" type="Button" parent="CarOptions"]
 custom_minimum_size = Vector2(100, 100)
@@ -83,10 +83,10 @@ expand_icon = true
 
 [node name="MapOptions" type="HBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 63.0
-offset_top = 195.0
-offset_right = 517.0
-offset_bottom = 313.0
+offset_left = 264.0
+offset_top = 478.0
+offset_right = 718.0
+offset_bottom = 596.0
 
 [node name="Map1" type="Button" parent="MapOptions"]
 custom_minimum_size = Vector2(100, 100)
@@ -120,35 +120,35 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -210.0
-offset_top = 23.0
-offset_right = 214.0
-offset_bottom = 96.0
+offset_left = -178.0
+offset_top = -22.0
+offset_right = 304.0
+offset_bottom = 88.0
 grow_horizontal = 2
 theme = ExtResource("12_q5g2k")
-theme_override_font_sizes/font_size = 60
+theme_override_font_sizes/font_size = 200
 text = "Get Ready..."
 
 [node name="MapText" type="Label" parent="."]
 layout_mode = 0
 offset_left = 66.0
-offset_top = 125.0
-offset_right = 279.0
-offset_bottom = 186.0
+offset_top = 235.0
+offset_right = 909.0
+offset_bottom = 417.0
 theme = ExtResource("12_q5g2k")
 theme_override_colors/font_shadow_color = Color(0.4524, 0.61074, 0.78, 1)
-theme_override_font_sizes/font_size = 60
+theme_override_font_sizes/font_size = 150
 text = "Select Map:"
 
 [node name="CarText" type="Label" parent="."]
 layout_mode = 0
-offset_left = 612.0
-offset_top = 126.0
-offset_right = 825.0
-offset_bottom = 187.0
+offset_left = 1075.0
+offset_top = 240.0
+offset_right = 1893.0
+offset_bottom = 483.0
 theme = ExtResource("12_q5g2k")
 theme_override_colors/font_shadow_color = Color(0.415686, 0.564706, 0.721569, 1)
-theme_override_font_sizes/font_size = 60
+theme_override_font_sizes/font_size = 150
 text = "Select Car:"
 
 [node name="ConfirmButton" type="Button" parent="."]
@@ -158,14 +158,14 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -428.0
-offset_top = -516.0
-offset_right = -25.0
-offset_bottom = -331.0
+offset_left = -197.0
+offset_top = -360.0
+offset_right = 186.0
+offset_bottom = -184.0
 grow_horizontal = 2
 grow_vertical = 0
 theme = ExtResource("1_upek8")
-theme_override_font_sizes/font_size = 70
+theme_override_font_sizes/font_size = 114
 text = "RACE!"
 icon = ExtResource("14_wqq3l")
 clip_text = true
@@ -176,9 +176,10 @@ expand_icon = true
 layout_mode = 0
 offset_left = 18.0
 offset_top = 19.0
-offset_right = 116.0
-offset_bottom = 61.0
-text = "Back"
+offset_right = 276.0
+offset_bottom = 115.0
+theme_override_font_sizes/font_size = 85
+text = "↩"
 clip_text = true
 icon_alignment = 1
 expand_icon = true
