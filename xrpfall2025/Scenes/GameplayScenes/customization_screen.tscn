@@ -52,9 +52,10 @@ offset_right = 1726.0
 offset_bottom = 602.0
 
 [node name="Car1" type="Button" parent="CarOptions"]
-custom_minimum_size = Vector2(100, 100)
+custom_minimum_size = Vector2(445, 200)
 layout_mode = 2
 theme = ExtResource("1_upek8")
+theme_override_font_sizes/font_size = 100
 toggle_mode = true
 button_group = ExtResource("1_wutij")
 text = "Aqua"
@@ -62,6 +63,7 @@ icon = ExtResource("4_p5nag")
 expand_icon = true
 
 [node name="Car2" type="Button" parent="CarOptions"]
+visible = false
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 theme = ExtResource("1_upek8")
@@ -72,6 +74,7 @@ icon = ExtResource("2_1wcrq")
 expand_icon = true
 
 [node name="Car3" type="Button" parent="CarOptions"]
+visible = false
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 theme = ExtResource("1_upek8")
@@ -89,7 +92,7 @@ offset_right = 718.0
 offset_bottom = 596.0
 
 [node name="Map1" type="Button" parent="MapOptions"]
-custom_minimum_size = Vector2(100, 100)
+custom_minimum_size = Vector2(455, 230)
 layout_mode = 2
 theme = ExtResource("1_upek8")
 toggle_mode = true
@@ -98,6 +101,7 @@ icon = ExtResource("3_ctcc5")
 expand_icon = true
 
 [node name="Map2" type="Button" parent="MapOptions"]
+visible = false
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 theme = ExtResource("1_upek8")
@@ -107,6 +111,7 @@ icon = ExtResource("8_qqu8f")
 expand_icon = true
 
 [node name="Map3" type="Button" parent="MapOptions"]
+visible = false
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 theme = ExtResource("1_upek8")
@@ -158,10 +163,10 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -197.0
-offset_top = -360.0
-offset_right = 186.0
-offset_bottom = -184.0
+offset_left = -160.0
+offset_top = -272.0
+offset_right = 223.0
+offset_bottom = -96.0
 grow_horizontal = 2
 grow_vertical = 0
 theme = ExtResource("1_upek8")
