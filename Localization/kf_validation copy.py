@@ -229,7 +229,7 @@ trans_G_g_tag3 = np.array([
 trans_G_A_tag3= trans_G_g_tag3 @ trans_g_H_tag3 @ trans_H_A_tag3
 print(f"[Transforms] beta_tag3 = {math.degrees(beta_tag3):.1f}")
 
-x1_tag0, y1_tag0, x2_tag0, y2_tag0 = 1.4144, -0.5, 0.5856, -0.5
+x1_tag0, y1_tag0, x2_tag0, y2_tag0 = 1.4144, -0.4572, 0.5856, -0.4572
 x3_tag0, y3_tag0 = (x1_tag0+x2_tag0)/2, (y1_tag0+y2_tag0)/2
 h4_tag0 = 0.352425
 if x1_tag0 == x2_tag0:

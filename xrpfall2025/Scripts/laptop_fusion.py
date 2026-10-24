@@ -91,6 +91,8 @@ Architecture:
 # Config
 # ============================================================
 
+pose_w = None
+
 # Where to look for the Pi's camera. The first address that answers on
 # the RTSP port wins, so the same build works whether the Pi is running
 # its own hotspot or is on CornellCup-Web. An address passed on the
@@ -241,7 +243,7 @@ trans_G_g_tag3 = np.array([
 trans_G_A_tag3= trans_G_g_tag3 @ trans_g_H_tag3 @ trans_H_A_tag3
 print(f"[Transforms] beta_tag3 = {math.degrees(beta_tag3):.1f}")
 
-x1_tag0, y1_tag0, x2_tag0, y2_tag0 = 1.4144, -0.5, 0.5856, -0.5
+x1_tag0, y1_tag0, x2_tag0, y2_tag0 = 1.4144, -0.4572, 0.5856, -0.4572
 x3_tag0, y3_tag0 = (x1_tag0+x2_tag0)/2, (y1_tag0+y2_tag0)/2
 h4_tag0 = 0.352425
 if x1_tag0 == x2_tag0:
@@ -266,7 +268,7 @@ print(f"[Transforms] beta_tag0 = {math.degrees(beta_tag0):.1f}")
 # ============================================================
 # TODO measure: xrpgodot.py used radius 0.033. Wrong values make the kart's
 # in-game position drift out of scale.
-WHEEL_RADIUS = 0.026   # meters (wheel diameter / 2)
+WHEEL_RADIUS = 0.052   # meters (wheel diameter / 2)
 TRACK_WIDTH  = 0.109   # meters between the two driven wheels
 r_xy = 0.4
 r_th = 5e-2
@@ -310,7 +312,7 @@ latest_robot_pose_lock = threading.Lock()
 latest_fused = None  # {"x": ..., "y": ..., "theta": ...}
 latest_fused_lock = threading.Lock()
 
-running = True
+# running = True
 
 # NEW: list of every visible tag this frame (for AR overlay).
 # Refreshed by the detector thread on each processed frame.
@@ -492,6 +494,15 @@ def detector_thread():
                             "x": r_x, "y": r_y, "theta": r_theta,
                             "tag_id": tag.tag_id, "time": time.time(),
                         }
+
+                    # Send absolute robot yaw to XRP
+                    msg = "TAG_YAW,{:.6f}".format(r_theta)
+
+                    try:
+                        yaw_sock.sendto(msg.encode("utf-8"),(XRP_IP, YAW_CORRECTION_PORT))
+                    except OSError as e:
+                        print("[YAW] UDP send error:", e)
+
                 except np.linalg.LinAlgError:
                     pass
             if tag.tag_id == 0:
@@ -581,7 +592,7 @@ def ar_tags_thread():
 def sensor_ekf_thread(csv_writer):
     # global ekf, theta_zero, latest_fused, running, POSITIVE_Y
     global ekf, theta_zero, latest_fused, running, POSITIVE_Y, X_THRESHOLD, FAR_FROM_ORIGIN
-    global x, y, theta, enc_l, enc_r, heading, xrp_ip_lock, xrp_ip
+    global x, y, theta, enc_l, enc_r, heading, xrp_ip_lock, xrp_ip, pose_w
     print("[DEBUG] Entered sensor_ekf_thread()", flush=True)
 
     sensor_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -637,7 +648,7 @@ def sensor_ekf_thread(csv_writer):
             continue
 
         with ekf_lock:
-            x_pred, y_pred, th_pred = ekf.predict(enc_l, enc_r)
+            x, y, theta = ekf.predict(enc_l, enc_r)
             # z_theta = heading - theta_zero
             # x, y, theta = ekf.correct(z_theta)
 
@@ -824,7 +835,7 @@ def gamepad_relay_thread():
 # Main: sensor packet loop + EKF + Godot pose output
 # ============================================================
 def main():
-    global ekf, theta_zero, xrp_ip, running, x, y, theta, enc_l, enc_r, heading
+    global ekf, theta_zero, xrp_ip, running, x, y, theta, enc_l, enc_r, heading, pose_w
 
     # sensor_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     # sensor_sock.bind(("0.0.0.0", SENSOR_PORT))
@@ -994,7 +1005,6 @@ def main():
         time.sleep(0.3)
         # sensor_sock.close()
         # pose_sock.close()
-
-
+        
 if __name__ == "__main__":
     main()
