@@ -1,7 +1,6 @@
-[gd_resource type="Theme" load_steps=8 format=3 uid="uid://fkat5bpgiklk"]
+[gd_resource type="Theme" load_steps=7 format=3 uid="uid://fkat5bpgiklk"]
 
-[ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="1_08h34"]
-[ext_resource type="FontFile" uid="uid://bwfypqtrjw70r" path="res://UI/Super Trend.ttf" id="1_wumam"]
+[ext_resource type="FontFile" uid="uid://b67jbu37t1tvi" path="res://UI/Kenney Future Narrow.ttf" id="1_wumam"]
 [ext_resource type="FontFile" uid="uid://df8sdjlg8cuok" path="res://UI/Kenney Blocks.ttf" id="3_abiw2"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_teel4"]
@@ -47,7 +46,7 @@ Button/styles/normal = SubResource("StyleBoxFlat_abiw2")
 Button/styles/pressed = SubResource("StyleBoxFlat_teel4")
 Label/colors/font_color = Color(0, 0, 0, 1)
 Label/font_sizes/font_size = 26
-Label/fonts/font = ExtResource("1_08h34")
+Label/fonts/font = ExtResource("1_wumam")
 RichTextLabel/colors/default_color = Color(1, 1, 1, 1)
 RichTextLabel/colors/font_outline_color = Color(0.356863, 0.501961, 0.713726, 1)
 RichTextLabel/constants/text_highlight_h_padding = 6

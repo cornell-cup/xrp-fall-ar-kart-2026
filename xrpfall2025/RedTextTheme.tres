@@ -1,11 +1,18 @@
-[gd_resource type="Theme" load_steps=2 format=3 uid="uid://bee3jtcppvowa"]
+[gd_resource type="Theme" load_steps=3 format=3 uid="uid://bee3jtcppvowa"]
 
-[ext_resource type="FontFile" uid="uid://bwfypqtrjw70r" path="res://UI/Super Trend.ttf" id="1_0w8ei"]
+[ext_resource type="FontFile" uid="uid://b67jbu37t1tvi" path="res://UI/Kenney Future Narrow.ttf" id="1_0w8ei"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_edja0"]
 
 [resource]
 Label/colors/font_color = Color(1, 1, 1, 1)
 Label/colors/font_outline_color = Color(0, 0, 0, 1)
 Label/colors/font_shadow_color = Color(0.788235, 0.403922, 0.435294, 1)
+Label/constants/line_spacing = 3
 Label/constants/outline_size = 5
+Label/constants/shadow_offset_x = 1
+Label/constants/shadow_offset_y = 1
 Label/constants/shadow_outline_size = 15
+Label/font_sizes/font_size = 16
 Label/fonts/font = ExtResource("1_0w8ei")
+Label/styles/normal = SubResource("StyleBoxEmpty_edja0")

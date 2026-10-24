@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://cexyth8mmkpa5"]
+[gd_scene load_steps=16 format=3 uid="uid://cexyth8mmkpa5"]
 
 [ext_resource type="Theme" uid="uid://fkat5bpgiklk" path="res://ScreenMainTheme.tres" id="1_qqu8f"]
 [ext_resource type="Theme" uid="uid://bqodo202t6svm" path="res://UI/button_theme.tres" id="1_upek8"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://ct5tj7qusd4kq" path="res://Assets/Images/greenCircle.png" id="3_ctcc5"]
 [ext_resource type="Texture2D" uid="uid://b2uxgsac21jo3" path="res://Assets/Images/BackgroundExample.png" id="3_mntij"]
 [ext_resource type="Texture2D" uid="uid://dpmkmwq6wmr8i" path="res://Assets/Images/InvertedPlaceholder.png" id="4_p5nag"]
+[ext_resource type="FontFile" uid="uid://b67jbu37t1tvi" path="res://UI/Kenney Future Narrow.ttf" id="5_wqq3l"]
 [ext_resource type="Texture2D" uid="uid://cuh3s1wm2itnm" path="res://Assets/Images/FastPlaceholder.png" id="6_q7vb7"]
 [ext_resource type="ButtonGroup" uid="uid://dqoxyk1apmlvs" path="res://UI/map_buttons.tres" id="7_q7vb7"]
 [ext_resource type="Texture2D" uid="uid://dffgyeya27umy" path="res://Assets/Images/icon.svg" id="8_qqu8f"]
@@ -55,6 +56,7 @@ offset_bottom = 602.0
 custom_minimum_size = Vector2(445, 200)
 layout_mode = 2
 theme = ExtResource("1_upek8")
+theme_override_fonts/font = ExtResource("5_wqq3l")
 theme_override_font_sizes/font_size = 100
 toggle_mode = true
 button_group = ExtResource("1_wutij")
@@ -170,7 +172,8 @@ offset_bottom = -96.0
 grow_horizontal = 2
 grow_vertical = 0
 theme = ExtResource("1_upek8")
-theme_override_font_sizes/font_size = 114
+theme_override_fonts/font = ExtResource("5_wqq3l")
+theme_override_font_sizes/font_size = 105
 text = "RACE!"
 icon = ExtResource("14_wqq3l")
 clip_text = true
