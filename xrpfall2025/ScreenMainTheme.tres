@@ -1,7 +1,8 @@
-[gd_resource type="Theme" load_steps=7 format=3 uid="uid://fkat5bpgiklk"]
+[gd_resource type="Theme" load_steps=8 format=3 uid="uid://fkat5bpgiklk"]
 
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="1_08h34"]
 [ext_resource type="FontFile" uid="uid://bwfypqtrjw70r" path="res://UI/Super Trend.ttf" id="1_wumam"]
+[ext_resource type="FontFile" uid="uid://df8sdjlg8cuok" path="res://UI/Kenney Blocks.ttf" id="3_abiw2"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_teel4"]
 bg_color = Color(0.47451, 0.584314, 0.745098, 1)
@@ -30,6 +31,7 @@ bg_color = Color(0.776682, 0.45114, 0.840815, 1)
 bg_color = Color(0.85011, 0.447592, 0.634987, 1)
 
 [resource]
+default_font = ExtResource("3_abiw2")
 Button/colors/font_color = Color(1, 1, 1, 0.878431)
 Button/colors/font_hover_color = Color(0.78, 0.78, 0.78, 1)
 Button/colors/font_hover_pressed_color = Color(0.76, 0.76, 0.76, 1)
