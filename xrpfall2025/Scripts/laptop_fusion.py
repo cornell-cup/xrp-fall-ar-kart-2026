@@ -77,6 +77,15 @@ XRP_GAMEPAD_PORT = 4002
 
 TAG_FRESHNESS_S = 0.2
 
+# This laptop locks onto the first XRP it hears and ignores any other XRP on the
+# network until that one has been silent this long; then it picks up whichever
+# XRP is sending. Any laptop can still drive any free XRP.
+XRP_LEASE_S = 3.0
+
+# DSCP "expedited forwarding": WiFi access points send these packets ahead of
+# bulk traffic like the camera stream, so gamepad commands aren't held up
+CONTROL_PACKET_TOS = 0xB8
+
 # How often the status lines print (seconds).
 PRINT_EVERY_S = 2.0
 
@@ -210,6 +219,7 @@ latest_visible_tags_time = 0.0
 
 xrp_ip = None
 xrp_ip_lock = threading.Lock()
+xrp_last_seen = 0.0
 
 running = True
 
@@ -470,6 +480,11 @@ def gamepad_relay_thread():
     relay_sock.settimeout(0.5)
 
     forward_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        forward_sock.setsockopt(socket.IPPROTO_IP, socket.IP_TOS, CONTROL_PACKET_TOS)
+        print("[Gamepad] Control packets marked high priority")
+    except (OSError, AttributeError) as e:
+        print(f"[Gamepad] Could not mark control packets high priority ({e}), sending normally")
     print(f"[Gamepad] Relay listening on 127.0.0.1:{GAMEPAD_RELAY_PORT}, "
           f"forwarding to XRP:{XRP_GAMEPAD_PORT}")
 
@@ -510,7 +525,7 @@ def gamepad_relay_thread():
 # Main: sensor packet loop + EKF + Godot pose output
 # ============================================================
 def main():
-    global ekf, theta_zero, xrp_ip, running
+    global ekf, theta_zero, xrp_ip, xrp_last_seen, running
 
     sensor_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sensor_sock.bind(("0.0.0.0", SENSOR_PORT))
@@ -528,6 +543,7 @@ def main():
 
     pkt_count = 0
     last_print = time.time()
+    last_ignored_print = 0.0
 
     try:
         while running:
@@ -535,11 +551,6 @@ def main():
                 data, addr = sensor_sock.recvfrom(256)
             except socket.timeout:
                 continue
-
-            with xrp_ip_lock:
-                if xrp_ip != addr[0]:
-                    xrp_ip = addr[0]
-                    print(f"[XRP] IP captured: {xrp_ip}")
 
             try:
                 text = data.decode("utf-8").strip()
@@ -556,6 +567,24 @@ def main():
                 heading = float(parts[3])
             except ValueError:
                 continue
+
+            # ---- Which XRP this laptop follows (first come, first served) ----
+            now = time.time()
+            with xrp_ip_lock:
+                if xrp_ip is not None and addr[0] != xrp_ip and now - xrp_last_seen < XRP_LEASE_S:
+                    if now - last_ignored_print > 5.0:
+                        print(f"[XRP] ignoring {addr[0]} (locked onto {xrp_ip})")
+                        last_ignored_print = now
+                    continue
+                if addr[0] != xrp_ip:
+                    if xrp_ip is not None:
+                        print(f"[XRP] {xrp_ip} went quiet, switching to {addr[0]}")
+                        # a different robot's encoders and heading: start the filter over
+                        with ekf_lock:
+                            ekf = None
+                    xrp_ip = addr[0]
+                    print(f"[XRP] locked onto {xrp_ip}")
+                xrp_last_seen = now
 
             if ekf is None:
                 with ekf_lock:
