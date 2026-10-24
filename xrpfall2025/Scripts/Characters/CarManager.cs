@@ -33,7 +33,11 @@ public partial class CarManager : Node
 	public override void _Process(double delta)
 	{
 		//sort the cars into their proper placements and save this new list
-		cars = MergeSort(Cars);
+		// Sort the cars safely using built-in C# LINQ
+		cars = cars.OrderByDescending(c => c.Lap)
+				   .ThenByDescending(c => c.NumPassedCheckpoints)
+				   .ThenByDescending(c => c.NumPassedCheckpoints > 0 ? c.DistanceFromLastCheckpoint() : 0)
+				   .ToList();
 
 		//adjust the placements of each car
 		for (int i = 0; i < cars.Count; i++)
