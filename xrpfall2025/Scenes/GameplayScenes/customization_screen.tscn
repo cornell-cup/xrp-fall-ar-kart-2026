@@ -1,18 +1,12 @@
-[gd_scene load_steps=16 format=3 uid="uid://cexyth8mmkpa5"]
+[gd_scene load_steps=10 format=3 uid="uid://cexyth8mmkpa5"]
 
 [ext_resource type="Theme" uid="uid://fkat5bpgiklk" path="res://ScreenMainTheme.tres" id="1_qqu8f"]
 [ext_resource type="Theme" uid="uid://bqodo202t6svm" path="res://UI/button_theme.tres" id="1_upek8"]
 [ext_resource type="ButtonGroup" uid="uid://bamt45mhkoyvk" path="res://UI/car_buttons.tres" id="1_wutij"]
-[ext_resource type="Texture2D" uid="uid://crf26xahoogfh" path="res://Assets/Images/greenTriangle.png" id="2_1wcrq"]
 [ext_resource type="Script" uid="uid://cmn3yomsk53u2" path="res://Scripts/customization_screen.gd" id="2_qqu8f"]
-[ext_resource type="Texture2D" uid="uid://ct5tj7qusd4kq" path="res://Assets/Images/greenCircle.png" id="3_ctcc5"]
 [ext_resource type="Texture2D" uid="uid://b2uxgsac21jo3" path="res://Assets/Images/BackgroundExample.png" id="3_mntij"]
-[ext_resource type="Texture2D" uid="uid://dpmkmwq6wmr8i" path="res://Assets/Images/InvertedPlaceholder.png" id="4_p5nag"]
 [ext_resource type="FontFile" uid="uid://b67jbu37t1tvi" path="res://UI/Kenney Future Narrow.ttf" id="5_wqq3l"]
-[ext_resource type="Texture2D" uid="uid://cuh3s1wm2itnm" path="res://Assets/Images/FastPlaceholder.png" id="6_q7vb7"]
 [ext_resource type="ButtonGroup" uid="uid://dqoxyk1apmlvs" path="res://UI/map_buttons.tres" id="7_q7vb7"]
-[ext_resource type="Texture2D" uid="uid://dffgyeya27umy" path="res://Assets/Images/icon.svg" id="8_qqu8f"]
-[ext_resource type="Texture2D" uid="uid://b5cdmx5dmfo32" path="res://Assets/Images/SlowPlaceholder.png" id="9_q5g2k"]
 [ext_resource type="Theme" uid="uid://bee3jtcppvowa" path="res://RedTextTheme.tres" id="12_q5g2k"]
 [ext_resource type="Texture2D" uid="uid://bfkjk87oq7wdr" path="res://Assets/Images/bluebutton.png" id="14_wqq3l"]
 
@@ -61,7 +55,6 @@ theme_override_font_sizes/font_size = 100
 toggle_mode = true
 button_group = ExtResource("1_wutij")
 text = "Aqua"
-icon = ExtResource("4_p5nag")
 expand_icon = true
 
 [node name="Car2" type="Button" parent="CarOptions"]
@@ -72,7 +65,6 @@ theme = ExtResource("1_upek8")
 toggle_mode = true
 button_group = ExtResource("1_wutij")
 text = "Red"
-icon = ExtResource("2_1wcrq")
 expand_icon = true
 
 [node name="Car3" type="Button" parent="CarOptions"]
@@ -83,7 +75,6 @@ theme = ExtResource("1_upek8")
 toggle_mode = true
 button_group = ExtResource("1_wutij")
 text = "Green"
-icon = ExtResource("6_q7vb7")
 expand_icon = true
 
 [node name="MapOptions" type="HBoxContainer" parent="."]
@@ -97,9 +88,10 @@ offset_bottom = 596.0
 custom_minimum_size = Vector2(455, 230)
 layout_mode = 2
 theme = ExtResource("1_upek8")
+theme_override_font_sizes/font_size = 100
 toggle_mode = true
 button_group = ExtResource("7_q7vb7")
-icon = ExtResource("3_ctcc5")
+text = "CIRCUIT"
 expand_icon = true
 
 [node name="Map2" type="Button" parent="MapOptions"]
@@ -109,7 +101,6 @@ layout_mode = 2
 theme = ExtResource("1_upek8")
 toggle_mode = true
 button_group = ExtResource("7_q7vb7")
-icon = ExtResource("8_qqu8f")
 expand_icon = true
 
 [node name="Map3" type="Button" parent="MapOptions"]
@@ -119,7 +110,6 @@ layout_mode = 2
 theme = ExtResource("1_upek8")
 toggle_mode = true
 button_group = ExtResource("7_q7vb7")
-icon = ExtResource("9_q5g2k")
 expand_icon = true
 
 [node name="TitleText" type="Label" parent="."]
@@ -127,36 +117,36 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -178.0
-offset_top = -22.0
-offset_right = 304.0
-offset_bottom = 88.0
+offset_left = -356.0
+offset_top = -11.0
+offset_right = 999.0
+offset_bottom = 214.0
 grow_horizontal = 2
 theme = ExtResource("12_q5g2k")
-theme_override_font_sizes/font_size = 200
+theme_override_font_sizes/font_size = 151
 text = "Get Ready..."
 
 [node name="MapText" type="Label" parent="."]
 layout_mode = 0
-offset_left = 66.0
-offset_top = 235.0
-offset_right = 909.0
-offset_bottom = 417.0
+offset_left = 96.0
+offset_top = 322.0
+offset_right = 999.0
+offset_bottom = 504.0
 theme = ExtResource("12_q5g2k")
 theme_override_colors/font_shadow_color = Color(0.4524, 0.61074, 0.78, 1)
-theme_override_font_sizes/font_size = 150
-text = "Select Map:"
+theme_override_font_sizes/font_size = 130
+text = "Select Map"
 
 [node name="CarText" type="Label" parent="."]
 layout_mode = 0
-offset_left = 1075.0
-offset_top = 240.0
-offset_right = 1893.0
-offset_bottom = 483.0
+offset_left = 1079.0
+offset_top = 320.0
+offset_right = 1965.0
+offset_bottom = 563.0
 theme = ExtResource("12_q5g2k")
 theme_override_colors/font_shadow_color = Color(0.415686, 0.564706, 0.721569, 1)
-theme_override_font_sizes/font_size = 150
-text = "Select Car:"
+theme_override_font_sizes/font_size = 130
+text = "Select Car"
 
 [node name="ConfirmButton" type="Button" parent="."]
 layout_mode = 1
