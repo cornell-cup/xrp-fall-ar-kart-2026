@@ -105,7 +105,10 @@ public partial class Player : Car
 			// faced at the start (sent negated), +y is to its left, and the angle is counter-clockwise
 			// in degrees. In Car Map.pdf's frame that's +y forward and +x right of the start line.
 			float forwardMetres = -xrpX / 100f;
-			float leftMetres = xrpY / 100f;
+			// The XRP's IMU heading currently increases turning right, which mirrors both the
+			// turning and the path, so left/right are reversed here. (If HEADING_SIGN in
+			// xrp_raw_sensors.py gets flipped instead, undo this or turns reverse again.)
+			float leftMetres = -xrpY / 100f;
 
 			// Metres to world units: tracks are built in metres and scaled up by the track loader
 			float unitsPerMetre = track.GlobalTransform.Basis.Scale.X;
@@ -118,8 +121,8 @@ public partial class Player : Car
 			// Smooth position
 			charbody3d.GlobalPosition = charbody3d.GlobalPosition.Lerp(targetPos, 0.3f);
 
-			// Counter-clockwise from the start heading, which is also counter-clockwise in Godot
-			float targetRotY = xrpStartYaw + Mathf.DegToRad(xrpAngle);
+			// Reversed for the same reason as leftMetres above
+			float targetRotY = xrpStartYaw - Mathf.DegToRad(xrpAngle);
 			charbody3d.Rotation = new Vector3(
 				charbody3d.Rotation.X,
 				Mathf.LerpAngle(charbody3d.Rotation.Y, targetRotY, 0.3f),
