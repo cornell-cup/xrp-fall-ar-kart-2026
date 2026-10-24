@@ -4,7 +4,7 @@
 [ext_resource type="FontFile" uid="uid://df8sdjlg8cuok" path="res://UI/Kenney Blocks.ttf" id="3_abiw2"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_teel4"]
-bg_color = Color(0.049595, 0.0822124, 0.130003, 1)
+bg_color = Color(0.996042, 0, 0.073748, 1)
 corner_radius_top_left = 15
 corner_radius_top_right = 15
 corner_radius_bottom_right = 15
