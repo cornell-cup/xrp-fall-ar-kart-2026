@@ -37,6 +37,7 @@ LAPTOP_BROADCAST_IP = None
 SENSOR_PORT = 5005
 GAMEPAD_PORT = 4002
 SEND_RATE_HZ = 100
+YAW_CORRECTION_PORT = 5007 # XRP listens for yaw correction from Laptop
 
 # ============================================================
 # Robot config
@@ -55,6 +56,8 @@ THROTTLE_RAMP_PER_SEC = 3.0
 # Main loop pause between passes. Gamepad packets are read once per pass,
 # so this is the most a new command waits on the XRP before it's applied
 LOOP_SLEEP_MS = 1
+
+ENCODER_PERCENT_OFFSET = 1.1 # based on empirical data gathered (the encoders seem to report about 15% less distance than acutally traveled)
 
 # From xrpgodot.py (SERVO_CENTER / SERVO_RANGE), the values the kart
 # currently drives straight with.
@@ -227,8 +230,9 @@ def wrap_pi(a):
     return (a + math.pi) % (2.0 * math.pi) - math.pi
 
 def imu_heading_rad():
+    global HEADING_OFFSET
     roll_deg = imu.get_roll()
-    return wrap_pi(HEADING_SIGN * math.radians(roll_deg) + HEADING_OFFSET)
+    return wrap_pi( HEADING_OFFSET - (HEADING_SIGN * math.radians(roll_deg)))
 
 
 # ============================================================
@@ -492,6 +496,34 @@ log_info("MOTOR", "connection-loss failsafe on ({} ms timeout)".format(GAMEPAD_T
 # Started after the 3 s IMU calibration; fed in the main loop and in every long wait
 start_watchdog()
 
+def create_yaw_socket():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind(("0.0.0.0", YAW_CORRECTION_PORT))
+    sock.settimeout(0.0)
+    return sock
+
+def process_absolute_yaw(sock):
+    global HEADING_OFFSET
+
+    try:
+        raw, addr = sock.recvfrom(128)
+    except OSError:
+        return
+
+    try:
+        parts = raw.decode("utf-8").strip().split(",")
+
+        if len(parts) != 2 or parts[0] != "TAG_YAW":
+            return
+
+        tag_yaw = float(parts[1])
+
+        difference_in_heading = tag_yaw - imu_heading_rad()
+
+        HEADING_OFFSET = HEADING_OFFSET + difference_in_heading
+
+    except (ValueError, UnicodeDecodeError):
+        pass
 
 # ============================================================
 # Main loop
@@ -534,6 +566,8 @@ def main():
     consecutive_send_errors = 0
 
     log_info("LOOP", "streaming at {} Hz to {}".format(SEND_RATE_HZ, dest))
+
+    # yaw_sock = create_yaw_socket()
 
     while True:
         now = time.ticks_ms()
@@ -620,6 +654,9 @@ def main():
         # ---- Receive gamepad ----
         try:
             while True:
+                # process_absolute_yaw(yaw_sock)
+
+
                 data, addr = sock_recv.recvfrom(64)
                 sender = addr[0]
                 t_rx = time.ticks_ms()
@@ -679,6 +716,8 @@ def main():
             try:
                 enc_l = motor_three.get_position()
                 enc_r = motor_four.get_position()
+                motor_three.reset_encoder_position()
+                motor_four.reset_encoder_position()
                 heading = imu_heading_rad()
                 msg = "RAW,{:.6f},{:.6f},{:.6f}".format(enc_l, enc_r, heading)
                 # Straight to the laptop while it's driving us, otherwise broadcast
@@ -729,4 +768,5 @@ finally:
             _log_file.close()
     except Exception:
         pass
+
 

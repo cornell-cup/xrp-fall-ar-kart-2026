@@ -4,104 +4,346 @@
 [Pose] Will send fused state to 127.0.0.1:6000
 [Camera] Connecting to rtsp://cornellcup2.local:8554/cam
 [DEBUG] Starting sensor thread
-[DEBUG] Entered sensor_ekf_thread()
-[DEBUG] Sensor thread started: True
 [AR] Broadcasting tag overlays to ('127.0.0.1', 6002)
 [Gamepad] Relay listening on 127.0.0.1:4003, forwarding to XRP:4002
+[DEBUG] Entered sensor_ekf_thread()
+[DEBUG] Sensor thread started: True
 [Video] TCP server on 6001, waiting for Godot...
 [Sensor] Listening for XRP raw sensors on UDP 5005
-[EKF] Initialized at heading=-3.112 rad from 192.168.4.8
-[Video] Godot connected from ('127.0.0.1', 58897)
-[EKF] 86 pkts/s | FUSED x=+7.45 y=-0.35 th=-180 | no tag yet
-[Sensor] enc_l=-0.255 enc_r=-0.282 rev | heading=-178.3° (22270 pkts/s)
-[EKF]    fused x=15.42 y=-0.62 m th=-180° | no tag yet
-[EKF] 92 pkts/s | FUSED x=+15.51 y=-0.63 th=-180 | no tag yet
-[EKF] 87 pkts/s | FUSED x=+23.13 y=-0.90 th=-180 | no tag yet
-[Sensor] enc_l=-0.255 enc_r=-0.282 rev | heading=-178.4° (23909 pkts/s)
-[EKF]    fused x=30.32 y=-1.15 m th=-180° | no tag yet
-[EKF] 85 pkts/s | FUSED x=+30.58 y=-1.16 th=-180 | no tag yet
-[tcp @ 0x600000fe0240] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (39272 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Video] Godot connected from ('127.0.0.1', 60093)
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (40377 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[tcp @ 0x600001638240] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
 [Camera] Failed to open, retrying in 3s...
-[Gamepad] Forwarded 78 packets to 192.168.4.8 in last 5s
-[EKF] 84 pkts/s | FUSED x=+37.94 y=-1.42 th=-180 | no tag yet
-[Sensor] enc_l=-0.255 enc_r=-0.282 rev | heading=-178.4° (18622 pkts/s)
-[EKF]    fused x=45.21 y=-1.68 m th=-180° | no tag yet
-[EKF] 90 pkts/s | FUSED x=+45.83 y=-1.70 th=-180 | no tag yet
-[EKF] 85 pkts/s | FUSED x=+53.28 y=-1.97 th=-180 | no tag yet
-[Sensor] enc_l=-0.255 enc_r=-0.282 rev | heading=-178.4° (22171 pkts/s)
-[EKF]    fused x=60.64 y=-2.24 m th=-180° | no tag yet
+[Gamepad] Forwarded 92 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42654 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (41527 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
 [Camera] Connecting to rtsp://cornellcup2.local:8554/cam
-[EKF] 92 pkts/s | FUSED x=+61.34 y=-2.27 th=-180 | no tag yet
-[EKF] 99 pkts/s | FUSED x=+32.22 y=-2.60 th=+173 | no tag yet
-[Sensor] enc_l=+2.954 enc_r=+3.115 rev | heading=+164.6° (20716 pkts/s)
-[EKF]    fused x=-28.34 y=-3.16 m th=+164° | no tag yet
-[Gamepad] Forwarded 76 packets to 192.168.4.8 in last 5s
-[EKF] 85 pkts/s | FUSED x=-40.77 y=-2.68 th=+155 | no tag yet
-[EKF] 96 pkts/s | FUSED x=-164.55 y=+7.40 th=+134 | no tag yet
-[Sensor] enc_l=+5.275 enc_r=+6.051 rev | heading=+95.4° (19636 pkts/s)
-[EKF]    fused x=-296.96 y=40.41 m th=+95° | no tag yet
-[EKF] 94 pkts/s | FUSED x=-321.62 y=+48.58 th=+95 | no tag yet
-[tcp @ 0x600000ff0090] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42109 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42087 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[tcp @ 0x600001638240] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
 [Camera] Failed to open, retrying in 3s...
-[EKF] 98 pkts/s | FUSED x=-495.40 y=+104.74 th=+93 | no tag yet
-[Sensor] enc_l=+5.398 enc_r=+6.145 rev | heading=+96.0° (21865 pkts/s)
-[EKF]    fused x=-635.63 y=153.70 m th=+96° | no tag yet
-[EKF] 93 pkts/s | FUSED x=-662.02 y=+163.25 th=+94 | no tag yet
-[Gamepad] Forwarded 76 packets to 192.168.4.8 in last 5s
-[EKF] 89 pkts/s | FUSED x=-804.58 y=+222.71 th=+80 | no tag yet
-[Sensor] enc_l=+3.444 enc_r=+4.450 rev | heading=+61.8° (20631 pkts/s)
-[EKF]    fused x=-895.41 y=273.16 m th=+62° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42234 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (40045 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
 [Camera] Connecting to rtsp://cornellcup2.local:8554/cam
-[EKF] 93 pkts/s | FUSED x=-917.23 y=+287.36 th=+55 | no tag yet
-[EKF] 99 pkts/s | FUSED x=-996.67 y=+347.45 th=+43 | no tag yet
-[Sensor] enc_l=+2.513 enc_r=+3.619 rev | heading=+42.7° (22537 pkts/s)
-[EKF]    fused x=-1048.34 y=388.91 m th=+43° | no tag yet
-[EKF] 96 pkts/s | FUSED x=-1066.64 y=+408.68 th=+36 | no tag yet
-[EKF] 92 pkts/s | FUSED x=-1111.72 y=+511.88 th=+5 | no tag yet
-[Sensor] enc_l=+4.265 enc_r=+5.333 rev | heading=-8.4° (22989 pkts/s)
-[EKF]    fused x=-1105.07 y=608.14 m th=-8° | no tag yet
-[Gamepad] Forwarded 76 packets to 192.168.4.8 in last 5s
-[EKF] 89 pkts/s | FUSED x=-1100.39 y=+648.62 th=-8 | no tag yet
-[tcp @ 0x600000fe0240] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (41801 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (41861 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[tcp @ 0x600001638240] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
 [Camera] Failed to open, retrying in 3s...
-[EKF] 89 pkts/s | FUSED x=-1074.86 y=+790.70 th=-22 | no tag yet
-[Sensor] enc_l=+5.660 enc_r=+6.832 rev | heading=-43.1° (21606 pkts/s)
-[EKF]    fused x=-1007.22 y=914.90 m th=-43° | no tag yet
-[EKF] 98 pkts/s | FUSED x=-979.90 y=+957.98 th=-43 | no tag yet
-[EKF] 97 pkts/s | FUSED x=-868.81 y=+1116.51 th=-49 | no tag yet
-[Sensor] enc_l=+4.484 enc_r=+5.706 rev | heading=-57.0° (19555 pkts/s)
-[EKF]    fused x=-795.06 y=1203.41 m th=-57° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42306 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42403 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
 [Camera] Connecting to rtsp://cornellcup2.local:8554/cam
-[EKF] 99 pkts/s | FUSED x=-757.32 y=+1244.66 th=-56 | no tag yet
-[Gamepad] Forwarded 76 packets to 192.168.4.8 in last 5s
-[EKF] 76 pkts/s | FUSED x=-676.49 y=+1330.58 th=-58 | no tag yet
-[Sensor] enc_l=+4.867 enc_r=+6.022 rev | heading=-72.8° (21158 pkts/s)
-[EKF]    fused x=-600.48 y=1378.63 m th=-73° | no tag yet
-[EKF] 96 pkts/s | FUSED x=-531.39 y=+1413.06 th=-76 | no tag yet
-[EKF] 101 pkts/s | FUSED x=-369.21 y=+1494.67 th=-76 | no tag yet
-[Sensor] enc_l=+4.778 enc_r=+5.968 rev | heading=-77.6° (23662 pkts/s)
-[EKF]    fused x=-296.69 y=1529.43 m th=-78° | no tag yet
-[EKF] 97 pkts/s | FUSED x=-216.89 y=+1564.83 th=-82 | no tag yet
-[tcp @ 0x600000fe9560] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (40712 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42677 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[tcp @ 0x600001625170] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
 [Camera] Failed to open, retrying in 3s...
-[EKF] 97 pkts/s | FUSED x=-67.44 y=+1618.62 th=-95 | no tag yet
-[Sensor] enc_l=+5.027 enc_r=+6.364 rev | heading=-105.5° (23520 pkts/s)
-[EKF]    fused x=-11.48 y=1628.88 m th=-105° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42189 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (41764 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42261 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42065 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[tcp @ 0x600001625170] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (41964 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (38922 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42367 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (39488 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[tcp @ 0x60000162c000] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (34224 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42375 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (39998 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42964 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[tcp @ 0x600001625170] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (40685 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (39779 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (41995 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (41958 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[tcp @ 0x600001625170] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (38029 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (37423 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (36016 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (39284 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[tcp @ 0x600001625170] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (38996 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42827 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (37173 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (41965 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[tcp @ 0x60000162c000] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (39026 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (41953 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (39829 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (42365 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[tcp @ 0x60000162c000] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (40939 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (40876 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[EKF] Initialized at heading=1.571 rad from 192.168.4.8
+[EKF] 1 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+89.5° (40536 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+89.5° (38841 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[tcp @ 0x600001638240] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+89.5° (27950 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[EKF] 23 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[EKF] 32 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+89.5° (18846 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[EKF] 37 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[EKF] 34 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+89.5° (24970 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[EKF] 34 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.02 th=+88 | no tag yet
+[Sensor] enc_l=+0.010 enc_r=+0.003 rev | heading=+88.0° (17845 pkts/s)
+[EKF]    fused x=0.00 y=0.04 m th=+88° | no tag yet
+[EKF] 33 pkts/s | FUSED x=+0.00 y=+0.05 th=+88 | no tag yet
+[Gamepad] Forwarded 100 packets to 192.168.4.8 in last 5s
+[tcp @ 0x60000163c120] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[EKF] 33 pkts/s | FUSED x=+0.00 y=+0.05 th=+88 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+89.1° (23404 pkts/s)
+[EKF]    fused x=0.00 y=0.05 m th=+88° | no tag yet
+[EKF] 35 pkts/s | FUSED x=+0.00 y=+0.05 th=+88 | no tag yet
+[EKF] 31 pkts/s | FUSED x=+0.01 y=-0.01 th=+98 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+100.6° (19782 pkts/s)
+[EKF]    fused x=0.01 y=-0.03 m th=+101° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[EKF] 30 pkts/s | FUSED x=+0.01 y=-0.03 th=+101 | no tag yet
+[EKF] 31 pkts/s | FUSED x=+0.01 y=-0.03 th=+100 | no tag yet
+[Gamepad] Forwarded 100 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.005 enc_r=+0.000 rev | heading=+98.6° (21095 pkts/s)
+[EKF]    fused x=0.01 y=-0.03 m th=+98° | no tag yet
+[EKF] 32 pkts/s | FUSED x=+0.01 y=-0.02 th=+101 | no tag yet
+[EKF] 28 pkts/s | FUSED x=-0.07 y=+0.11 th=+144 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+145.7° (17761 pkts/s)
+[EKF]    fused x=-0.09 y=0.13 m th=+146° | no tag yet
+[EKF] 33 pkts/s | FUSED x=-0.09 y=+0.13 th=+146 | no tag yet
+[tcp @ 0x600001625170] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[EKF] 32 pkts/s | FUSED x=-0.09 y=+0.13 th=+146 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+145.7° (23419 pkts/s)
+[EKF]    fused x=-0.09 y=0.13 m th=+146° | no tag yet
+[EKF] 33 pkts/s | FUSED x=-0.09 y=+0.13 th=+146 | no tag yet
+[Gamepad] Forwarded 100 packets to 192.168.4.8 in last 5s
+[EKF] 32 pkts/s | FUSED x=-0.09 y=+0.13 th=+146 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+145.7° (24186 pkts/s)
+[EKF]    fused x=-0.09 y=0.13 m th=+146° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[EKF] 34 pkts/s | FUSED x=-0.09 y=+0.13 th=+146 | no tag yet
+[EKF] 32 pkts/s | FUSED x=-0.08 y=+0.11 th=+144 | no tag yet
+[Sensor] enc_l=-0.009 enc_r=-0.003 rev | heading=+142.1° (26577 pkts/s)
+[EKF]    fused x=-0.02 y=0.07 m th=+142° | no tag yet
+[EKF] 30 pkts/s | FUSED x=-0.02 y=+0.07 th=+142 | no tag yet
+[Gamepad] Forwarded 100 packets to 192.168.4.8 in last 5s
+[EKF] 32 pkts/s | FUSED x=-0.02 y=+0.07 th=+142 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+143.5° (26976 pkts/s)
+[EKF]    fused x=-0.02 y=0.07 m th=+143° | no tag yet
+[EKF] 32 pkts/s | FUSED x=-0.02 y=+0.07 th=+143 | no tag yet
+[tcp @ 0x600001625170] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[EKF] 32 pkts/s | FUSED x=-0.09 y=+0.16 th=+119 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+119.3° (24168 pkts/s)
+[EKF]    fused x=-0.09 y=0.16 m th=+119° | no tag yet
+[EKF] 32 pkts/s | FUSED x=-0.09 y=+0.16 th=+119 | no tag yet
+[EKF] 31 pkts/s | FUSED x=-0.09 y=+0.16 th=+119 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+118.3° (26753 pkts/s)
+[EKF]    fused x=-0.09 y=0.16 m th=+119° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[Gamepad] Forwarded 100 packets to 192.168.4.8 in last 5s
+[EKF] 31 pkts/s | FUSED x=-0.09 y=+0.16 th=+119 | no tag yet
+[EKF] 32 pkts/s | FUSED x=-0.08 y=+0.15 th=+116 | no tag yet
+[Sensor] enc_l=-0.009 enc_r=-0.002 rev | heading=+115.3° (27441 pkts/s)
+[EKF]    fused x=-0.08 y=0.14 m th=+115° | no tag yet
+[EKF] 30 pkts/s | FUSED x=-0.04 y=+0.02 th=+105 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+104.5° (28571 pkts/s)
+[EKF]    fused x=-0.03 y=0.01 m th=+104° | no tag yet
+[EKF] 30 pkts/s | FUSED x=-0.03 y=+0.01 th=+104 | no tag yet
+[EKF] 31 pkts/s | FUSED x=-0.03 y=+0.01 th=+105 | no tag yet
+[tcp @ 0x600001625170] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[Gamepad] Forwarded 100 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.005 enc_r=+0.000 rev | heading=+106.6° (28271 pkts/s)
+[EKF]    fused x=-0.05 y=0.07 m th=+106° | no tag yet
+[EKF] 30 pkts/s | FUSED x=-0.05 y=+0.07 th=+106 | no tag yet
+[EKF] 30 pkts/s | FUSED x=-0.04 y=+0.05 th=+105 | no tag yet
+[Sensor] enc_l=+0.005 enc_r=+0.002 rev | heading=+105.8° (28621 pkts/s)
+[EKF]    fused x=-0.04 y=0.05 m th=+106° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[EKF] 31 pkts/s | FUSED x=-0.05 y=+0.06 th=+106 | no tag yet
+[EKF] 29 pkts/s | FUSED x=-0.05 y=+0.09 th=+109 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+107.2° (27347 pkts/s)
+[EKF]    fused x=-0.05 y=0.08 m th=+107° | no tag yet
+[EKF] 29 pkts/s | FUSED x=-0.05 y=+0.08 th=+107 | no tag yet
+[Gamepad] Forwarded 100 packets to 192.168.4.8 in last 5s
+[EKF] 31 pkts/s | FUSED x=-0.02 y=-0.02 th=+102 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+103.4° (21787 pkts/s)
+[EKF]    fused x=-0.02 y=-0.02 m th=+104° | no tag yet
+[EKF] 29 pkts/s | FUSED x=-0.02 y=-0.02 th=+103 | no tag yet
+[tcp @ 0x600001638240] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[EKF] 30 pkts/s | FUSED x=-0.02 y=-0.01 th=+104 | no tag yet
+[Sensor] enc_l=+0.002 enc_r=+0.000 rev | heading=+103.9° (27514 pkts/s)
+[EKF]    fused x=-0.02 y=-0.01 m th=+104° | no tag yet
+[EKF] 29 pkts/s | FUSED x=-0.02 y=-0.01 th=+104 | no tag yet
+[EKF] 30 pkts/s | FUSED x=-0.02 y=-0.01 th=+104 | no tag yet
+[Gamepad] Forwarded 99 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+103.9° (25505 pkts/s)
+[EKF]    fused x=-0.02 y=-0.01 m th=+104° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[EKF] 31 pkts/s | FUSED x=-0.02 y=-0.01 th=+104 | no tag yet
+[EKF] 31 pkts/s | FUSED x=-0.02 y=-0.01 th=+104 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+103.9° (38237 pkts/s)
+[EKF]    fused x=-0.02 y=-0.01 m th=+104° | no tag yet
+[EKF] 31 pkts/s | FUSED x=-0.02 y=-0.01 th=+104 | no tag yet
+[EKF] 27 pkts/s | FUSED x=-0.04 y=+0.08 th=+106 | no tag yet
+[Sensor] enc_l=-0.002 enc_r=+0.000 rev | heading=+105.8° (38066 pkts/s)
+[EKF]    fused x=-0.04 y=0.08 m th=+107° | no tag yet
+[Gamepad] Forwarded 100 packets to 192.168.4.8 in last 5s
+[EKF] 29 pkts/s | FUSED x=-0.05 y=+0.12 th=+107 | no tag yet
+[tcp @ 0x6000016203f0] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[EKF] 30 pkts/s | FUSED x=-0.08 y=+0.21 th=+110 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+110.0° (39340 pkts/s)
+[EKF]    fused x=-0.08 y=0.21 m th=+110° | no tag yet
+[EKF] 30 pkts/s | FUSED x=-0.08 y=+0.21 th=+110 | no tag yet
+[EKF] 30 pkts/s | FUSED x=-0.08 y=+0.21 th=+110 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+110.1° (39459 pkts/s)
+[EKF]    fused x=-0.08 y=0.21 m th=+110° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[EKF] 29 pkts/s | FUSED x=-0.11 y=+0.29 th=+112 | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=+0.003 enc_r=+0.002 rev | heading=+114.3° (37745 pkts/s)
+[EKF]    fused x=-0.13 y=0.34 m th=+114° | no tag yet
+[EKF] 29 pkts/s | FUSED x=-0.13 y=+0.34 th=+114 | no tag yet
+[EKF] 29 pkts/s | FUSED x=-0.11 y=+0.29 th=+112 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (39580 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
+[EKF] 32 pkts/s | FUSED x=-0.11 y=+0.29 th=+112 | no tag yet
+[tcp @ 0x600001638240] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (34189 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
+[Gamepad] Forwarded 92 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (28355 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (29217 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
+[Gamepad] Forwarded 100 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (29335 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
+[tcp @ 0x6000016203f0] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (29310 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (28802 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[Gamepad] Forwarded 100 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (29410 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (26962 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
+[tcp @ 0x600001638240] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[Gamepad] Forwarded 101 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (29315 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (29602 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (29416 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
+[Gamepad] Forwarded 95 packets to 192.168.4.8 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (29314 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
+[tcp @ 0x600001625170] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
+[Camera] Failed to open, retrying in 3s...
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (29687 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
 [Gamepad] Forwarded 75 packets to 192.168.4.8 in last 5s
-[EKF] 94 pkts/s | FUSED x=+104.23 y=+1648.75 th=-104 | no tag yet
-[EKF] 98 pkts/s | FUSED x=+282.00 y=+1677.41 th=-83 | no tag yet
-[Sensor] enc_l=+4.434 enc_r=+5.412 rev | heading=-70.5° (23611 pkts/s)
-[EKF]    fused x=327.47 y=1687.04 m th=-70° | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+112.5° (26690 pkts/s)
+[EKF]    fused x=-0.11 y=0.29 m th=+112° | no tag yet
 [Camera] Connecting to rtsp://cornellcup2.local:8554/cam
-[EKF] 100 pkts/s | FUSED x=+434.59 y=+1714.71 th=-62 | no tag yet
-[EKF] 98 pkts/s | FUSED x=+578.61 y=+1753.48 th=-62 | no tag yet
-[Sensor] enc_l=+4.205 enc_r=+5.108 rev | heading=-62.5° (22488 pkts/s)
-[EKF]    fused x=608.01 y=1761.37 m th=-62° | no tag yet
-[EKF] 95 pkts/s | FUSED x=+718.25 y=+1790.96 th=-62 | no tag yet
-[Gamepad] Forwarded 87 packets to 192.168.4.8 in last 5s
-[EKF] 100 pkts/s | FUSED x=+865.25 y=+1830.37 th=-62 | no tag yet
-[Sensor] enc_l=+4.205 enc_r=+5.108 rev | heading=-62.5° (19728 pkts/s)
-[EKF]    fused x=879.95 y=1834.31 m th=-62° | no tag yet
-[EKF] 98 pkts/s | FUSED x=+1009.32 y=+1868.96 th=-63 | no tag yet
-[tcp @ 0x600000fec000] Failed to resolve hostname cornellcup2.local: nodename nor servname provided, or not known
-[Camera] Failed to open, retrying in 3s...

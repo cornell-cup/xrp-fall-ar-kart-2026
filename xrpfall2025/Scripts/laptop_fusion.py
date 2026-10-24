@@ -966,10 +966,16 @@ def main():
             
 
             try:
+                # payload = json.dumps({
+                #     "x": -(x * 100),
+                #     "y": y * 100,
+                #     "angle": math.degrees(theta) % 360.0,
+                # })
                 payload = json.dumps({
-                    "x": -(x * 100),
-                    "y": y * 100,
-                    "angle": math.degrees(theta) % 360.0,
+                    "x": y * 100,
+                    "y": -(x * 100),
+                    # "angle": math.degrees(theta) % 360.0,
+                    "angle": math.degrees(theta),
                 })
                 pose_sock.sendto(payload.encode(), (GODOT_HOST, GODOT_POSE_PORT))
             except Exception as e:
