@@ -19,12 +19,12 @@ pestolink = PestoLinkAgent(robot_name)
 # -------- UDP / Network Configuration --------
 # WIFI_SSID = "XRP-Robot"
 # WIFI_PASSWORD = "xrpbot123"
-WIFI_SSID = "CornellCup-Web"
-WIFI_PASSWORD = "disneyworld!"
+WIFI_SSID = "AR-Kart"
+WIFI_PASSWORD = "cornellcup"
 
 # Laptop IP address (same network as Pico)
 # LAPTOP_IP = "10.42.0.99"
-LAPTOP_IP = "192.168.4.229"
+LAPTOP_IP = "192.168.0.160"
 
 # UDP ports (must match laptop pygame joystick script)
 PICO_UDP_PORT = 5006      # Pico listens here for JOY,x,y
@@ -42,7 +42,7 @@ JOYSTICK_DEADBAND = 0.05
 STEER_CENTER_DEG = 100.0
 STEER_RANGE_DEG = 60.0   # +-60 degrees from center
 
-ENCODER_PERCENT_OFFSET = 1.1 # based on empirical data gathered (the encoders seem to report about 15% less distance than acutally traveled)
+ENCODER_PERCENT_OFFSET = 1/0.85 # based on empirical data gathered (the encoders seem to report about 15% less distance than acutally traveled)
 
 wlan = network.WLAN(network.STA_IF)
 
@@ -146,7 +146,10 @@ def process_absolute_yaw(sock):
 
         HEADING_OFFSET = HEADING_OFFSET + difference_in_heading
 
+        print("Updated heading offset")
+
     except (ValueError, UnicodeDecodeError):
+        print("Did not updated heading offset")
         pass
 
 # -------- Helpers --------
@@ -283,6 +286,7 @@ def main():
 
     while True:
         if pestolink.is_connected():  # Check if a BLE connection is established
+            print("Connected to Pestolin")
             led.value(0)
             rotation = -1 * pestolink.get_axis(0)
             throttle = -1 * pestolink.get_axis(1)
@@ -329,12 +333,13 @@ def main():
                     gyro_bias = (1.0 - bias_beta) * gyro_bias + bias_beta * rate
             
                 # ---- PREDICTION STEP ----
-                # l = motor_three.get_position()*ENCODER_PERCENT_OFFSET + last_l
-                # r = motor_four.get_position()*ENCODER_PERCENT_OFFSET + last_r
                 l = motor_three.get_position()*ENCODER_PERCENT_OFFSET
                 r = motor_four.get_position()*ENCODER_PERCENT_OFFSET
                 motor_three.reset_encoder_position()
                 motor_four.reset_encoder_position()
+                
+                print("l: " + str(l))
+                print("r: " + str(r))
                 
                 # ---- Map joystick to motors and steering (Ackermann control) ----
                 # Forward/reverse speed from joystick Y
@@ -385,5 +390,6 @@ def main():
     
 if __name__ == "__main__":
     main()
+
 
 

@@ -24,8 +24,9 @@ from XRPLib.defaults import *
 # Open network -> password "" (giving a password to an open network makes
 # the Pico W attempt WPA2 and fail).
 WIFI_NETWORKS = [
+    ("AR-Kart", "cornellcup"),   
     ("XRP-Robot", ""),                          # Pi hotspot (open)
-    ("CornellCup-Web", "disneyworld!"),
+    ("CornellCup-Web", "passwordhere"),
 ]
 
 # Sensor packets are broadcast to the whole local network, so the laptop's
@@ -57,7 +58,7 @@ THROTTLE_RAMP_PER_SEC = 3.0
 # so this is the most a new command waits on the XRP before it's applied
 LOOP_SLEEP_MS = 1
 
-ENCODER_PERCENT_OFFSET = 1.1 # based on empirical data gathered (the encoders seem to report about 15% less distance than acutally traveled)
+ENCODER_PERCENT_OFFSET = 1/0.85 # based on empirical data gathered (the encoders seem to report about 15% less distance than acutally traveled)
 
 # From xrpgodot.py (SERVO_CENTER / SERVO_RANGE), the values the kart
 # currently drives straight with.
