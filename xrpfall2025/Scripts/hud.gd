@@ -102,6 +102,11 @@ func _process(delta: float) -> void:
 		if stopwatch_running and not get_tree().paused:
 			race_time += delta
 			stopwatch_label.text = format_time(race_time)
+			
+			# TEST: End the game if the timer hits 10 seconds
+			if race_time >= 10.0:
+				finished_race()
+				return
 		
 			if player_node and player_node.Lap != current_lap:
 				record_lap_time()
