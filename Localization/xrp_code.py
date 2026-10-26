@@ -132,6 +132,7 @@ def process_absolute_yaw(sock):
     try:
         raw, addr = sock.recvfrom(128)
     except OSError:
+        print("yaw processing error")
         return
 
     try:
@@ -390,6 +391,7 @@ def main():
     
 if __name__ == "__main__":
     main()
+
 
 
 
