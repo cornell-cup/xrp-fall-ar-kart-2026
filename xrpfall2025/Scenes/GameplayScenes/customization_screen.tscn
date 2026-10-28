@@ -4,7 +4,7 @@
 [ext_resource type="Theme" uid="uid://bqodo202t6svm" path="res://UI/button_theme.tres" id="1_upek8"]
 [ext_resource type="ButtonGroup" uid="uid://bamt45mhkoyvk" path="res://UI/car_buttons.tres" id="1_wutij"]
 [ext_resource type="Script" uid="uid://cmn3yomsk53u2" path="res://Scripts/customization_screen.gd" id="2_qqu8f"]
-[ext_resource type="Texture2D" uid="uid://b2uxgsac21jo3" path="res://Assets/Images/BackgroundExample.png" id="3_mntij"]
+[ext_resource type="Texture2D" uid="uid://b042olkg5sc2b" path="res://Assets/Images/new-2026/blue-bg-PNG.png" id="3_l8wsh"]
 [ext_resource type="FontFile" uid="uid://b67jbu37t1tvi" path="res://UI/Kenney Future Narrow.ttf" id="5_wqq3l"]
 [ext_resource type="ButtonGroup" uid="uid://dqoxyk1apmlvs" path="res://UI/map_buttons.tres" id="7_q7vb7"]
 [ext_resource type="Theme" uid="uid://bee3jtcppvowa" path="res://RedTextTheme.tres" id="12_q5g2k"]
@@ -30,12 +30,13 @@ grow_vertical = 2
 color = Color(0.216, 0.219067, 0.4, 1)
 
 [node name="ImageBackground" type="TextureRect" parent="."]
-layout_mode = 0
-offset_left = -9.0
-offset_top = -80.0
-offset_right = 2422.0
-offset_bottom = 1275.0
-texture = ExtResource("3_mntij")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_l8wsh")
 expand_mode = 1
 stretch_mode = 4
 
