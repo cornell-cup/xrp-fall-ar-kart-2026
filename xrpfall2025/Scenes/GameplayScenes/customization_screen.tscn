@@ -48,6 +48,7 @@ offset_right = 1726.0
 offset_bottom = 602.0
 
 [node name="Car1" type="Button" parent="CarOptions"]
+visible = false
 custom_minimum_size = Vector2(445, 200)
 layout_mode = 2
 theme = ExtResource("1_upek8")
@@ -79,6 +80,7 @@ text = "Green"
 expand_icon = true
 
 [node name="MapOptions" type="HBoxContainer" parent="."]
+visible = false
 layout_mode = 0
 offset_left = 264.0
 offset_top = 478.0
@@ -128,6 +130,7 @@ theme_override_font_sizes/font_size = 151
 text = "Get Ready..."
 
 [node name="MapText" type="Label" parent="."]
+visible = false
 layout_mode = 0
 offset_left = 96.0
 offset_top = 322.0
