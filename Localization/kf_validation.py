@@ -143,7 +143,8 @@ RTSP_URL = f"rtsp://{PI_IP}:8554/cam"
 
 SENSOR_PORT = 5005
 
-XRP_IP = "192.168.0.191"
+XRP_IP = "192.168.0.191" # for not all-terain car
+# XRP_IP = "192.168.0.141" # for all-terain car
 YAW_CORRECTION_PORT = 5007
 
 yaw_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -153,9 +154,9 @@ CSV_LOG_PATH = "fusion_log.csv"
 
 # Apply camera correction to the EKF? Disable to compare encoder+IMU
 # only against the raw tag pose, which is useful for debugging.
-APPLY_CAMERA_CORRECTION = True
+APPLY_CAMERA_CORRECTION = False
 
-TAG_FRESHNESS_S = 0.2
+TAG_FRESHNESS_S = 0.3
 
 # ----- Camera intrinsics -----
 Camera_params = [1.26828550e+03, 1.25414697e+03, 3.61108041e+02, 2.97975274e+02]
@@ -169,7 +170,7 @@ FAR_FROM_ORIGIN = 0
 # ============================================================
 # Frame transforms (from pi_detect_aprilTag.py)
 # ============================================================
-_theta_mount = np.radians(0)
+_theta_mount = np.radians(5)
 s_theta = np.sin(_theta_mount); c_theta = np.cos(_theta_mount)
 h1, l1, d = 0.03047, 0.007625, 0.02792
 trans_R_C = np.array([
@@ -322,6 +323,7 @@ def grabber_thread(rtsp_url):
         fail = 0
         while running:
             ret, frame = cap.read()
+
             if not ret:
                 fail += 1
                 if fail > 10:
@@ -329,6 +331,9 @@ def grabber_thread(rtsp_url):
                     break
                 time.sleep(0.05); continue
             fail = 0
+
+            # frame = cv2.flip(frame, cv2.ROTATE_180)  # Horizontal mirror
+
             with latest_frame_lock:
                 latest_frame = frame
                 latest_frame_id += 1
@@ -550,6 +555,7 @@ def sensor_ekf_thread(csv_writer):
             continue
         try:
             enc_l = float(parts[1]); enc_r = float(parts[2]); heading = float(parts[3])
+            # print("Received sensor data, enc_l: " + str(enc_l) + ", enc_r: " + str(enc_r) + ", heading: " + str(heading))
         except ValueError:
             continue
 
@@ -575,13 +581,13 @@ def sensor_ekf_thread(csv_writer):
             # print("enc_r: " + str(enc_r))
             x, y, theta = ekf.predict(enc_l, enc_r)
 
-            msg = "TAG_YAW,{:.6f}".format(theta)
+            # msg = "TAG_YAW,{:.6f}".format(theta)
             
             
-            try:
-                yaw_sock.sendto(msg.encode("utf-8"),(XRP_IP, YAW_CORRECTION_PORT))
-            except OSError as e:
-                print("[YAW] UDP send error:", e)
+            # try:
+            #     yaw_sock.sendto(msg.encode("utf-8"),(XRP_IP, YAW_CORRECTION_PORT))
+            # except OSError as e:
+            #     print("[YAW] UDP send error:", e)
             # print("x_pred: " + str(x_pred))
             # print("y_pred: " + str(y_pred))
             # print("th_pred: " + str(th_pred))
@@ -672,7 +678,7 @@ def main():
     csv_file = None
     csv_writer = None
     if CSV_LOG_PATH:
-        csv_file = open(CSV_LOG_PATH, "w", newline="")
+        csv_file = open(CSV_LOG_PATH, "w", newline="", buffering=1)
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow([
             "time", "x_fused", "y_fused", "theta_fused",

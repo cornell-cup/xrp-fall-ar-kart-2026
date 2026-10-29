@@ -10,7 +10,7 @@ class ackermann_simple_ekf:
 
         # System Characteristics
         self._wheel_radius = wheel_radius
-        self._alpha = 0.2
+        self._alpha = 0.025
         self._distance_between_wheels = distance_between_wheels
         self._R = np.array([[initial_position_uncertainty, 0, 0], 
                             [0, initial_position_uncertainty, 0],
@@ -116,7 +116,7 @@ class ackermann_simple_ekf:
 
         camera_Q = np.array([[1e-4, 0, 0],
                              [0, 1e-4, 0],
-                             [0, 0, 3e-2]])
+                             [0, 0, 3e-3]])
         
         camera_C = np.array([[1, 0, 0],
                              [0, 1, 0],

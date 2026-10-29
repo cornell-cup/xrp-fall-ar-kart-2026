@@ -16,10 +16,10 @@ april_tag_locations = [[1, -0.4572]]
 #         return (a + np.pi) % (2.0 * np.pi) - np.pi
 
 def get_theta(x1, y1, x2, y2):
-    print(f"x1, y1: {x1}, {y1}")
-    print(f"x2, y1: {x2}, {y2}")
+    # print(f"x1, y1: {x1}, {y1}")
+    # print(f"x2, y1: {x2}, {y2}")
     yaw = np.degrees(np.arctan2(y2-y1,x2-x1))
-    print(f"yaw: {yaw}")
+    # print(f"yaw: {yaw}")
     return yaw
 
 def make_3D_plot(csv_files, n, title="Obstacle Avoidance", file_name="graph100.png"):
@@ -75,38 +75,38 @@ def make_3D_plot(csv_files, n, title="Obstacle Avoidance", file_name="graph100.p
                 else:
                     line = line + 1
 
-    # # Create a figure and a 3D axes object
-    # fig = plt.figure()
-    # ax = fig.add_subplot(111, projection='3d')
+    # Create a figure and a 3D axes object
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
 
-    # ax.scatter3D(ekf_x, ekf_y, time, c=time, cmap='Reds', marker='o', label='KF')
-    # ax.scatter3D(ball_x, ball_y, time, c=time, cmap='Blues', marker='o', label='Ball')
-    # ax.scatter3D(april_tag_x, april_tag_y, time, c=time)
+    ax.scatter3D(ekf_x, ekf_y, time, c=time, cmap='Reds', marker='o', label='KF')
+    ax.scatter3D(ball_x, ball_y, time, c=time, cmap='Blues', marker='o', label='Ball')
+    ax.scatter3D(april_tag_x, april_tag_y, time, c=time)
 
-    # # Set labels for the axes
-    # ax.set_xlabel('x-axis')
-    # ax.set_ylabel('y-axis')
-    # ax.set_zlabel('t-axis')
+    # Set labels for the axes
+    ax.set_xlabel('x-axis')
+    ax.set_ylabel('y-axis')
+    ax.set_zlabel('t-axis')
 
-    # # Set a title for the plot
-    # ax.set_title(title)
+    # Set a title for the plot
+    ax.set_title(title)
 
-    # # Display the plot
-    # plt.legend()
+    # Display the plot
+    plt.legend()
     # plt.savefig("3Dpath.png")
-    # plt.show()
+    plt.show()
 
-    ekf_x = np.array(ekf_x)
-    ekf_y = np.array(ekf_y)
-    ekf_theta = np.array(ekf_theta)
+    # ekf_x = np.array(ekf_x)
+    # ekf_y = np.array(ekf_y)
+    # ekf_theta = np.array(ekf_theta)
 
-    ball_x = np.array(ball_x)
-    ball_y = np.array(ball_y)
-    ball_theta = np.array(ball_theta)
+    # ball_x = np.array(ball_x)
+    # ball_y = np.array(ball_y)
+    # ball_theta = np.array(ball_theta)
 
-    error_x = ball_x - ekf_x
-    error_y = ball_y - ekf_y
-    error_theta = ball_theta - ekf_theta
+    # error_x = ball_x - ekf_x
+    # error_y = ball_y - ekf_y
+    # error_theta = ball_theta - ekf_theta
 
     # plt.plot(time, error_x)
     # plt.axhline(0.0762, color='red', linestyle='--')
@@ -122,13 +122,13 @@ def make_3D_plot(csv_files, n, title="Obstacle Avoidance", file_name="graph100.p
     # plt.savefig("y_positional_error.png")
     # plt.show()
 
-    # plt.plot(time, ball_theta)
-    plt.plot(time, error_theta)
-    # plt.axhline(0.0762, color='red', linestyle='--')
-    # plt.axhline(-0.0762, color='red', linestyle='--')
-    plt.title("Error in Yaw [degrees]")
-    plt.savefig("yaw_error.png")
-    plt.show()
+    # # plt.plot(time, ball_theta)
+    # plt.plot(time, error_theta)
+    # # plt.axhline(0.0762, color='red', linestyle='--')
+    # # plt.axhline(-0.0762, color='red', linestyle='--')
+    # plt.title("Error in Yaw [degrees]")
+    # plt.savefig("yaw_error.png")
+    # plt.show()
 
 
 
