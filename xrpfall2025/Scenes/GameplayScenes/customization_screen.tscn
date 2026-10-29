@@ -155,6 +155,7 @@ theme_override_font_sizes/font_size = 130
 text = "Select Car"
 
 [node name="ConfirmButton" type="Button" parent="."]
+visible = false
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -177,6 +178,7 @@ icon_alignment = 1
 expand_icon = true
 
 [node name="BackButton" type="Button" parent="."]
+visible = false
 layout_mode = 0
 offset_left = 18.0
 offset_top = 19.0
