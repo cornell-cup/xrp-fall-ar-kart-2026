@@ -222,5 +222,10 @@ custom_minimum_size = Vector2(350, 400)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_l8wsh")
 
+[node name="RacePanel" type="PanelContainer" parent="MiddlePanels"]
+custom_minimum_size = Vector2(350, 400)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_l8wsh")
+
 [connection signal="pressed" from="ConfirmButton" to="." method="_on_confirm_button_pressed"]
 [connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
