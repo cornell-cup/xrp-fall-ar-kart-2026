@@ -143,6 +143,7 @@ theme_override_font_sizes/font_size = 130
 text = "Select Map"
 
 [node name="CarText" type="Label" parent="."]
+visible = false
 layout_mode = 0
 offset_left = 1079.0
 offset_top = 320.0
