@@ -10,7 +10,7 @@ class ackermann_simple_ekf:
 
         # System Characteristics
         self._wheel_radius = wheel_radius
-        self._alpha = 0.2
+        self._alpha = 0.025
         self._distance_between_wheels = distance_between_wheels
         self._R = np.array([[initial_position_uncertainty, 0, 0], 
                             [0, initial_position_uncertainty, 0],
@@ -54,9 +54,9 @@ class ackermann_simple_ekf:
         average = 0.5 * (dl + dr)
 
         # error increases with larger encoder values, but always about 5% of true distance traveled
-        self._R[0][0] = average
-        self._R[1][1] = average
-        self._R[2][2] = average
+        self._R[0][0] = average*6
+        self._R[1][1] = average*6
+        self._R[2][2] = average*6
             
         ds_l = dl * 2.0 * math.pi * self._wheel_radius
         ds_r = dr * 2.0 * math.pi * self._wheel_radius
@@ -65,13 +65,6 @@ class ackermann_simple_ekf:
     
         # ---- Prediction ----
         th_mid = self.wrap_pi(self._state[2][0] + 0.5 * dtheta_enc)
-
-        # self._state[0][0] = self._state[0][0] + (ds * math.sin(th_mid))
-        # self._state[1][0] = self._state[1][0] + (ds * math.cos(th_mid))
-        # self._state[2][0] = self.wrap_pi(self._state[2][0] + dtheta_enc)
-
-        # self._F[0][2] = -ds * math.sin(th_mid)
-        # self._F[1][2] = ds * math.cos(th_mid)
 
         self._state[0][0] = self._state[0][0] + (ds * math.cos(th_mid))
         self._state[1][0] = self._state[1][0] + (ds * math.sin(th_mid))
@@ -91,7 +84,7 @@ class ackermann_simple_ekf:
 
         imu_Q = np.array([[0, 0, 0],
                           [0, 0, 0],
-                          [0, 0, 0.001]])
+                          [0, 0, 0.0037]])
         
         imu_C = np.array([[0, 0, 0],
                           [0, 0, 0],
@@ -112,7 +105,6 @@ class ackermann_simple_ekf:
         self._Epsilon = (self._I - imu_K@imu_C)@self._Epsilon
         
         self._state[2][0] = self.wrap_pi(self._state[2][0])
-        # print("wrapped theta: " + str(self._state[2][0]))
 
         return self._state[0][0], self._state[1][0], self._state[2][0]
     
@@ -124,7 +116,7 @@ class ackermann_simple_ekf:
 
         camera_Q = np.array([[1e-4, 0, 0],
                              [0, 1e-4, 0],
-                             [0, 0, 3e-2]])
+                             [0, 0, 3e-3]])
         
         camera_C = np.array([[1, 0, 0],
                              [0, 1, 0],
@@ -141,7 +133,6 @@ class ackermann_simple_ekf:
         self._Epsilon = (self._I - camera_K@camera_C)@self._Epsilon
     
         new_state[2][0] = self.wrap_pi(new_state[2][0])
-        # print("wrapped theta: " + str(self._theta))
 
         self.low_pass_filter(new_state[0][0], new_state[1][0], new_state[2][0])
         return self._state[0][0], self._state[1][0], self._state[2][0]

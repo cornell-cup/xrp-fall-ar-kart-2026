@@ -45,7 +45,7 @@ YAW_CORRECTION_PORT = 5007 # XRP listens for yaw correction from Laptop
 # ============================================================
 JOYSTICK_DEADBAND = 0.05
 
-MAX_DRIVE_RPM = 100
+MAX_DRIVE_RPM = 7
 
 # Throttle ramping (brownout protection) — limits how fast the motor command
 # can change. 4.0 per second means 0->full takes 250 ms, which avoids the
@@ -58,12 +58,12 @@ THROTTLE_RAMP_PER_SEC = 3.0
 # so this is the most a new command waits on the XRP before it's applied
 LOOP_SLEEP_MS = 1
 
-ENCODER_PERCENT_OFFSET = 1/0.85 # based on empirical data gathered (the encoders seem to report about 15% less distance than acutally traveled)
+ENCODER_PERCENT_OFFSET = 1/0.95 # based on empirical data gathered (the encoders seem to report about 15% less distance than acutally traveled)
 
 # From xrpgodot.py (SERVO_CENTER / SERVO_RANGE), the values the kart
 # currently drives straight with.
-STEER_CENTER_DEG = 100.0
-STEER_RANGE_DEG = 75.0
+STEER_CENTER_DEG = 90.0
+STEER_RANGE_DEG = 45.0
 
 GAMEPAD_HEADER = 0x55
 # The first laptop to send gamepad packets gets control. Packets from any other
@@ -229,6 +229,13 @@ HEADING_OFFSET = math.pi/2 # 90 degrees
 
 def wrap_pi(a):
     return (a + math.pi) % (2.0 * math.pi) - math.pi
+
+def clamp(v, lo, hi):
+    if v < lo:
+        return lo
+    if v > hi:
+        return hi
+    return v
 
 def imu_heading_rad():
     global HEADING_OFFSET
@@ -568,7 +575,7 @@ def main():
 
     log_info("LOOP", "streaming at {} Hz to {}".format(SEND_RATE_HZ, dest))
 
-    # yaw_sock = create_yaw_socket()
+    yaw_sock = create_yaw_socket()
 
     while True:
         now = time.ticks_ms()
@@ -655,7 +662,7 @@ def main():
         # ---- Receive gamepad ----
         try:
             while True:
-                # process_absolute_yaw(yaw_sock)
+                process_absolute_yaw(yaw_sock)
 
 
                 data, addr = sock_recv.recvfrom(64)
@@ -701,7 +708,7 @@ def main():
                 motor_three.set_speed(0.0)
                 motor_four.set_speed(0.0)
             else:
-                target_rpm = applied_throttle * MAX_DRIVE_RPM
+                target_rpm = clamp(applied_throttle, -1.0, 1.0) * MAX_DRIVE_RPM
                 motor_three.set_speed(target_rpm)
                 motor_four.set_speed(target_rpm)
 
@@ -715,8 +722,8 @@ def main():
         if time.ticks_diff(now, last_send) >= send_interval_ms:
             last_send = now
             try:
-                enc_l = motor_three.get_position()
-                enc_r = motor_four.get_position()
+                enc_l = motor_three.get_position()*ENCODER_PERCENT_OFFSET
+                enc_r = motor_four.get_position()*ENCODER_PERCENT_OFFSET
                 motor_three.reset_encoder_position()
                 motor_four.reset_encoder_position()
                 heading = imu_heading_rad()

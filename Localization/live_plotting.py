@@ -106,8 +106,8 @@ fig.canvas.manager.set_window_title("XRP live (x, y)")
 if CAMERA_ORIENTATION:
     ax.set_xlim(Y_RANGE[1], Y_RANGE[0])      # +y to the left
     ax.set_ylim(X_RANGE)                     # +x up
-    ax.set_xlabel("world y (m)  ← +y")
-    ax.set_ylabel("world x (m)  ↑ +x")
+    ax.set_xlabel("world y (m) +y")
+    ax.set_ylabel("world x (m) +x")
 else:
     ax.set_xlim(X_RANGE); ax.set_ylim(Y_RANGE)
     ax.set_xlabel("world x (m)"); ax.set_ylabel("world y (m)")

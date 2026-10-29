@@ -101,7 +101,9 @@ PI_CANDIDATES = [a for a in sys.argv[1:2] if a] + [
     "cornellcup2.local",   # works on any network (mDNS name)
     "10.42.0.1",           # Pi hotspot
     "192.168.4.95",        # last known CornellCup-Web address
+    "192.168.0.138",       # last known AR-Kart address
 ]
+
 RTSP_PORT = 8554
 
 SENSOR_PORT = 5005
@@ -114,15 +116,16 @@ GODOT_AR_TAGS_PORT = 6002    # NEW: AR overlay events
 GAMEPAD_RELAY_PORT = 4003
 XRP_GAMEPAD_PORT = 4002
 
-XRP_IP = "192.168.4.8"
+# XRP_IP = "192.168.4.8" # for CornellCup-Web
+XRP_IP = "192.168.0.191" # for AR-Kart
 YAW_CORRECTION_PORT = 5007
 
 yaw_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
-PI_IP = sys.argv[1] if len(sys.argv) > 1 else "192.168.4.95"
+# PI_IP = sys.argv[1] if len(sys.argv) > 1 else "192.168.4.95"
 
-# PI_IP = sys.argv[1] if len(sys.argv) > 1 else "192.168.0.193"
+PI_IP = sys.argv[1] if len(sys.argv) > 1 else "192.168.0.193"
 
 RTSP_URL = f"rtsp://{PI_IP}:8554/cam"
 
@@ -133,7 +136,7 @@ CSV_LOG_PATH = "fusion_log.csv"
 # only against the raw tag pose, which is useful for debugging.
 APPLY_CAMERA_CORRECTION = True
 
-TAG_FRESHNESS_S = 0.2
+TAG_FRESHNESS_S = 0.3
 
 # How often the status lines print (seconds).
 PRINT_EVERY_S = 2.0
@@ -183,7 +186,7 @@ FRAME_H_DEFAULT = 480
 # Frame transforms (from pi_detect_aprilTag.py)
 # ============================================================
 
-_theta_mount = np.radians(0)
+_theta_mount = np.radians(5)
 s_theta = np.sin(_theta_mount); c_theta = np.cos(_theta_mount)
 h1, l1, d = 0.03047, 0.007625, 0.02792
 trans_R_C = np.array([
