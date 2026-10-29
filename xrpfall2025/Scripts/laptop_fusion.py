@@ -21,6 +21,10 @@ import struct
 import threading
 from contextlib import contextmanager
 
+# Flush every printed line, so the game's fusion.log fills in as fusion runs
+# (when its output goes to a pipe instead of a terminal, Python buffers it)
+sys.stdout.reconfigure(line_buffering=True)
+
 import numpy as np
 import cv2
 from pupil_apriltags import Detector
@@ -59,6 +63,7 @@ Architecture:
 # its own hotspot or is on CornellCup-Web. An address passed on the
 # command line (Godot's PI_IP) is tried first.
 PI_CANDIDATES = [a for a in sys.argv[1:2] if a] + [
+    "192.168.0.138",
     "cornellcup2.local",   # works on any network (mDNS name)
     "10.42.0.1",           # Pi hotspot
     "192.168.4.95",        # last known CornellCup-Web address

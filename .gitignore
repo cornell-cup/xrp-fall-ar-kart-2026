@@ -30,3 +30,5 @@ __pycache__/
 *.pyc
 xrpfall2025/apriltag_detector
 xrpfall2025/laptop_fusion
+xrpfall2025/fusion/
+xrpfall2025/fusion.log

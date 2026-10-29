@@ -47,6 +47,25 @@ var _last_gamepad_packet: PackedByteArray = PackedByteArray()
 const GAMEPAD_HEADER: int = 0x55
 const DEADZONE: float = 0.08
 
+# ---- Gamepad latency measurement ----
+# Every gamepad packet carries a sequence number (0-255); the XRP sends
+# "ACK,<seq>" straight back on this port when it applies the packet. The time
+# between sending and the ACK is the round trip game -> fusion -> WiFi -> XRP -> game
+const LATENCY_PORT: int = 6003
+# A packet with no ACK after this long counts as lost
+const ACK_LOST_AFTER_MS: int = 1000
+var udp_latency: PacketPeerUDP = PacketPeerUDP.new()
+var _gamepad_seq: int = 0
+var _seq_sent_ms: Dictionary = {}   # seq -> Time.get_ticks_msec() when sent
+# Stats since the last status line (every 5 s), and the latest values for a HUD
+var _rtt_count: int = 0
+var _rtt_sum_ms: int = 0
+var _rtt_max_ms: int = 0
+var _acks_lost: int = 0
+var _packets_sent: int = 0
+var latency_avg_ms: float = -1.0
+var latency_max_ms: int = -1
+
 # ---- Video TCP ----
 var tcp_client: StreamPeerTCP = StreamPeerTCP.new()
 var tcp_connected: bool = false
@@ -61,6 +80,18 @@ const AR_LABEL_PIXEL_SIZE: float = 0.2
 
 # ---- Fusion process ----
 var fusion_pid: int = -1
+# Python with fusion's packages (numpy, opencv, pupil_apriltags), used to run
+# Scripts/laptop_fusion.py directly. Empty = use $AR_KART_PYTHON, or look for
+# the ar-kart conda env in the usual places
+const FUSION_PYTHON: String = ""
+# How long fusion must stay running to count as started; if it exits sooner
+# (e.g. a missing package) the next way of launching it is tried
+const FUSION_STARTUP_CHECK_S: float = 3.0
+# Fusion's output (prints, errors) is written here, next to the project
+const FUSION_LOG_FILE: String = "fusion.log"
+var _fusion_stdout: FileAccess = null
+var _fusion_stderr: FileAccess = null
+var _fusion_log: FileAccess = null
 
 # ---- Latest video frame ----
 var video_texture: ImageTexture = null
@@ -88,19 +119,29 @@ var ar_tag_labels: Dictionary = {}
 var _ar_attach_timer: float = 0.0
 
 # Real camera intrinsics in pixels, at the resolution they were calibrated at.
-# Must match Camera_params in laptop_fusion.py
+# The calibration was done with the camera mounted upside down; it's now mounted
+# the right way up, so the optical center is the old one rotated 180°
+# (cx -> 640 - cx, cy -> 480 - cy). fx/fy don't change. Should match
+# Camera_params in laptop_fusion.py
 const CAM_FX: float = 1268.28550
 const CAM_FY: float = 1254.14697
-const CAM_CX: float = 361.108041
-const CAM_CY: float = 297.975274
+const CAM_CX: float = 640.0 - 361.108041
+const CAM_CY: float = 480.0 - 297.975274
 const CAM_CALIB_W: float = 640.0
 const CAM_CALIB_H: float = 480.0
-# The Pi camera is mounted upside down (the picture-in-picture preview flips it
-# both ways too), so the AR backdrop rotates the feed 180°
-const CAM_UPSIDE_DOWN: bool = true
+# Set true if the Pi camera is mounted upside down, to rotate the AR backdrop 180°
+# (and flip the picture-in-picture preview in camera_feed.gd to match)
+const CAM_UPSIDE_DOWN: bool = false
 # How far the real camera is tilted up from level (negative = down). The 25° is
 # _theta_mount in laptop_fusion.py; it points up so it can see the tags on the gates
 const CAM_TILT_UP_DEG: float = 25.0
+# Where the real camera's lens sits on the kart, in metres: height above the
+# floor, distance ahead of the kart's center, and sideways (positive = right).
+# Measure these on the robot; the defaults are where the camera sat on the kart model
+const CAM_HEIGHT_M: float = 0.073
+const CAM_FORWARD_M: float = 0.061
+const CAM_SIDEWAYS_M: float = 0.0
+
 
 # In AR mode the real floor and gates are in the video, so these virtual pieces
 # are only drawn on the minimap (render layer 2) and not on the kart camera (layer 1)
@@ -124,12 +165,51 @@ func _get_base_dir() -> String:
 		return OS.get_executable_path().get_base_dir()
 
 
-func _get_fusion_path() -> String:
+# Ways to launch fusion, in the order to try them. Each is
+# {"name", "path", "args"}. In the editor, running laptop_fusion.py directly
+# comes first (no rebuild needed after editing fusion); an exported game uses
+# the folder build (fusion/laptop_fusion, PyInstaller --onedir) first
+func _fusion_launch_options() -> Array:
 	var base = _get_base_dir()
-	if OS.get_name() == "Windows":
-		return base.path_join("laptop_fusion.exe")
+	var options = []
+
+	var python = _find_fusion_python()
+	var script = base.path_join("Scripts").path_join("laptop_fusion.py")
+	var python_option = null
+	if python != "" and FileAccess.file_exists(script):
+		# -u: unbuffered, so its output reaches fusion.log right away
+		python_option = {"name": "Python script (%s)" % python, "path": python, "args": ["-u", script, PI_IP]}
+
+	var exe = "laptop_fusion.exe" if OS.get_name() == "Windows" else "laptop_fusion"
+	var folder_build = base.path_join("fusion").path_join(exe)
+	var folder_option = null
+	if FileAccess.file_exists(folder_build):
+		folder_option = {"name": "folder build", "path": folder_build, "args": [PI_IP]}
+
+	if OS.has_feature("editor"):
+		options = [python_option, folder_option]
 	else:
-		return base.path_join("laptop_fusion")
+		options = [folder_option, python_option]
+	return options.filter(func(o): return o != null)
+
+
+# A Python that can run laptop_fusion.py: FUSION_PYTHON, then $AR_KART_PYTHON,
+# then the ar-kart conda env in the usual install locations
+func _find_fusion_python() -> String:
+	var candidates = []
+	if FUSION_PYTHON != "":
+		candidates.append(FUSION_PYTHON)
+	if OS.get_environment("AR_KART_PYTHON") != "":
+		candidates.append(OS.get_environment("AR_KART_PYTHON"))
+	var windows = OS.get_name() == "Windows"
+	var home = OS.get_environment("USERPROFILE" if windows else "HOME")
+	for conda in ["anaconda3", "miniconda3", "miniforge3", "opt/anaconda3", "opt/miniconda3"]:
+		var env_dir = home.path_join(conda).path_join("envs").path_join("ar-kart")
+		candidates.append(env_dir.path_join("python.exe") if windows else env_dir.path_join("bin").path_join("python"))
+	for candidate in candidates:
+		if FileAccess.file_exists(candidate):
+			return candidate
+	return ""
 
 
 func _ready() -> void:
@@ -146,6 +226,11 @@ func _ready() -> void:
 		push_error("[NetworkReceiver] Failed to bind AR tags port %d (error %d)" % [AR_TAGS_PORT, err_ar])
 	else:
 		print("[NetworkReceiver] Listening for AR tags on UDP %d" % AR_TAGS_PORT)
+
+	# Gamepad ACKs from the XRP (latency measurement)
+	var err_lat = udp_latency.bind(LATENCY_PORT, "0.0.0.0")
+	if err_lat != OK:
+		push_error("[NetworkReceiver] Failed to bind latency port %d (error %d)" % [LATENCY_PORT, err_lat])
 
 	# Gamepad output
 	udp_gamepad.set_dest_address(GAMEPAD_RELAY_HOST, GAMEPAD_RELAY_PORT)
@@ -166,6 +251,8 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
+	_drain_fusion_output()
+	_process_latency()
 	_process_tcp_status()
 	_process_video()
 	_process_pose()
@@ -205,7 +292,12 @@ func _process(_delta: float) -> void:
 			StreamPeerTCP.STATUS_CONNECTING: tcp_status_name = "CONNECTING"
 			StreamPeerTCP.STATUS_CONNECTED: tcp_status_name = "CONNECTED"
 			StreamPeerTCP.STATUS_ERROR: tcp_status_name = "ERROR"
-		print("[NetworkReceiver] Status - TCP: %s | Pose: %s | Gamepad: %s | Video: %s | AR: %s | Frames: %d/%d" % [
+		var latency_text = "no ACKs"
+		if _rtt_count > 0:
+			latency_avg_ms = float(_rtt_sum_ms) / _rtt_count
+			latency_max_ms = _rtt_max_ms
+			latency_text = "avg %.0f ms, max %d ms" % [latency_avg_ms, latency_max_ms]
+		print("[NetworkReceiver] Status - TCP: %s | Pose: %s | Gamepad: %s | Video: %s | AR: %s | Frames: %d/%d | Gamepad round trip: %s, %d/%d lost" % [
 			tcp_status_name,
 			"active" if xrp_connected else "waiting",
 			"connected" if gamepad_connected else "none",
@@ -213,9 +305,15 @@ func _process(_delta: float) -> void:
 			"on" if ar_enabled else "off",
 			_frames_shown_this_period,
 			_frames_dropped_this_period,
+			latency_text, _acks_lost, _packets_sent,
 		])
 		_frames_shown_this_period = 0
 		_frames_dropped_this_period = 0
+		_rtt_count = 0
+		_rtt_sum_ms = 0
+		_rtt_max_ms = 0
+		_acks_lost = 0
+		_packets_sent = 0
 
 
 # ============================================================
@@ -225,24 +323,67 @@ func _process(_delta: float) -> void:
 func _start_fusion() -> void:
 	_kill_old_fusion()
 	await get_tree().create_timer(1.0).timeout
-	var fusion_path = _get_fusion_path()
-	if not FileAccess.file_exists(fusion_path):
-		push_error("[NetworkReceiver] Fusion binary not found: %s" % fusion_path)
+
+	var log_path = _get_base_dir().path_join(FUSION_LOG_FILE)
+	_fusion_log = FileAccess.open(log_path, FileAccess.WRITE)
+
+	var options = _fusion_launch_options()
+	if options.is_empty():
+		push_error("[NetworkReceiver] No way to start fusion: no ar-kart Python found and no fusion/ folder build (see README)")
 		return
-	if OS.get_name() == "macOS":
-		OS.execute("xattr", ["-rd", "com.apple.quarantine", fusion_path])
-		OS.execute("chmod", ["+x", fusion_path])
-	fusion_pid = OS.create_process(fusion_path, [PI_IP])
-	if fusion_pid > 0:
-		print("[NetworkReceiver] Fusion started (PID: %d)" % fusion_pid)
-	else:
-		push_error("[NetworkReceiver] Failed to start fusion binary")
+
+	for option in options:
+		if option["name"] == "folder build" and OS.get_name() == "macOS":
+			# clear the download quarantine on the whole folder (its libraries are in _internal)
+			OS.execute("xattr", ["-rd", "com.apple.quarantine", option["path"].get_base_dir()])
+			OS.execute("chmod", ["+x", option["path"]])
+
+		_log_fusion_line("=== starting fusion: %s ===" % option["name"])
+		var info = OS.execute_with_pipe(option["path"], option["args"], false)
+		if info.is_empty():
+			_log_fusion_line("=== could not launch ===")
+			continue
+		fusion_pid = info["pid"]
+		_fusion_stdout = info["stdio"]
+		_fusion_stderr = info["stderr"]
+
+		await get_tree().create_timer(FUSION_STARTUP_CHECK_S).timeout
+		if OS.is_process_running(fusion_pid):
+			print("[NetworkReceiver] Fusion started: %s (PID: %d), output in %s" % [option["name"], fusion_pid, log_path])
+			return
+		_drain_fusion_output()
+		push_warning("[NetworkReceiver] Fusion (%s) exited right away, see %s; trying the next way" % [option["name"], log_path])
+		fusion_pid = -1
+
+	push_error("[NetworkReceiver] Fusion failed to start every way it was tried, see %s" % log_path)
+
+
+# Copies whatever fusion has printed into fusion.log. Called every frame: the
+# output pipes must be kept drained or fusion would block once they fill
+func _drain_fusion_output() -> void:
+	for pipe in [_fusion_stdout, _fusion_stderr]:
+		if pipe == null:
+			continue
+		var data = pipe.get_buffer(65536)
+		if data.size() > 0 and _fusion_log != null:
+			_fusion_log.store_buffer(data)
+			_fusion_log.flush()
+
+
+func _log_fusion_line(line: String) -> void:
+	if _fusion_log != null:
+		_fusion_log.store_line(line)
+		_fusion_log.flush()
 
 
 func _kill_old_fusion() -> void:
 	if OS.get_name() == "Windows":
 		OS.execute("taskkill", ["/F", "/IM", "laptop_fusion.exe"])
+		# the Python script runs as python.exe, so match it by its command line
+		OS.execute("powershell", ["-NoProfile", "-Command",
+			"Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*laptop_fusion.py*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"])
 	else:
+		# matches both the folder build and "python ... laptop_fusion.py"
 		OS.execute("pkill", ["-f", "laptop_fusion"])
 
 
@@ -258,10 +399,15 @@ func _cleanup() -> void:
 		print("[NetworkReceiver] Fusion stopped (PID: %d)" % fusion_pid)
 		fusion_pid = -1
 	_kill_old_fusion()
+	_drain_fusion_output()
+	if _fusion_log != null:
+		_fusion_log.close()
+		_fusion_log = null
 	tcp_client.disconnect_from_host()
 	tcp_connected = false
 	udp_pose_in.close()
 	udp_ar_tags.close()
+	udp_latency.close()
 	udp_gamepad.close()
 
 
@@ -311,7 +457,8 @@ func _try_attach_ar() -> bool:
 		return false
 	ar_camera = cam
 	ar_tag_labels.clear()  # old labels were freed along with the old backdrop
-	_match_real_camera(cam)
+	_place_camera(cam)
+	_hide_own_kart(cam)
 	_setup_camera_backdrop(cam)
 	_update_ar_camera_fov()
 	_hide_world()
@@ -325,14 +472,62 @@ func _principal_point() -> Vector2:
 	return Vector2.ONE - pp if CAM_UPSIDE_DOWN else pp
 
 
-# Tilts the kart camera to match the real one, keeping its position on the kart model
-func _match_real_camera(cam: Camera3D) -> void:
-	var forward = -cam.global_transform.basis.z
+# Puts the kart camera where the real one is (CAM_HEIGHT_M / CAM_FORWARD_M /
+# CAM_SIDEWAYS_M from the bottom-center of the kart) and tilts it like the real one.
+# It stays parented to the kart, so it follows it from then on
+func _place_camera(cam: Camera3D) -> void:
+	var body = _find_kart_body(cam)
+	var forward: Vector3
+	if body != null:
+		forward = -body.global_transform.basis.z
+	else:
+		forward = -cam.global_transform.basis.z
 	forward.y = 0
 	forward = forward.normalized()
+
+	if body != null:
+		var units = _units_per_metre()
+		var bottom = body.global_position
+		var shape = body.get_node_or_null("CollisionShape3D") as CollisionShape3D
+		if shape != null and shape.shape is BoxShape3D:
+			bottom.y += shape.position.y - (shape.shape as BoxShape3D).size.y / 2
+		var right = forward.cross(Vector3.UP)
+		cam.global_position = bottom \
+			+ Vector3.UP * CAM_HEIGHT_M * units \
+			+ forward * CAM_FORWARD_M * units \
+			+ right * CAM_SIDEWAYS_M * units
+
 	var tilt = deg_to_rad(CAM_TILT_UP_DEG)
 	var look = forward * cos(tilt) + Vector3.UP * sin(tilt)
 	cam.global_basis = Basis.looking_at(look, Vector3.UP)
+
+
+# The kart's physics body the camera rides on
+func _find_kart_body(node: Node) -> CharacterBody3D:
+	var n = node.get_parent()
+	while n != null:
+		if n is CharacterBody3D:
+			return n
+		n = n.get_parent()
+	return null
+
+
+# World units per metre: tracks are built in metres and scaled up by the track loader
+func _units_per_metre() -> float:
+	var scene = get_tree().current_scene
+	var loader = scene.get_node_or_null("TrackLoader") if scene else null
+	if loader != null and loader.get("scale") != null:
+		return float(loader.get("scale"))
+	return 50.0
+
+
+# The camera rides on the player's own kart model, whose wheels and body would
+# block part of the view. In real life it's the robot itself, so hide it from
+# the kart camera (and from shadows). Its minimap icons are on another layer
+func _hide_own_kart(cam: Camera3D) -> void:
+	var model = cam.get_parent()
+	for node in model.find_children("*", "VisualInstance3D", true, false):
+		node.layers &= ~1
 
 
 func _setup_camera_backdrop(cam: Camera3D) -> void:
@@ -364,6 +559,7 @@ func _setup_camera_backdrop(cam: Camera3D) -> void:
 	ar_backdrop_mesh.mesh = mesh
 	ar_backdrop_mesh.material_override = mat
 	ar_backdrop_mesh.name = "ARCameraBackdrop"
+	ar_backdrop_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	cam.add_child(ar_backdrop_mesh)
 	# Shift the quad so the camera's optical center sits straight ahead of the game camera
 	var pp = _principal_point()
@@ -462,6 +658,7 @@ func _update_ar_labels(tags: Array) -> void:
 
 func _create_tag_label(text: String) -> Label3D:
 	var label = Label3D.new()
+	label.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	label.text = text
 	label.font_size = 64
 	label.modulate = Color(1, 0.9, 0.2)
@@ -648,20 +845,47 @@ func _process_gamepad_send(delta: float) -> void:
 # Sends the stick state right away when it changed, otherwise only as a keepalive.
 # Returns true if a packet went out
 func _send_gamepad(ly: float, rx: float, delta: float) -> bool:
-	var packet := PackedByteArray()
-	packet.append(GAMEPAD_HEADER)
-	packet.append(4)
-	packet.append(1); packet.append(_encode_axis(ly))
-	packet.append(2); packet.append(_encode_axis(rx))
+	# Change detection only looks at the stick values, not the sequence number
+	var axes := PackedByteArray([_encode_axis(ly), _encode_axis(rx)])
 
 	gamepad_send_timer += delta
-	if packet == _last_gamepad_packet and gamepad_send_timer < 1.0 / GAMEPAD_KEEPALIVE_HZ:
+	if axes == _last_gamepad_packet and gamepad_send_timer < 1.0 / GAMEPAD_KEEPALIVE_HZ:
 		return false
 
 	gamepad_send_timer = 0.0
-	_last_gamepad_packet = packet
+	_last_gamepad_packet = axes
+	_gamepad_seq = (_gamepad_seq + 1) % 256
+	var packet := PackedByteArray()
+	packet.append(GAMEPAD_HEADER)
+	packet.append(6)
+	packet.append(1); packet.append(axes[0])
+	packet.append(2); packet.append(axes[1])
+	packet.append(3); packet.append(_gamepad_seq)   # older XRP scripts ignore idx 3
+	_seq_sent_ms[_gamepad_seq] = Time.get_ticks_msec()
+	_packets_sent += 1
 	udp_gamepad.put_packet(packet)
 	return true
+
+
+# Reads the XRP's ACKs and records each packet's round-trip time
+func _process_latency() -> void:
+	var now = Time.get_ticks_msec()
+	while udp_latency.get_available_packet_count() > 0:
+		var parts = udp_latency.get_packet().get_string_from_utf8().split(",")
+		if parts.size() != 2 or parts[0] != "ACK":
+			continue
+		var seq = int(parts[1])
+		if _seq_sent_ms.has(seq):
+			var rtt = now - int(_seq_sent_ms[seq])
+			_seq_sent_ms.erase(seq)
+			_rtt_count += 1
+			_rtt_sum_ms += rtt
+			_rtt_max_ms = max(_rtt_max_ms, rtt)
+	# no ACK for a while = lost (also clears entries before the sequence number wraps around)
+	for seq in _seq_sent_ms.keys():
+		if now - int(_seq_sent_ms[seq]) > ACK_LOST_AFTER_MS:
+			_seq_sent_ms.erase(seq)
+			_acks_lost += 1
 
 
 # True while a race is loaded and its countdown hasn't finished yet
