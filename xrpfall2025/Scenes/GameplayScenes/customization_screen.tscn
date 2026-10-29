@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://cexyth8mmkpa5"]
+[gd_scene load_steps=12 format=3 uid="uid://cexyth8mmkpa5"]
 
 [ext_resource type="Theme" uid="uid://fkat5bpgiklk" path="res://ScreenMainTheme.tres" id="1_qqu8f"]
 [ext_resource type="Theme" uid="uid://bqodo202t6svm" path="res://UI/button_theme.tres" id="1_upek8"]
@@ -17,6 +17,18 @@ border_width_top = 12
 border_width_right = 12
 border_width_bottom = 12
 border_color = Color(0.901961, 0.541176, 0, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q7vb7"]
+bg_color = Color(0.4, 0.8, 1, 1)
+border_width_left = 12
+border_width_top = 12
+border_width_right = 12
+border_width_bottom = 12
+border_color = Color(0, 0.466667, 0.8, 1)
 corner_radius_top_left = 24
 corner_radius_top_right = 24
 corner_radius_bottom_right = 24
@@ -225,7 +237,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_l8wsh")
 [node name="RacePanel" type="PanelContainer" parent="MiddlePanels"]
 custom_minimum_size = Vector2(350, 400)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_l8wsh")
+theme_override_styles/panel = SubResource("StyleBoxFlat_q7vb7")
 
 [connection signal="pressed" from="ConfirmButton" to="." method="_on_confirm_button_pressed"]
 [connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
