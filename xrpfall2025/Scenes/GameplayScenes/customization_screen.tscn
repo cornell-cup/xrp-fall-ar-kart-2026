@@ -8,7 +8,6 @@
 [ext_resource type="FontFile" uid="uid://b67jbu37t1tvi" path="res://UI/Kenney Future Narrow.ttf" id="5_wqq3l"]
 [ext_resource type="ButtonGroup" uid="uid://dqoxyk1apmlvs" path="res://UI/map_buttons.tres" id="7_q7vb7"]
 [ext_resource type="Texture2D" uid="uid://d0nqsgbhxp72n" path="res://Assets/Images/new-2026/kart-clear-PNG.png" id="10_q7vb7"]
-[ext_resource type="Texture2D" uid="uid://dbpsfbshfs0m7" path="res://Assets/Images/new-2026/island-clear-PNG.png" id="11_qqu8f"]
 [ext_resource type="Theme" uid="uid://bee3jtcppvowa" path="res://RedTextTheme.tres" id="12_q5g2k"]
 [ext_resource type="Texture2D" uid="uid://bfkjk87oq7wdr" path="res://Assets/Images/bluebutton.png" id="14_wqq3l"]
 
@@ -23,6 +22,18 @@ corner_radius_top_left = 24
 corner_radius_top_right = 24
 corner_radius_bottom_right = 24
 corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q5g2k"]
+bg_color = Color(1, 0.701961, 0, 1)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+border_color = Color(0.284563, 0.161529, 0.120225, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q7vb7"]
 bg_color = Color(0.4, 0.8, 1, 1)
@@ -262,7 +273,12 @@ theme_override_font_sizes/font_size = 40
 text = "SELECT KART"
 horizontal_alignment = 1
 
-[node name="TextureRect" type="TextureRect" parent="MiddlePanels/KartPanel/VBoxContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="MiddlePanels/KartPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_q5g2k")
+
+[node name="TextureRect" type="TextureRect" parent="MiddlePanels/KartPanel/VBoxContainer/PanelContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 texture = ExtResource("10_q7vb7")
@@ -278,27 +294,6 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_q7vb7")
 custom_minimum_size = Vector2(350, 400)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_qqu8f")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="MiddlePanels/MapPanel"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="MiddlePanels/MapPanel/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(0.290196, 0.145098, 0, 1)
-theme_override_colors/font_outline_color = Color(0.290196, 0.145098, 0, 1)
-theme_override_constants/shadow_offset_y = 6
-theme_override_constants/outline_size = 12
-theme_override_font_sizes/font_size = 40
-text = "SELECT MAP"
-horizontal_alignment = 1
-
-[node name="TextureRect" type="TextureRect" parent="MiddlePanels/MapPanel/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-texture = ExtResource("11_qqu8f")
-expand_mode = 1
-stretch_mode = 5
 
 [connection signal="pressed" from="ConfirmButton" to="." method="_on_confirm_button_pressed"]
 [connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
