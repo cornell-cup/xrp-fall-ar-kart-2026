@@ -327,6 +327,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_default_cursor_shape = 2
 theme_override_font_sizes/font_size = 70
 theme_override_styles/focus = SubResource("StyleBoxEmpty_q5g2k")
 theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_hys36")
