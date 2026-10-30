@@ -46,3 +46,7 @@ func save_customization():
 	var file = FileAccess.open("user://customization.json", FileAccess.WRITE)
 	file.store_string(JSON.stringify(save_data))
 	file.close()
+
+
+func _on_race_button_pressed() -> void:
+	pass # Replace with function body.
