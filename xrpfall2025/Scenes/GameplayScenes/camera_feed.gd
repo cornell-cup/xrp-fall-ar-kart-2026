@@ -10,10 +10,8 @@ func _ready() -> void:
 	
 	video_rect.position = Vector2(15, window_size.y - pip_size.y - 15)
 	video_rect.size = pip_size
-	# the camera is mounted the right way up, so no flipping
-	# (set both true if it's ever mounted upside down again, with CAM_UPSIDE_DOWN in NetworkReceiver.gd)
-	video_rect.flip_v = false
-	video_rect.flip_h = false
+	video_rect.flip_v = true
+	video_rect.flip_h = true
 	video_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	video_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 

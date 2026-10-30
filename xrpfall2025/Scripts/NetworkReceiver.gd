@@ -119,19 +119,16 @@ var ar_tag_labels: Dictionary = {}
 var _ar_attach_timer: float = 0.0
 
 # Real camera intrinsics in pixels, at the resolution they were calibrated at.
-# The calibration was done with the camera mounted upside down; it's now mounted
-# the right way up, so the optical center is the old one rotated 180°
-# (cx -> 640 - cx, cy -> 480 - cy). fx/fy don't change. Should match
-# Camera_params in laptop_fusion.py
+# Must match Camera_params in laptop_fusion.py
 const CAM_FX: float = 1268.28550
 const CAM_FY: float = 1254.14697
-const CAM_CX: float = 640.0 - 361.108041
-const CAM_CY: float = 480.0 - 297.975274
+const CAM_CX: float = 361.108041
+const CAM_CY: float = 297.975274
 const CAM_CALIB_W: float = 640.0
 const CAM_CALIB_H: float = 480.0
-# Set true if the Pi camera is mounted upside down, to rotate the AR backdrop 180°
-# (and flip the picture-in-picture preview in camera_feed.gd to match)
-const CAM_UPSIDE_DOWN: bool = false
+# The Pi camera's picture comes out upside down (the picture-in-picture preview
+# flips it both ways too), so the AR backdrop rotates the feed 180°
+const CAM_UPSIDE_DOWN: bool = true
 # How far the real camera is tilted up from level (negative = down). The 25° is
 # _theta_mount in laptop_fusion.py; it points up so it can see the tags on the gates
 const CAM_TILT_UP_DEG: float = 25.0
