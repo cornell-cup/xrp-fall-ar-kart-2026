@@ -53,7 +53,12 @@ corner_radius_bottom_left = 24
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hys36"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mntij"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mntij"]
+bg_color = Color(0.810404, 0.91131, 0.849722, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qqu8f"]
 bg_color = Color(0.2, 0.6, 1, 1)
@@ -331,7 +336,7 @@ mouse_default_cursor_shape = 2
 theme_override_font_sizes/font_size = 70
 theme_override_styles/focus = SubResource("StyleBoxEmpty_q5g2k")
 theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_hys36")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_mntij")
+theme_override_styles/hover = SubResource("StyleBoxFlat_mntij")
 flat = true
 
 [node name="Label" type="Label" parent="MiddlePanels/RacePanel/VBoxContainer/TextureRect/RaceButton"]
