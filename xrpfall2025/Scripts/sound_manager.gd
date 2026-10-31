@@ -1,8 +1,8 @@
 extends Node
 
-@export var click_sfx: AudioStream = preload("res://Assets/Sound/SFX/YOUR_CLICK_FILE.mp3")
-@export var race_start_sfx: AudioStream = preload("res://Assets/Sound/SFX/YOUR_RACE_FILE.mp3")
-@export var match_finish_sfx: AudioStream = preload("res://Assets/Sound/SFX/YOUR_FINISH_FILE.mp3")
+@export var click_sfx: AudioStream = preload("res://Assets/Sound/SFX/UIClick.mp3")
+@export var race_start_sfx: AudioStream = preload("res://Assets/Sound/SFX/RaceButtonClick.mp3")
+@export var match_finish_sfx: AudioStream = preload("res://Assets/Sound/SFX/GameComplete.mp3")
 
 var _click_player: AudioStreamPlayer
 var _event_player: AudioStreamPlayer
