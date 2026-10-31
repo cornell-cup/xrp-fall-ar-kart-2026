@@ -53,11 +53,16 @@ JOYSTICK_DEADBAND = 0.05
 MAX_DRIVE_RPM = 100
 
 # Throttle ramping (brownout protection) — limits how fast the motor command
-# can change. 4.0 per second means 0->full takes 250 ms, which avoids the
+# can change. 3.0 per second means 0->full takes ~330 ms, which avoids the
 # inrush-current spikes that browned out the power rail. Measured in time, not
 # loop passes, so it doesn't change with LOOP_SLEEP_MS.
 # Larger value = snappier response but higher current spikes.
-THROTTLE_RAMP_PER_SEC = 4.0
+THROTTLE_RAMP_PER_SEC = 3.0   # 
+# The same, but for slowing down and stopping, so letting go of the stick stops
+# the kart in ~170 ms instead of ~330 ms. The brownouts came from speeding up;
+# braking draws less, but if the LOAD log lines show bigger voltage dips when
+# stopping, lower this toward THROTTLE_RAMP_PER_SEC
+THROTTLE_RAMP_DOWN_PER_SEC = 6.0
 
 # Main loop pause between passes. Gamepad packets are read once per pass,
 # so this is the most a new command waits on the XRP before it's applied
@@ -73,9 +78,10 @@ STEER_RANGE_DEG = 75.0
 
 # Steering ramping (brownout protection) — limits how fast the servo is told
 # to move, since a servo snapping across its range draws a burst of current.
-# 500 deg/s means center -> full lock (75 deg) takes 150 ms, and full left ->
-# full right (150 deg) takes 300 ms. Larger value = snappier steering.
-STEER_RAMP_DEG_PER_SEC = 500.0
+# 800 deg/s means center -> full lock (75 deg) takes ~95 ms, and full left ->
+# full right (150 deg) takes ~190 ms, close to how fast the servo itself turns.
+# Larger value = snappier steering.
+STEER_RAMP_DEG_PER_SEC = 800.0
 
 GAMEPAD_HEADER = 0x55
 # The first laptop to send gamepad packets gets control. Packets from any other
@@ -593,8 +599,8 @@ def create_sockets():
 # ============================================================
 _log_init()
 _init_battery_sense()
-log_info("BOOT", "starting xrp_raw_sensors.py (MAX_RPM={}, ramp={}/s, sensors {} Hz)".format(
-    MAX_DRIVE_RPM, THROTTLE_RAMP_PER_SEC, SEND_RATE_HZ))
+log_info("BOOT", "starting xrp_raw_sensors.py (MAX_RPM={}, ramp={}/s up {}/s down, steer {} deg/s, sensors {} Hz)".format(
+    MAX_DRIVE_RPM, THROTTLE_RAMP_PER_SEC, THROTTLE_RAMP_DOWN_PER_SEC, STEER_RAMP_DEG_PER_SEC, SEND_RATE_HZ))
 log_info("BOOT", "reset cause={} battery={} previous run {}".format(
     reset_cause_name(), battery_str() + " (" + battery_source + ")",
     "unknown (no log)" if _previous_clean is None else
@@ -704,12 +710,13 @@ def main():
     gp_stops = 0
     last_gp_rx = None
 
-    # Encoder positions at the last sensor packet. Each packet sends the change
-    # since then, worked out here instead of by resetting the encoders: XRPLib's
-    # speed controller measures speed from the encoder count every 20 ms, and
-    # resetting it underneath that made the motors ignore the commanded speed
-    last_enc_l = motor_three.get_position()
-    last_enc_r = motor_four.get_position()
+    # Each sensor packet carries the encoders' running totals and a packet number,
+    # and the laptop works out the change itself. A packet Wi-Fi drops then loses
+    # no distance (the next one's totals include it), and late or repeated packets
+    # can be spotted. (The encoders are never reset while running: XRPLib's speed
+    # controller measures speed from the count every 20 ms, and resetting it
+    # underneath that made the motors ignore the commanded speed)
+    sensor_seq = 0
     last_load_log = time.ticks_ms()
 
     log_info("LOOP", "streaming at {} Hz to {}".format(SEND_RATE_HZ, dest))
@@ -870,8 +877,17 @@ def main():
         # (only while connected: on connection loss the motors stop at once)
         if gamepad_active:
             target = max(-1.0, min(1.0, joy_y))
-            max_step = THROTTLE_RAMP_PER_SEC * loop_dt_s
-            applied_throttle += max(-max_step, min(max_step, target - applied_throttle))
+            # slowing down (toward zero) uses the faster ramp, speeding up the gentle one
+            slowing = (applied_throttle > 0 and target < applied_throttle) or \
+                      (applied_throttle < 0 and target > applied_throttle)
+            ramp = THROTTLE_RAMP_DOWN_PER_SEC if slowing else THROTTLE_RAMP_PER_SEC
+            max_step = ramp * loop_dt_s
+            new_throttle = applied_throttle + max(-max_step, min(max_step, target - applied_throttle))
+            # when reversing, the fast ramp only goes as far as stopped; the other
+            # direction then builds up at the gentle rate
+            if slowing and new_throttle * applied_throttle < 0:
+                new_throttle = 0.0
+            applied_throttle = new_throttle
 
             if abs(applied_throttle) < JOYSTICK_DEADBAND:
                 motor_three.set_speed(0.0)
@@ -899,17 +915,14 @@ def main():
         if time.ticks_diff(now, last_send) >= send_interval_ms:
             last_send = now
             try:
-                pos_l = motor_three.get_position()
-                pos_r = motor_four.get_position()
-                enc_l = (pos_l - last_enc_l) * ENCODER_PERCENT_OFFSET
-                enc_r = (pos_r - last_enc_r) * ENCODER_PERCENT_OFFSET
+                total_l = motor_three.get_position() * ENCODER_PERCENT_OFFSET
+                total_r = motor_four.get_position() * ENCODER_PERCENT_OFFSET
                 heading = imu_heading_rad()
-                msg = "RAW,{:.6f},{:.6f},{:.6f}".format(enc_l, enc_r, heading)
+                sensor_seq += 1
+                msg = "RAW2,{},{:.6f},{:.6f},{:.6f}".format(sensor_seq, total_l, total_r, heading)
                 # Straight to the laptop while it's driving us, otherwise broadcast
                 target = (controller_ip, SENSOR_PORT) if gamepad_active and controller_ip else dest
                 sock_send.sendto(msg.encode(), target)
-                # only after a successful send, so a failed one's distance goes in the next packet
-                last_enc_l, last_enc_r = pos_l, pos_r
                 send_count += 1
                 consecutive_send_errors = 0
             except OSError as e:

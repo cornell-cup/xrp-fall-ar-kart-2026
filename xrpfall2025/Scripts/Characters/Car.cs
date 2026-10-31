@@ -483,13 +483,13 @@ public partial class Car : Node
 	{
 		if (item == States.Regular)
 		{
-			GD.Print("Invalid item state.");
+			//GD.Print("Invalid item state.");
 			return;
 		}
 
 		current = item;
 		effectTimeRemaining = GetEffectDuration(item);
-		GD.Print($"{Name}: activated {item} item");
+		//GD.Print($"{Name}: activated {item} item");
 	}
 
 	/// <summary>
@@ -509,7 +509,7 @@ public partial class Car : Node
 	public void StoreItem(States newItem)
 	{
 		storedItem = newItem;
-		GD.Print($"Stored new item: {storedItem}");
+		//GD.Print($"Stored new item: {storedItem}");
 	}
 
 	#endregion

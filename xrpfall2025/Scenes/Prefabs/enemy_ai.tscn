@@ -1,9 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://h53l8sihrgy"]
+[gd_scene load_steps=5 format=3 uid="uid://h53l8sihrgy"]
 
 [ext_resource type="PackedScene" uid="uid://u7we301bvb4s" path="res://Assets/3dmodels/XRP_Car.fbx" id="1_emg7k"]
 [ext_resource type="Script" uid="uid://jc5php58w2u6" path="res://Scripts/Characters/EnemyAi.cs" id="1_gnafk"]
-[ext_resource type="Texture2D" uid="uid://crf26xahoogfh" path="res://Assets/Images/greenTriangle.png" id="3_u64v4"]
-[ext_resource type="Texture2D" uid="uid://ct5tj7qusd4kq" path="res://Assets/Images/greenCircle.png" id="4_35fls"]
+[ext_resource type="Texture2D" uid="uid://c5p1bnlcg1co7" path="res://Assets/Images/enemy_arrow.png" id="3_u64v4"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_gnafk"]
 size = Vector3(5.715, 3.16874, 11.43)
@@ -32,17 +31,10 @@ shape = SubResource("BoxShape3D_gnafk")
 [node name="XRP_Car" parent="Node3D/CharacterBody3D/CollisionShape3D" instance=ExtResource("1_emg7k")]
 transform = Transform3D(-17.84502, 0, 0, 0, 17.84502, 0, 0, 0, -17.84502, 0, -1.5071, 1.07305)
 
-[node name="triangle" type="Sprite3D" parent="Node3D/CharacterBody3D/CollisionShape3D/XRP_Car"]
-transform = Transform3D(0.13, 2.27299e-08, 3.97423e-15, 0, -5.68248e-09, 0.52, 2.27299e-08, -0.13, -2.27299e-08, 0, 0.206713, 0.679663)
+[node name="arrow" type="Sprite3D" parent="Node3D/CharacterBody3D/CollisionShape3D/XRP_Car"]
+transform = Transform3D(-0.27, 0, 0, 0, 0, 0.27, 0, 0.27, 0, 0, 0.2, 0.06)
 layers = 2
-modulate = Color(0.772889, 0.256248, 0, 1)
 texture = ExtResource("3_u64v4")
-
-[node name="circle" type="Sprite3D" parent="Node3D/CharacterBody3D/CollisionShape3D/XRP_Car"]
-transform = Transform3D(-0.065, -9.81474e-09, -1.71606e-15, 0, -2.84123e-09, 0.26, -9.81474e-09, 0.065, 1.1365e-08, 0, 0.206713, 0.179363)
-layers = 2
-modulate = Color(0.772889, 0.256248, 0, 1)
-texture = ExtResource("4_35fls")
 
 [node name="RayCast3D" type="RayCast3D" parent="Node3D/CharacterBody3D/CollisionShape3D/XRP_Car"]
 transform = Transform3D(1, 0, 0, 0, -0.0435779, -0.996195, 0, 0.498097, -0.0871558, 4.44089e-16, 0.15, 0.3)

@@ -109,6 +109,14 @@ const TRAIL_MAX: int = 300
 var ar_enabled: bool = false
 var ar_backdrop_mesh: MeshInstance3D = null
 var ar_camera: Camera3D = null
+# The camera's place relative to the kart body, set when AR attaches
+var ar_camera_offset: Transform3D = Transform3D.IDENTITY
+var ar_camera_local: Transform3D = Transform3D.IDENTITY
+# How old the video on screen is when shown (the camera's delay, CAMERA_LATENCY_S in
+# laptop_fusion.py). The AR camera is placed where the kart was that long ago, so
+# virtual things stay lined up with the video instead of sliding across it while turning.
+# Virtual things trail the video while turning: raise it. They lead it: lower it
+const AR_VIDEO_DELAY_S: float = 0.15
 # Size of the backdrop quad, set so it exactly covers the real camera's view
 var ar_backdrop_size: Vector2 = Vector2.ZERO
 # How far in front of the kart camera the backdrop sits. Anything virtual further
@@ -116,22 +124,22 @@ var ar_backdrop_size: Vector2 = Vector2.ZERO
 const AR_BACKDROP_DIST: float = 1000.0
 # Map of tag_id -> Label3D overlay node.
 var ar_tag_labels: Dictionary = {}
+
 var _ar_attach_timer: float = 0.0
 
 # Real camera intrinsics in pixels, at the resolution they were calibrated at.
 # Must match Camera_params in laptop_fusion.py
-const CAM_FX: float = 1268.28550
-const CAM_FY: float = 1254.14697
-const CAM_CX: float = 361.108041
-const CAM_CY: float = 297.975274
+const CAM_FX: float = 558.546
+const CAM_FY: float = 561.275
+const CAM_CX: float = 368.271
+const CAM_CY: float = 264.430
 const CAM_CALIB_W: float = 640.0
 const CAM_CALIB_H: float = 480.0
 # The Pi camera's picture comes out upside down (the picture-in-picture preview
 # flips it both ways too), so the AR backdrop rotates the feed 180°
 const CAM_UPSIDE_DOWN: bool = true
-# How far the real camera is tilted up from level (negative = down). The 25° is
-# _theta_mount in laptop_fusion.py; it points up so it can see the tags on the gates
-const CAM_TILT_UP_DEG: float = 25.0
+# How far the real camera is tilted up from level (negative = down)
+const CAM_TILT_UP_DEG: float = 7.0
 # Where the real camera's lens sits on the kart, in metres: height above the
 # floor, distance ahead of the kart's center, and sideways (positive = right).
 # Measure these on the robot; the defaults are where the camera sat on the kart model
@@ -144,6 +152,9 @@ const CAM_SIDEWAYS_M: float = 0.0
 # are only drawn on the minimap (render layer 2) and not on the kart camera (layer 1)
 const AR_HIDDEN_NODES: Array[String] = ["Ground", "TrackLoader", "Finishline"]
 const MINIMAP_ONLY_LAYER: int = 2
+# ...except the track's edge lines, which stay on the kart camera too as an outline
+# of the track over the video
+const AR_KEPT_NODES: Array[String] = ["InnerEdge", "OuterEdge"]
 
 # ---- Debug ----
 var debug_timer: float = 0.0
@@ -266,6 +277,7 @@ func _process(_delta: float) -> void:
 				_try_attach_ar()
 		else:
 			_update_ar_camera_fov()
+			_place_ar_camera_in_past()
 
 	if not tcp_connected:
 		tcp_retry_timer += _delta
@@ -455,6 +467,10 @@ func _try_attach_ar() -> bool:
 	ar_camera = cam
 	ar_tag_labels.clear()  # old labels were freed along with the old backdrop
 	_place_camera(cam)
+	ar_camera_local = cam.transform
+	var body = _find_kart_body(cam)
+	if body != null:
+		ar_camera_offset = body.global_transform.affine_inverse() * cam.global_transform
 	_hide_own_kart(cam)
 	_setup_camera_backdrop(cam)
 	_update_ar_camera_fov()
@@ -497,6 +513,22 @@ func _place_camera(cam: Camera3D) -> void:
 	var tilt = deg_to_rad(CAM_TILT_UP_DEG)
 	var look = forward * cos(tilt) + Vector3.UP * sin(tilt)
 	cam.global_basis = Basis.looking_at(look, Vector3.UP)
+
+
+# Puts the AR camera where the kart was AR_VIDEO_DELAY_S ago, to match the video.
+# Only while the real XRP is driving the kart; otherwise it rides on the kart as usual
+func _place_ar_camera_in_past() -> void:
+	if not is_instance_valid(ar_camera):
+		return
+	var body = _find_kart_body(ar_camera)
+	var player: Node = body
+	while player != null and not player.has_method("GetDelayedBodyTransform"):
+		player = player.get_parent()
+	if player == null or not xrp_connected:
+		ar_camera.transform = ar_camera_local
+		return
+	var past: Transform3D = player.call("GetDelayedBodyTransform", AR_VIDEO_DELAY_S)
+	ar_camera.global_transform = past * ar_camera_offset
 
 
 # The kart's physics body the camera rides on
@@ -588,6 +620,10 @@ func _hide_world() -> void:
 	for node_name in AR_HIDDEN_NODES:
 		var node = scene.get_node_or_null(node_name)
 		if node: _move_to_minimap_layer(node)
+	for node_name in AR_KEPT_NODES:
+		var node = scene.find_child(node_name, true, false)
+		if node is VisualInstance3D:
+			node.layers = 3   # kart camera and minimap
 
 
 func _move_to_minimap_layer(node: Node) -> void:
