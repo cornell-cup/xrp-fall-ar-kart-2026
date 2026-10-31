@@ -72,7 +72,8 @@ var xrp_trail: Array[Vector2] = []
 const TRAIL_MAX: int = 300
 
 # ---- AR mode ----
-var ar_enabled: bool = false
+# var ar_enabled: bool = false
+var ar_enabled: bool = true
 var ar_backdrop_mesh: MeshInstance3D = null
 const AR_BACKDROP_W: float = 500.0
 const AR_BACKDROP_H: float = 350.0

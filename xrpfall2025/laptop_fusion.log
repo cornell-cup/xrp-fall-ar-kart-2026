@@ -1,1 +1,2748 @@
 [BOOT] python=/Users/hilarioesparza/Desktop/Cornell/CUP/xrp-fall-ar-kart-2026/xrpfall2025/laptop_fusion cwd=/Users/hilarioesparza/Desktop/Cornell/CUP/xrp-fall-ar-kart-2026/xrpfall2025 argv=['./laptop_fusion', 'cornellcup2.local'] log=/Users/hilarioesparza/Desktop/Cornell/CUP/xrp-fall-ar-kart-2026/xrpfall2025/laptop_fusion.log
+[Transforms] beta_tag3 = 0.0
+[Transforms] beta_tag0 = 180.0
+[Pose] Will send fused state to 127.0.0.1:6000
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[AR] Broadcasting tag overlays to ('127.0.0.1', 6002)
+[Video] TCP server on 6001, waiting for Godot...
+[DEBUG] Starting sensor thread
+[Gamepad] Relay listening on 127.0.0.1:4003, forwarding to XRP:4002
+[DEBUG] Entered sensor_ekf_thread()
+[DEBUG] Sensor thread started: True
+[Sensor] Listening for XRP raw sensors on UDP 5005
+[XRP] IP captured: 192.168.0.191
+[EKF] Initialized at heading=1.577 rad from 192.168.0.191
+[rtsp @ 0x109415b30] method DESCRIBE failed: 404 Not Found
+[Camera] Failed to open, retrying in 3s...
+[Video] Godot connected from ('127.0.0.1', 60501)
+[EKF] 27 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.4° (35376 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[EKF] 24 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[EKF] 32 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[rtsp @ 0x108b08da0] method DESCRIBE failed: 404 Not Found
+[Camera] Failed to open, retrying in 3s...
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.4° (31552 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.4° (23674 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[EKF] 27 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Camera] Connecting to rtsp://cornellcup2.local:8554/cam
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Camera] RTSP connected
+[Detect] 0 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.4° (30670 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.5° (15344 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.5° (12867 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.5° (15571 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 27 fps | no tag
+[EKF] 27 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.6° (18396 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 24 fps | no tag
+[EKF] 26 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[EKF] 34 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.6° (16668 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 24 fps | no tag
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[EKF] 26 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.6° (16808 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Detect] 29 fps | no tag
+[EKF] 34 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[EKF] 34 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.6° (17145 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+90 | no tag yet
+[EKF] 35 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.7° (18863 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 20 fps | no tag
+[EKF] 33 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 89 packets to 192.168.0.191 in last 5s
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.7° (19051 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[EKF] 37 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 35 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.7° (18935 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 19 fps | no tag
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 32 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.7° (15544 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Detect] 30 fps | no tag
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 32 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.8° (18475 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.8° (17813 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 23 fps | no tag
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[EKF] 32 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.8° (11579 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.8° (17683 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.9° (17356 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 28 fps | no tag
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.9° (15654 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 33 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 26 fps | no tag
+[EKF] 34 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+90.9° (15617 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 27 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 23 fps | no tag
+[Gamepad] Forwarded 96 packets to 192.168.0.191 in last 5s
+[EKF] 34 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.0° (14748 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 25 fps | no tag
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.0° (12196 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 25 fps | no tag
+[EKF] 27 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.0° (14410 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 100 packets to 192.168.0.191 in last 5s
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 23 fps | no tag
+[EKF] 27 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.1° (14363 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 24 fps | no tag
+[EKF] 21 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.1° (16788 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 35 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 14 fps | no tag
+[Gamepad] Forwarded 100 packets to 192.168.0.191 in last 5s
+[EKF] 23 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.1° (14252 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 19 fps | no tag
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.1° (10113 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 13 fps | no tag
+[EKF] 35 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.2° (5922 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 69 packets to 192.168.0.191 in last 5s
+[EKF] 26 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.2° (11078 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 32 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 8 fps | no tag
+[EKF] 20 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.2° (9273 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 37 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 8 fps | no tag
+[Gamepad] Forwarded 105 packets to 192.168.0.191 in last 5s
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.2° (16690 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 10 fps | no tag
+[EKF] 33 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.3° (18649 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 26 fps | no tag
+[EKF] 19 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.3° (18218 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 12 fps | no tag
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.3° (18592 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 27 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 0 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.3° (18899 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 16 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.3° (18993 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 24 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.4° (17764 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 35 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 26 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.4° (14945 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 3 fps | no tag
+[EKF] 34 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[EKF] 33 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.4° (14764 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 12 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 23 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.4° (18856 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 8 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[EKF] 18 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.4° (18196 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 32 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 33 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.5° (17462 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 27 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.5° (18111 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 6 fps | no tag
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.5° (17542 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 33 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 48 fps | no tag
+[EKF] 34 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.5° (16247 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 31 fps | no tag
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.6° (17630 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 24 fps | no tag
+[EKF] 34 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.6° (18118 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 29 fps | no tag
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.6° (17526 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 27 fps | no tag
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.6° (17926 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 26 fps | no tag
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.7° (17679 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 22 fps | no tag
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.7° (16211 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.7° (16441 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 27 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.8° (17133 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.8° (16620 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[EKF] 27 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.8° (17661 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[EKF] 27 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.8° (18143 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.9° (13632 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 13 fps | no tag
+[EKF] 22 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 26 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.9° (7229 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 30 fps | no tag
+[EKF] 36 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 34 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.9° (12860 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 22 fps | no tag
+[EKF] 34 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.9° (18042 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 22 fps | no tag
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+91.9° (16170 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 23 fps | no tag
+[EKF] 33 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 32 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.0° (17467 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.0° (17563 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 26 fps | no tag
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.0° (16294 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 32 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 10 fps | no tag
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.0° (17234 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 21 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 29 fps | no tag
+[EKF] 36 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.1° (15264 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 27 fps | no tag
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.1° (9572 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 27 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 16 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.1° (14271 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 23 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[EKF] 35 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 19 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.1° (15146 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 31 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.1° (14343 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 29 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 89 packets to 192.168.0.191 in last 5s
+[Detect] 27 fps | no tag
+[EKF] 24 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.2° (10075 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 33 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 24 fps | no tag
+[EKF] 26 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.2° (11725 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 18 fps | no tag
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.2° (14604 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 23 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.2° (13228 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 27 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 14 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.3° (15936 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 25 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 20 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.3° (16786 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 34 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 33 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.3° (17017 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[EKF] 30 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 25 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.3° (17711 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 21 fps | no tag
+[EKF] 32 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[EKF] 31 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.3° (16625 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 12 fps | no tag
+[EKF] 37 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[EKF] 27 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17933 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 11 fps | no tag
+[EKF] 28 pkts/s | FUSED x=+0.00 y=+0.00 th=+91 | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (12550 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14287 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 22 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17965 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 11 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17940 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 7 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18498 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 12 fps | no tag
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (19118 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 8 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15730 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 4 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17571 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 92 packets to 192.168.0.191 in last 5s
+[Detect] 2 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (19152 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 12 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18976 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[h264 @ 0x109415fe0] error while decoding MB 17 27, bytestream -5
+[h264 @ 0x10941f190] error while decoding MB 18 8, bytestream -6
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18764 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18662 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (19274 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 18 fps | no tag
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17333 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 31 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14773 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18641 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 11 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16801 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18433 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Detect] 10 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18632 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18760 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 23 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15805 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 7 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18102 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 8 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18923 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 12 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18634 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 15 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18544 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15297 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 92 packets to 192.168.0.191 in last 5s
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15260 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14779 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 34 fps | no tag
+[Gamepad] Forwarded 72 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (11637 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 9 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (6412 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 17 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (9134 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (10514 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 22 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (8280 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (11010 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (13185 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 21 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (10306 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 22 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (10358 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 18 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (12144 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (11224 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14562 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14611 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 22 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15819 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16838 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17702 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 20 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (6740 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15866 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16856 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 22 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15812 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15090 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17415 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15977 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 24 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15549 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 23 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16428 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17766 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17426 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15358 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Detect] 28 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14795 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (12415 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15694 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14839 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17941 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15594 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17815 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Gamepad] Forwarded 89 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17450 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16111 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17241 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 23 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (13047 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 23 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (11117 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (13355 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15026 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17319 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16278 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16991 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18468 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17577 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18209 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14915 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14416 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Gamepad] Forwarded 89 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (11193 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (13739 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (7878 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Gamepad] Forwarded 68 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (9772 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (13720 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (13082 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 96 packets to 192.168.0.191 in last 5s
+[Detect] 19 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17311 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14691 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16087 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17255 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16659 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17348 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17145 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (10678 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (10402 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (11551 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 24 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (9860 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (11551 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 29 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (12977 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (8733 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15485 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 88 packets to 192.168.0.191 in last 5s
+[Detect] 24 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16985 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 65] No route to host
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 19 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (9255 pkts/s)
+[Gamepad] Forward error: [Errno 64] Host is down
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 35 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 46 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (13138 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 29 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17915 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 27 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17226 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 0 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 27 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16816 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 28 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16909 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 29 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 0 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17582 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 30 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (12666 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 27 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (12681 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 0 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 27 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17044 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 29 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17415 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Gamepad] Forwarded 47 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16230 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Gamepad] Forward error: [Errno 65] No route to host
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16889 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 27 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16570 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 44 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 25 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15820 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 15 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16986 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 19 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (10789 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 0 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 10 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (5323 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 28 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16121 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17938 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 21 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 0 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18753 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 25 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (12655 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 23 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 0 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (8170 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16871 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14957 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Gamepad] Forwarded 81 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 65] No route to host
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (11846 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 25 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (12861 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 25 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 9 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (8610 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 26 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15555 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 26 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17647 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 29 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 0 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16727 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 24 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17460 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 25 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 0 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17193 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 27 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14099 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 27 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14341 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 0 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 18 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15769 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 15 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16192 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 11 fps | no tag
+[Gamepad] Forwarded 82 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 65] No route to host
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18731 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 12 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14422 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 41 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (13750 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 8 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 18 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18150 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 28 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15653 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 0 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 28 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16270 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 20 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15624 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 25 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16926 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 0 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 22 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17878 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 26 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16776 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 0 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 27 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17173 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17049 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 10 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14968 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 86 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 65] No route to host
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17710 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 17 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15523 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 30 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forwarded 4 packets to 192.168.0.191 in last 5s
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18837 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 12 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (13191 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Detect] 38 fps | no tag
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Gamepad] Forward error: [Errno 64] Host is down
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17729 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Gamepad] Forwarded 31 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17997 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (13354 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 20 fps | no tag
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (12736 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 21 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17624 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 19 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18452 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17783 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18645 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18564 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 22 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17920 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18155 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16162 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16365 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 29 fps | no tag
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (13312 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (9916 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16782 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15873 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16969 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17644 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (13054 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 23 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17330 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 20 fps | no tag
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16629 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17291 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 23 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18472 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17950 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18299 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18446 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17211 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17300 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Detect] 29 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18114 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17719 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 29 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17641 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (13182 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14139 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17584 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18097 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 91 packets to 192.168.0.191 in last 5s
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17615 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 6 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (19600 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15775 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Gamepad] Forwarded 90 packets to 192.168.0.191 in last 5s
+[Detect] 30 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (12088 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (11844 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 0 fps | no tag
+[Video] Godot disconnected
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (0 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 18 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (7413 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16582 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 23 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18611 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18472 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18826 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18236 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18858 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (19003 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18117 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (19009 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 22 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18951 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18842 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17425 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18237 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 23 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15863 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17154 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 22 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16555 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 21 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (13079 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (10189 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (11926 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 23 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (9935 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15622 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (18438 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17362 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16959 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 2 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (15673 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 39 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (14000 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (9187 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 23 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (17789 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (16581 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 12 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (8380 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=-0.000 enc_r=+0.000 rev | heading=+92.4° (12976 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+91° | no tag yet
