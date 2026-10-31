@@ -5,6 +5,7 @@ var total_time: float = 0.0
 
 # I should put all the buttons in a container so it's more efficient to turn them visible/invis
 func _ready() -> void:
+	SoundManager.play_match_finish()
 	$HomeButton.visible = true
 	$RestartButton.visible = true
 	$Background.visible = true
