@@ -306,7 +306,7 @@ theme_override_colors/font_outline_color = Color(0.290196, 0.145098, 0, 1)
 theme_override_constants/shadow_offset_y = 6
 theme_override_constants/outline_size = 12
 theme_override_font_sizes/font_size = 40
-text = "SELECT MAP"
+text = "SELECT KART"
 horizontal_alignment = 1
 
 [node name="PanelContainer" type="PanelContainer" parent="MiddlePanels/KartPanel/VBoxContainer"]
@@ -377,7 +377,7 @@ theme_override_colors/font_outline_color = Color(0.290196, 0.145098, 0, 1)
 theme_override_constants/shadow_offset_y = 6
 theme_override_constants/outline_size = 12
 theme_override_font_sizes/font_size = 40
-text = "SELECT KART"
+text = "SELECT MAP"
 horizontal_alignment = 1
 
 [node name="PanelContainer" type="PanelContainer" parent="MiddlePanels/MapPanel/VBoxContainer"]
