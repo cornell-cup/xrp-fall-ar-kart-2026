@@ -336,7 +336,7 @@ texture = ExtResource("11_q5g2k")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="RaceButton" type="Button" parent="MiddlePanels/RacePanel"]
+[node name="RaceButton" type="Button" parent="MiddlePanels/RacePanel" groups=["custom_sfx"]]
 layout_mode = 2
 focus_mode = 0
 mouse_default_cursor_shape = 2
