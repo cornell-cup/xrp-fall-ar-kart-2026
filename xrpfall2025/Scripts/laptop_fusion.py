@@ -173,6 +173,8 @@ VIDEO_MAX_FPS = 30
 Camera_params = [558.546, 561.275, 368.271, 264.430]
 TAG_SIZE_TAG3 = 0.06503
 TAG_SIZE_TAG0 = 0.08584
+TAG_SIZE_TAG1 = 0.11202
+TAG_SIZE_TAG2 = 0.11202
 
 POSITIVE_Y = 1
 X_THRESHOLD = 0.4572
@@ -291,6 +293,80 @@ trans_G_g_tag0 = np.array([
 trans_G_A_tag0 = trans_G_g_tag0 @ trans_g_H_tag0 @ trans_H_A_tag0
 
 print(f"[Transforms] beta_tag0 = {math.degrees(beta_tag0):.1f}")
+
+
+h3_tag2, l3_tag2 = 0, 0.01013
+trans_H_A_tag2 = np.array([
+    [1, 0, 0,   0  ], [0, 1, 0, -h3_tag2 ], [0, 0, 1, -l3_tag2 ], [0, 0, 0, 1],
+])
+
+alpha_tag2 = np.radians(0)
+c_alpha_tag2, s_alpha_tag2 = np.cos(alpha_tag2), np.sin(alpha_tag2)
+l4_tag2 = 0.0
+trans_g_H_tag2 = np.array([
+    [1, 0,        0,         0 ],
+    [0, c_alpha_tag2, -s_alpha_tag2,    0 ],
+    [0, s_alpha_tag2,  c_alpha_tag2,  -l4_tag2],
+    [0, 0,        0,          1],
+])
+
+x1_tag2, y1_tag2, x2_tag2, y2_tag2 = 0.94615, -1.6256, 0.94615, -1.1811
+x3_tag2, y3_tag2 = (x1_tag2+x2_tag2)/2, (y1_tag2+y2_tag2)/2
+h4_tag2 = 0.352425
+if x1_tag2 == x2_tag2:
+    beta_tag2 = np.radians(90) if y1_tag2 > y2_tag2 else np.radians(270)
+else:
+    beta_tag2 = np.arctan((y1_tag2-y2_tag2)/(x2_tag2-x1_tag2))
+    if x1_tag2 <= x2_tag2 and y1_tag2 >= y2_tag2: beta_tag2 = beta_tag2
+    elif x1_tag2 > x2_tag2:             beta_tag2 = beta_tag2 + np.radians(180)
+    else:                     beta_tag2 = beta_tag2 + np.radians(270)
+c_beta_tag2, s_beta_tag2 = np.cos(beta_tag2), np.sin(beta_tag2)
+trans_G_g_tag2 = np.array([
+    [ c_beta_tag2, 0,  s_beta_tag2, x3_tag2],
+    [-s_beta_tag2, 0,  c_beta_tag2, y3_tag2],
+    [ 0,     -1,  0,      h4_tag2],
+    [ 0,      0,  0,       1],
+])
+trans_G_A_tag2= trans_G_g_tag2 @ trans_g_H_tag2 @ trans_H_A_tag2
+print(f"[Transforms] beta_tag2 = {math.degrees(beta_tag2):.1f}")
+
+
+
+h3_tag1, l3_tag1 = 0, 0.01102
+trans_H_A_tag1 = np.array([
+    [1, 0, 0,   0  ], [0, 1, 0, -h3_tag1 ], [0, 0, 1, -l3_tag1 ], [0, 0, 0, 1],
+])
+
+alpha_tag1 = np.radians(0)
+c_alpha_tag1, s_alpha_tag1 = np.cos(alpha_tag1), np.sin(alpha_tag1)
+l4_tag1 = 0.0
+trans_g_H_tag1 = np.array([
+    [1, 0,        0,         0 ],
+    [0, c_alpha_tag1, -s_alpha_tag1,    0 ],
+    [0, s_alpha_tag1,  c_alpha_tag1,  -l4_tag1],
+    [0, 0,        0,          1],
+])
+
+x1_tag1, y1_tag1, x2_tag1, y2_tag1 = 0.94615, 1.6256, 0.94615, 1.1811
+x3_tag1, y3_tag1 = (x1_tag1+x2_tag1)/2, (y1_tag1+y2_tag1)/2
+h4_tag1 = 0.352425
+if x1_tag1 == x2_tag1:
+    beta_tag1 = np.radians(90) if y1_tag1 > y2_tag1 else np.radians(270)
+else:
+    beta_tag1 = np.arctan((y1_tag1-y2_tag1)/(x2_tag1-x1_tag1))
+    if x1_tag1 <= x2_tag1 and y1_tag1 >= y2_tag1: beta_tag1 = beta_tag1
+    elif x1_tag1 > x2_tag1:             beta_tag1 = beta_tag1 + np.radians(180)
+    else:                     beta_tag1 = beta_tag1 + np.radians(270)
+c_beta_tag1, s_beta_tag1 = np.cos(beta_tag1), np.sin(beta_tag1)
+trans_G_g_tag1 = np.array([
+    [ c_beta_tag1, 0,  s_beta_tag1, x3_tag1],
+    [-s_beta_tag1, 0,  c_beta_tag1, y3_tag1],
+    [ 0,     -1,  0,      h4_tag1],
+    [ 0,      0,  0,       1],
+])
+trans_G_A_tag1= trans_G_g_tag1 @ trans_g_H_tag1 @ trans_H_A_tag1
+print(f"[Transforms] beta_tag1 = {math.degrees(beta_tag1):.1f}")
+
 
 # ============================================================
 # EKF
@@ -483,6 +559,8 @@ def detector_thread():
     
     trans_C_A_tag3 = np.identity(4)
     trans_C_A_tag0 = np.identity(4)
+    trans_C_A_tag1 = np.identity(4)
+    trans_C_A_tag2 = np.identity(4)
     last_processed_id = -1
     fps_n = 0
     fps_t = time.time()
@@ -502,15 +580,9 @@ def detector_thread():
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         with suppress_stderr():
         
-            if FAR_FROM_ORIGIN:
-                results = detector.detect(
+            results = detector.detect(
                     gray, estimate_tag_pose=True,
-                    camera_params=Camera_params, tag_size=TAG_SIZE_TAG0,
-                )
-            else:
-                results = detector.detect(
-                    gray, estimate_tag_pose=True,
-                    camera_params=Camera_params, tag_size=TAG_SIZE_TAG3,
+                    camera_params=Camera_params, tag_size=TAG_SIZE_TAG1,
                 )
 
         valid = [t for t in results if 0 <= t.tag_id <= 7]
@@ -538,6 +610,13 @@ def detector_thread():
         if valid:
             tag = min(valid, key=lambda t: abs(t.pose_t[2][0]))
             if tag.tag_id == 3:
+                with suppress_stderr():
+                    results = detector.detect(
+                            gray, estimate_tag_pose=True,
+                            camera_params=Camera_params, tag_size=TAG_SIZE_TAG3,
+                        )
+                valid = [t for t in results if 0 <= t.tag_id <= 7]
+                tag = min(valid, key=lambda t: abs(t.pose_t[2][0]))
                 trans_C_A_tag3[:3, :3] = tag.pose_R
                 trans_C_A_tag3[0, 3] = tag.pose_t[0][0]
                 trans_C_A_tag3[1, 3] = tag.pose_t[1][0]
@@ -576,6 +655,13 @@ def detector_thread():
                 except np.linalg.LinAlgError:
                     pass
             if tag.tag_id == 0:
+                with suppress_stderr():
+                    results = detector.detect(
+                            gray, estimate_tag_pose=True,
+                            camera_params=Camera_params, tag_size=TAG_SIZE_TAG0,
+                        )
+                valid = [t for t in results if 0 <= t.tag_id <= 7]
+                tag = min(valid, key=lambda t: abs(t.pose_t[2][0]))
                 trans_C_A_tag0[:3, :3] = tag.pose_R
                 trans_C_A_tag0[0, 3] = tag.pose_t[0][0]
                 trans_C_A_tag0[1, 3] = tag.pose_t[1][0]
@@ -611,6 +697,44 @@ def detector_thread():
                     #     except OSError as e:
                     #         print("[YAW] UDP send error:", e)
 
+                except np.linalg.LinAlgError:
+                    pass
+
+            if tag.tag_id == 1:
+                trans_C_A_tag1[:3, :3] = tag.pose_R
+                trans_C_A_tag1[0, 3] = tag.pose_t[0][0]
+                trans_C_A_tag1[1, 3] = tag.pose_t[1][0]
+                trans_C_A_tag1[2, 3] = tag.pose_t[2][0]
+                try:
+                    trans_A_C_tag1 = np.linalg.inv(trans_C_A_tag1)
+                    trans_R_G_tag1 = trans_G_A_tag1 @ trans_A_C_tag1 @ trans_R_C
+                    r_x = float(trans_R_G_tag1[0, 3])
+                    r_y = float(trans_R_G_tag1[1, 3])
+                    r_theta = math.atan2(trans_R_G_tag1[1, 0], trans_R_G_tag1[0, 0])
+                    with latest_robot_pose_lock:
+                        latest_robot_pose_world = {
+                            "x": r_x, "y": r_y, "theta": r_theta,
+                            "tag_id": tag.tag_id, "time": time.time(),
+                        }
+                except np.linalg.LinAlgError:
+                    pass
+
+            if tag.tag_id == 2:
+                trans_C_A_tag2[:3, :3] = tag.pose_R
+                trans_C_A_tag2[0, 3] = tag.pose_t[0][0]
+                trans_C_A_tag2[1, 3] = tag.pose_t[1][0]
+                trans_C_A_tag2[2, 3] = tag.pose_t[2][0]
+                try:
+                    trans_A_C_tag2 = np.linalg.inv(trans_C_A_tag2)
+                    trans_R_G_tag2 = trans_G_A_tag2 @ trans_A_C_tag2 @ trans_R_C
+                    r_x = float(trans_R_G_tag2[0, 3])
+                    r_y = float(trans_R_G_tag2[1, 3])
+                    r_theta = math.atan2(trans_R_G_tag2[1, 0], trans_R_G_tag2[0, 0])
+                    with latest_robot_pose_lock:
+                        latest_robot_pose_world = {
+                            "x": r_x, "y": r_y, "theta": r_theta,
+                            "tag_id": tag.tag_id, "time": time.time(),
+                        }
                 except np.linalg.LinAlgError:
                     pass
 
