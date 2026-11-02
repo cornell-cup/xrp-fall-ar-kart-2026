@@ -50,19 +50,19 @@ YAW_CORRECTION_PORT = 5007 # XRP listens for yaw correction from Laptop
 JOYSTICK_DEADBAND = 0.05
 
 # Lowered from 200 to roughly halve the motors' current draw (brownout protection)
-MAX_DRIVE_RPM = 100
+MAX_DRIVE_RPM = 50
 
 # Throttle ramping (brownout protection) — limits how fast the motor command
 # can change. 3.0 per second means 0->full takes ~330 ms, which avoids the
 # inrush-current spikes that browned out the power rail. Measured in time, not
 # loop passes, so it doesn't change with LOOP_SLEEP_MS.
 # Larger value = snappier response but higher current spikes.
-THROTTLE_RAMP_PER_SEC = 3.0   # 
+THROTTLE_RAMP_PER_SEC = 8.0   # 
 # The same, but for slowing down and stopping, so letting go of the stick stops
 # the kart in ~170 ms instead of ~330 ms. The brownouts came from speeding up;
 # braking draws less, but if the LOAD log lines show bigger voltage dips when
 # stopping, lower this toward THROTTLE_RAMP_PER_SEC
-THROTTLE_RAMP_DOWN_PER_SEC = 6.0
+THROTTLE_RAMP_DOWN_PER_SEC = 8.0
 
 # Main loop pause between passes. Gamepad packets are read once per pass,
 # so this is the most a new command waits on the XRP before it's applied

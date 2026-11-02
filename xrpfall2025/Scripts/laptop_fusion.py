@@ -172,9 +172,11 @@ VIDEO_MAX_FPS = 30
 # fx, fy, cx, cy - for the camera's wide mode 
 Camera_params = [558.546, 561.275, 368.271, 264.430]
 TAG_SIZE_TAG3 = 0.06503
-TAG_SIZE_TAG0 = 0.08584
+TAG_SIZE_TAG0 = 0.08576
 TAG_SIZE_TAG1 = 0.11202
 TAG_SIZE_TAG2 = 0.11202
+
+TAG_SIZE = 0.08576
 
 POSITIVE_Y = 1
 X_THRESHOLD = 0.4572
@@ -210,7 +212,7 @@ FRAME_H_DEFAULT = 480
 # Frame transforms (from pi_detect_aprilTag.py)
 # ============================================================
 
-_theta_mount = np.radians(7)
+_theta_mount = np.radians(2)
 s_theta = np.sin(_theta_mount); c_theta = np.cos(_theta_mount)
 h1, l1, d = 0.03047, 0.007625, 0.02792
 trans_R_C = np.array([
@@ -223,19 +225,19 @@ trans_R_C = np.array([
 # robot frame from the camera frame, for where a seen tag is relative to the robot
 trans_C_R = np.linalg.inv(trans_R_C)
 
-h3_tag3, l3_tag3 = 0,0.0099568
+h3_tag3, l3_tag3 = 0, 0.0099568
 trans_H_A_tag3 = np.array([
     [1, 0, 0,   0  ], [0, 1, 0, -h3_tag3 ], [0, 0, 1, -l3_tag3 ], [0, 0, 0, 1],
 ])
 
 h3_tag0, l3_tag0 = -0.0058039, 0.010414
 trans_H_A_tag0 = np.array([
-    [1, 0, 0,   0  ], [0, 1, 0, -h3_tag3 ], [0, 0, 1, -l3_tag3 ], [0, 0, 0, 1],
+    [1, 0, 0,   0  ], [0, 1, 0, -h3_tag0 ], [0, 0, 1, -l3_tag0 ], [0, 0, 0, 1],
 ])
 
 alpha_tag3 = np.radians(0)
 c_alpha_tag3, s_alpha_tag3 = np.cos(alpha_tag3), np.sin(alpha_tag3)
-l4_tag3 = 0.01895
+l4_tag3 = 0.0
 trans_g_H_tag3 = np.array([
     [1, 0,        0,         0 ],
     [0, c_alpha_tag3, -s_alpha_tag3,    0 ],
@@ -245,7 +247,7 @@ trans_g_H_tag3 = np.array([
 
 alpha_tag0 = np.radians(0)
 c_alpha_tag0, s_alpha_tag0 = np.cos(alpha_tag0), np.sin(alpha_tag0)
-l4_tag0 = 0.01187
+l4_tag0 = 0.0
 trans_g_H_tag0 = np.array([
     [1, 0,        0,         0 ],
     [0, c_alpha_tag0, -s_alpha_tag0,    0 ],
@@ -347,7 +349,7 @@ trans_g_H_tag1 = np.array([
     [0, 0,        0,          1],
 ])
 
-x1_tag1, y1_tag1, x2_tag1, y2_tag1 = 0.94615, 1.6256, 0.94615, 1.1811
+x1_tag1, y1_tag1, x2_tag1, y2_tag1 = 0.94615, 1.5875, 0.94615, 1.143
 x3_tag1, y3_tag1 = (x1_tag1+x2_tag1)/2, (y1_tag1+y2_tag1)/2
 h4_tag1 = 0.352425
 if x1_tag1 == x2_tag1:
@@ -582,7 +584,7 @@ def detector_thread():
         
             results = detector.detect(
                     gray, estimate_tag_pose=True,
-                    camera_params=Camera_params, tag_size=TAG_SIZE_TAG1,
+                    camera_params=Camera_params, tag_size=TAG_SIZE,
                 )
 
         valid = [t for t in results if 0 <= t.tag_id <= 7]
@@ -610,13 +612,6 @@ def detector_thread():
         if valid:
             tag = min(valid, key=lambda t: abs(t.pose_t[2][0]))
             if tag.tag_id == 3:
-                with suppress_stderr():
-                    results = detector.detect(
-                            gray, estimate_tag_pose=True,
-                            camera_params=Camera_params, tag_size=TAG_SIZE_TAG3,
-                        )
-                valid = [t for t in results if 0 <= t.tag_id <= 7]
-                tag = min(valid, key=lambda t: abs(t.pose_t[2][0]))
                 trans_C_A_tag3[:3, :3] = tag.pose_R
                 trans_C_A_tag3[0, 3] = tag.pose_t[0][0]
                 trans_C_A_tag3[1, 3] = tag.pose_t[1][0]
@@ -655,13 +650,6 @@ def detector_thread():
                 except np.linalg.LinAlgError:
                     pass
             if tag.tag_id == 0:
-                with suppress_stderr():
-                    results = detector.detect(
-                            gray, estimate_tag_pose=True,
-                            camera_params=Camera_params, tag_size=TAG_SIZE_TAG0,
-                        )
-                valid = [t for t in results if 0 <= t.tag_id <= 7]
-                tag = min(valid, key=lambda t: abs(t.pose_t[2][0]))
                 trans_C_A_tag0[:3, :3] = tag.pose_R
                 trans_C_A_tag0[0, 3] = tag.pose_t[0][0]
                 trans_C_A_tag0[1, 3] = tag.pose_t[1][0]
@@ -711,10 +699,14 @@ def detector_thread():
                     r_x = float(trans_R_G_tag1[0, 3])
                     r_y = float(trans_R_G_tag1[1, 3])
                     r_theta = math.atan2(trans_R_G_tag1[1, 0], trans_R_G_tag1[0, 0])
+                    rel = trans_C_R @ trans_C_A_tag1[:, 3]
+                    tag_world = trans_G_A_tag1
                     with latest_robot_pose_lock:
                         latest_robot_pose_world = {
                             "x": r_x, "y": r_y, "theta": r_theta,
-                            "tag_id": tag.tag_id, "time": time.time(),
+                            "tag_id": tag.tag_id, "time": frame_time,
+                            "tag_x": float(tag_world[0, 3]), "tag_y": float(tag_world[1, 3]),
+                            "rel_x": float(rel[0]), "rel_y": float(rel[1]),
                         }
                 except np.linalg.LinAlgError:
                     pass
@@ -730,10 +722,14 @@ def detector_thread():
                     r_x = float(trans_R_G_tag2[0, 3])
                     r_y = float(trans_R_G_tag2[1, 3])
                     r_theta = math.atan2(trans_R_G_tag2[1, 0], trans_R_G_tag2[0, 0])
+                    rel = trans_C_R @ trans_C_A_tag2[:, 3]
+                    tag_world = trans_G_A_tag2
                     with latest_robot_pose_lock:
                         latest_robot_pose_world = {
                             "x": r_x, "y": r_y, "theta": r_theta,
-                            "tag_id": tag.tag_id, "time": time.time(),
+                            "tag_id": tag.tag_id, "time": frame_time,
+                            "tag_x": float(tag_world[0, 3]), "tag_y": float(tag_world[1, 3]),
+                            "rel_x": float(rel[0]), "rel_y": float(rel[1]),
                         }
                 except np.linalg.LinAlgError:
                     pass

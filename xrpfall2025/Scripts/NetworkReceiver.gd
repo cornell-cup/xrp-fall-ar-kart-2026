@@ -39,13 +39,12 @@ const POSE_TIMEOUT: float = 8.0
 # ---- Gamepad ----
 var udp_gamepad: PacketPeerUDP = PacketPeerUDP.new()
 var gamepad_connected: bool = false
-# Packets go out the moment the stick changes; this keepalive resends the
-# current value when it doesn't, so the XRP's 500 ms input timeout never trips
-const GAMEPAD_KEEPALIVE_HZ: float = 50.0
-var gamepad_send_timer: float = 0.0
-var _last_gamepad_packet: PackedByteArray = PackedByteArray()
+# The stick is sent every frame, changed or not, so a lost packet (a lost
+# "stop" especially) is replaced one frame later
 const GAMEPAD_HEADER: int = 0x55
-const DEADZONE: float = 0.08
+# Stick readings under this count as centered. Many sticks rest a little off
+# center (0.08-0.15), which used to get through and keep the kart creeping
+const DEADZONE: float = 0.15
 
 # ---- Gamepad latency measurement ----
 # Every gamepad packet carries a sequence number (0-255); the XRP sends
@@ -139,7 +138,7 @@ const CAM_CALIB_H: float = 480.0
 # flips it both ways too), so the AR backdrop rotates the feed 180°
 const CAM_UPSIDE_DOWN: bool = true
 # How far the real camera is tilted up from level (negative = down)
-const CAM_TILT_UP_DEG: float = 7.0
+const CAM_TILT_UP_DEG: float = 1.0
 # Where the real camera's lens sits on the kart, in metres: height above the
 # floor, distance ahead of the kart's center, and sideways (positive = right).
 # Measure these on the robot; the defaults are where the camera sat on the kart model
@@ -242,8 +241,8 @@ func _ready() -> void:
 
 	# Gamepad output
 	udp_gamepad.set_dest_address(GAMEPAD_RELAY_HOST, GAMEPAD_RELAY_PORT)
-	print("[NetworkReceiver] Gamepad relayed via %s:%d on every change (keepalive %d Hz)" % [
-		GAMEPAD_RELAY_HOST, GAMEPAD_RELAY_PORT, int(GAMEPAD_KEEPALIVE_HZ)])
+	print("[NetworkReceiver] Gamepad relayed via %s:%d every frame" % [
+		GAMEPAD_RELAY_HOST, GAMEPAD_RELAY_PORT])
 
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
 	var pads = Input.get_connected_joypads()
@@ -852,9 +851,10 @@ func _encode_axis(value: float) -> int:
 func _apply_deadzone(value: float) -> float:
 	if absf(value) < DEADZONE:
 		return 0.0
-	return value
+	# rescaled so just past the deadzone is just above 0, not a jump to 0.15
+	return signf(value) * (absf(value) - DEADZONE) / (1.0 - DEADZONE)
 
-func _process_gamepad_send(delta: float) -> void:
+func _process_gamepad_send(_delta: float) -> void:
 	if Input.get_connected_joypads().is_empty():
 		if gamepad_connected:
 			gamepad_connected = false
@@ -872,21 +872,11 @@ func _process_gamepad_send(delta: float) -> void:
 	if _in_race_countdown():
 		ly = 0.0
 		rx = 0.0
-	_send_gamepad(ly, rx, delta)
+	_send_gamepad(ly, rx)
 
 
-# Sends the stick state right away when it changed, otherwise only as a keepalive.
-# Returns true if a packet went out
-func _send_gamepad(ly: float, rx: float, delta: float) -> bool:
-	# Change detection only looks at the stick values, not the sequence number
+func _send_gamepad(ly: float, rx: float) -> void:
 	var axes := PackedByteArray([_encode_axis(ly), _encode_axis(rx)])
-
-	gamepad_send_timer += delta
-	if axes == _last_gamepad_packet and gamepad_send_timer < 1.0 / GAMEPAD_KEEPALIVE_HZ:
-		return false
-
-	gamepad_send_timer = 0.0
-	_last_gamepad_packet = axes
 	_gamepad_seq = (_gamepad_seq + 1) % 256
 	var packet := PackedByteArray()
 	packet.append(GAMEPAD_HEADER)
@@ -897,7 +887,6 @@ func _send_gamepad(ly: float, rx: float, delta: float) -> bool:
 	_seq_sent_ms[_gamepad_seq] = Time.get_ticks_msec()
 	_packets_sent += 1
 	udp_gamepad.put_packet(packet)
-	return true
 
 
 # Reads the XRP's ACKs and records each packet's round-trip time
