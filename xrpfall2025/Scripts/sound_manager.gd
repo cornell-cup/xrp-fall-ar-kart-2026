@@ -45,6 +45,7 @@ func play_race_start() -> void:
 		_event_player.play()
 
 func play_match_finish() -> void:
+	_music_player.stop() # Stops race music so GameComplete SFX Activates
 	if match_finish_sfx != null:
 		_event_player.stream = match_finish_sfx
 		_event_player.play()
