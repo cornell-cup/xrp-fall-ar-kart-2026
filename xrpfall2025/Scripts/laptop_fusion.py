@@ -312,9 +312,9 @@ trans_g_H_tag2 = np.array([
     [0, 0,        0,          1],
 ])
 
-x1_tag2, y1_tag2, x2_tag2, y2_tag2 = 0.94615, -1.6256, 0.94615, -1.1811
+x1_tag2, y1_tag2, x2_tag2, y2_tag2 = 0.69758178, -1.78660678, -0.71663178, -0.37239322
 x3_tag2, y3_tag2 = (x1_tag2+x2_tag2)/2, (y1_tag2+y2_tag2)/2
-h4_tag2 = 0.352425
+h4_tag2 = 0.11324
 if x1_tag2 == x2_tag2:
     beta_tag2 = np.radians(90) if y1_tag2 > y2_tag2 else np.radians(270)
 else:
