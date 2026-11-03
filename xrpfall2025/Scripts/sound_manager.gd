@@ -4,8 +4,12 @@ extends Node
 @export var race_start_sfx: AudioStream = preload("res://Assets/Sound/SFX/RaceButtonClick.mp3")
 @export var match_finish_sfx: AudioStream = preload("res://Assets/Sound/SFX/GameComplete.mp3")
 
+# Menu Background Music
+@export var menu_music: AudioStream = preload("res://Assets/Sound/BackgroundMusic/Option_1_Menu_maksymmalko-game-game-music-581017-OOG.ogg")
+
 var _click_player: AudioStreamPlayer
 var _event_player: AudioStreamPlayer
+var _music_player: AudioStreamPlayer
 
 func _ready() -> void:
 	_click_player = AudioStreamPlayer.new()
@@ -16,11 +20,14 @@ func _ready() -> void:
 	_event_player.bus = "Master"
 	add_child(_event_player)
 	
+	_music_player = AudioStreamPlayer.new()
+	_music_player.bus = "Master"
+	add_child(_music_player)
+	
 	get_tree().node_added.connect(_on_node_added)
 
 func _on_node_added(node: Node) -> void:
 	if node is BaseButton:
-		# If a button has custom sound behavior, skip the generic click
 		if node.is_in_group("custom_sfx"):
 			return
 		if not node.pressed.is_connected(play_click):
@@ -40,3 +47,12 @@ func play_match_finish() -> void:
 	if match_finish_sfx != null:
 		_event_player.stream = match_finish_sfx
 		_event_player.play()
+
+func play_menu_music() -> void:
+	if menu_music == null:
+		return
+	# If this track is already playing, do NOT restart it from second 0!
+	if _music_player.stream == menu_music and _music_player.playing:
+		return
+	_music_player.stream = menu_music
+	_music_player.play()
