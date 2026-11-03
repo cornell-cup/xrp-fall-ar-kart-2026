@@ -58,3 +58,11 @@ func play_menu_music() -> void:
 		return
 	_music_player.stream = menu_music
 	_music_player.play()
+
+func play_race_music() -> void:
+	if race_music == null:
+		return
+	if _music_player.stream == race_music and _music_player.playing:
+		return
+	_music_player.stream = race_music
+	_music_player.play()
