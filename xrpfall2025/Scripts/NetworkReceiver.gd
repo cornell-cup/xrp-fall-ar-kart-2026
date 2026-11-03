@@ -3,13 +3,16 @@ extends Node
 # ============================================================
 # Combined network receiver — fusion + AR UI.
 #
-# Launches the bundled laptop_fusion executable on startup. From it:
+# Launches laptop_fusion on startup (the Python script in the editor, the
+# folder build in an exported game). From it:
 #   - UDP 6000: fused robot pose JSON {x, y, angle}
 #   - TCP 6001: raw RGB video frames
-#   - UDP 6002: ar_tags JSON   (NEW — for AR overlays)
+#   - UDP 6002: ar_tags JSON, for the labels over AprilTags in AR mode
 #
 # Sends to Python:
 #   - UDP 4003 (localhost): gamepad packets, Python forwards to XRP
+# And from the XRP directly:
+#   - UDP 6003: "ACK,<seq>" for each gamepad packet, for the round-trip time
 #
 # AR mode: at startup, prompts "Enable AR Camera?". If yes, the live
 # camera feed becomes the world backdrop and labels float over each
@@ -20,9 +23,9 @@ extends Node
 # with Player.cs.
 # ============================================================
 
-# Passed to laptop_fusion, which tries it first and then falls back to
-# cornellcup2.local / 10.42.0.1 / 192.168.4.95 on its own. So the kart
-# works on the Pi hotspot or CornellCup-Web without changing this.
+# Passed to laptop_fusion, which tries it first and then falls back to the
+# other addresses in its PI_CANDIDATES on its own, so the kart works on any of
+# the networks without changing this.
 const PI_IP: String = "cornellcup2.local"
 
 const POSE_PORT: int = 6000
@@ -56,14 +59,12 @@ const ACK_LOST_AFTER_MS: int = 1000
 var udp_latency: PacketPeerUDP = PacketPeerUDP.new()
 var _gamepad_seq: int = 0
 var _seq_sent_ms: Dictionary = {}   # seq -> Time.get_ticks_msec() when sent
-# Stats since the last status line (every 5 s), and the latest values for a HUD
+# Stats since the last status line (every 5 s)
 var _rtt_count: int = 0
 var _rtt_sum_ms: int = 0
 var _rtt_max_ms: int = 0
 var _acks_lost: int = 0
 var _packets_sent: int = 0
-var latency_avg_ms: float = -1.0
-var latency_max_ms: int = -1
 
 # ---- Video TCP ----
 var tcp_client: StreamPeerTCP = StreamPeerTCP.new()
@@ -101,21 +102,26 @@ var xrp_x: float = 0.0
 var xrp_y: float = 0.0
 var xrp_angle: float = 0.0
 var xrp_connected: bool = false
-var xrp_trail: Array[Vector2] = []
-const TRAIL_MAX: int = 300
 
 # ---- AR mode ----
 var ar_enabled: bool = false
 var ar_backdrop_mesh: MeshInstance3D = null
 var ar_camera: Camera3D = null
-# The camera's place relative to the kart body, set when AR attaches
-var ar_camera_offset: Transform3D = Transform3D.IDENTITY
+# The camera's place on the kart, set when AR attaches (used when the XRP isn't driving)
 var ar_camera_local: Transform3D = Transform3D.IDENTITY
-# How old the video on screen is when shown (the camera's delay, CAMERA_LATENCY_S in
-# laptop_fusion.py). The AR camera is placed where the kart was that long ago, so
-# virtual things stay lined up with the video instead of sliding across it while turning.
-# Virtual things trail the video while turning: raise it. They lead it: lower it
-const AR_VIDEO_DELAY_S: float = 0.15
+# Height of the floor under the kart, set when AR attaches. The AR camera is kept
+# CAM_HEIGHT_M above it and level (tilted only by CAM_TILT_UP_DEG), like the real
+# camera, so the game kart bobbing or tipping in the physics doesn't shake the view
+var ar_floor_y: float = 0.0
+# How much older the video on screen is than the kart's pose: the camera's delay
+# (~0.3 s measured with a stopwatch) minus the pose's own (~0.05 s). The AR camera
+# is placed where the kart was that long ago, so the track outline stays lined up
+# with the video instead of moving with the kart ahead of it.
+# Outline moves before the video does: raise it. After the video: lower it
+const AR_VIDEO_DELAY_S: float = 0.25
+# Recent [time, position, heading] of the kart, for placing the AR camera in the past
+var _ar_kart_history: Array = []
+const AR_HISTORY_S: float = 1.0
 # Size of the backdrop quad, set so it exactly covers the real camera's view
 var ar_backdrop_size: Vector2 = Vector2.ZERO
 # How far in front of the kart camera the backdrop sits. Anything virtual further
@@ -249,9 +255,10 @@ func _ready() -> void:
 	if not pads.is_empty():
 		print("[NetworkReceiver] Controller already connected: %s" % Input.get_joy_name(0))
 
+	# The video connection is made (and remade) by the retry in _process, once
+	# fusion's video server is up
 	_start_fusion()
 	await get_tree().create_timer(4.0).timeout
-	_connect_video_tcp()
 
 	# Show the AR popup after fusion + video are wired up
 	call_deferred("_show_ar_dialog")
@@ -282,13 +289,7 @@ func _process(_delta: float) -> void:
 		tcp_retry_timer += _delta
 		if tcp_retry_timer > 3.0:
 			tcp_retry_timer = 0.0
-			tcp_client.disconnect_from_host()
-			tcp_client = StreamPeerTCP.new()
-			var err = tcp_client.connect_to_host("127.0.0.1", VIDEO_PORT)
-			if err != OK:
-				print("[NetworkReceiver] TCP connect attempt failed (error %d)" % err)
-			else:
-				print("[NetworkReceiver] Retrying TCP connection to %d..." % VIDEO_PORT)
+			_connect_video_tcp()
 
 	debug_timer += _delta
 	if debug_timer > 5.0:
@@ -302,9 +303,7 @@ func _process(_delta: float) -> void:
 			StreamPeerTCP.STATUS_ERROR: tcp_status_name = "ERROR"
 		var latency_text = "no ACKs"
 		if _rtt_count > 0:
-			latency_avg_ms = float(_rtt_sum_ms) / _rtt_count
-			latency_max_ms = _rtt_max_ms
-			latency_text = "avg %.0f ms, max %d ms" % [latency_avg_ms, latency_max_ms]
+			latency_text = "avg %.0f ms, max %d ms" % [float(_rtt_sum_ms) / _rtt_count, _rtt_max_ms]
 		print("[NetworkReceiver] Status - TCP: %s | Pose: %s | Gamepad: %s | Video: %s | AR: %s | Frames: %d/%d | Gamepad round trip: %s, %d/%d lost" % [
 			tcp_status_name,
 			"active" if xrp_connected else "waiting",
@@ -467,9 +466,7 @@ func _try_attach_ar() -> bool:
 	ar_tag_labels.clear()  # old labels were freed along with the old backdrop
 	_place_camera(cam)
 	ar_camera_local = cam.transform
-	var body = _find_kart_body(cam)
-	if body != null:
-		ar_camera_offset = body.global_transform.affine_inverse() * cam.global_transform
+	_ar_kart_history.clear()
 	_hide_own_kart(cam)
 	_setup_camera_backdrop(cam)
 	_update_ar_camera_fov()
@@ -489,29 +486,41 @@ func _principal_point() -> Vector2:
 # It stays parented to the kart, so it follows it from then on
 func _place_camera(cam: Camera3D) -> void:
 	var body = _find_kart_body(cam)
-	var forward: Vector3
-	if body != null:
-		forward = -body.global_transform.basis.z
-	else:
-		forward = -cam.global_transform.basis.z
-	forward.y = 0
-	forward = forward.normalized()
+	if body == null:
+		var forward = -cam.global_transform.basis.z
+		forward.y = 0
+		cam.global_basis = _ar_camera_basis(forward.normalized())
+		return
+	ar_floor_y = body.global_position.y
+	var shape = body.get_node_or_null("CollisionShape3D") as CollisionShape3D
+	if shape != null and shape.shape is BoxShape3D:
+		ar_floor_y += shape.position.y - (shape.shape as BoxShape3D).size.y / 2
+	cam.global_transform = _ar_camera_transform(body.global_position, _kart_forward(body))
 
-	if body != null:
-		var units = _units_per_metre()
-		var bottom = body.global_position
-		var shape = body.get_node_or_null("CollisionShape3D") as CollisionShape3D
-		if shape != null and shape.shape is BoxShape3D:
-			bottom.y += shape.position.y - (shape.shape as BoxShape3D).size.y / 2
-		var right = forward.cross(Vector3.UP)
-		cam.global_position = bottom \
-			+ Vector3.UP * CAM_HEIGHT_M * units \
-			+ forward * CAM_FORWARD_M * units \
-			+ right * CAM_SIDEWAYS_M * units
 
+# Where the real camera is when the kart's center is at kart_pos facing forward:
+# CAM_HEIGHT_M above the floor, CAM_FORWARD_M / CAM_SIDEWAYS_M from the center
+func _ar_camera_transform(kart_pos: Vector3, forward: Vector3) -> Transform3D:
+	var units = _units_per_metre()
+	var right = forward.cross(Vector3.UP)
+	var pos = Vector3(kart_pos.x, ar_floor_y, kart_pos.z) \
+		+ Vector3.UP * CAM_HEIGHT_M * units \
+		+ forward * CAM_FORWARD_M * units \
+		+ right * CAM_SIDEWAYS_M * units
+	return Transform3D(_ar_camera_basis(forward), pos)
+
+
+# Facing forward, tilted up CAM_TILT_UP_DEG, never rolled
+func _ar_camera_basis(forward: Vector3) -> Basis:
 	var tilt = deg_to_rad(CAM_TILT_UP_DEG)
-	var look = forward * cos(tilt) + Vector3.UP * sin(tilt)
-	cam.global_basis = Basis.looking_at(look, Vector3.UP)
+	return Basis.looking_at(forward * cos(tilt) + Vector3.UP * sin(tilt), Vector3.UP)
+
+
+# The way the kart faces, flat on the floor
+func _kart_forward(body: Node3D) -> Vector3:
+	var forward = -body.global_transform.basis.z
+	forward.y = 0
+	return forward.normalized()
 
 
 # Puts the AR camera where the kart was AR_VIDEO_DELAY_S ago, to match the video.
@@ -520,14 +529,33 @@ func _place_ar_camera_in_past() -> void:
 	if not is_instance_valid(ar_camera):
 		return
 	var body = _find_kart_body(ar_camera)
-	var player: Node = body
-	while player != null and not player.has_method("GetDelayedBodyTransform"):
-		player = player.get_parent()
-	if player == null or not xrp_connected:
+	if body == null or not xrp_connected:
+		_ar_kart_history.clear()
 		ar_camera.transform = ar_camera_local
 		return
-	var past: Transform3D = player.call("GetDelayedBodyTransform", AR_VIDEO_DELAY_S)
-	ar_camera.global_transform = past * ar_camera_offset
+
+	var now = Time.get_ticks_msec() / 1000.0
+	var f = _kart_forward(body)
+	_ar_kart_history.append([now, body.global_position, atan2(f.z, f.x)])
+	while now - _ar_kart_history[0][0] > AR_HISTORY_S:
+		_ar_kart_history.pop_front()
+
+	# the samples just before and after that moment (the oldest one if the
+	# history doesn't go back that far yet), and the point between them
+	var then = now - AR_VIDEO_DELAY_S
+	var before = _ar_kart_history[0]
+	var after = before
+	for sample in _ar_kart_history:
+		after = sample
+		if sample[0] > then:
+			break
+		before = sample
+	var k = 0.0
+	if after[0] > before[0]:
+		k = clampf((then - before[0]) / (after[0] - before[0]), 0.0, 1.0)
+	var pos: Vector3 = before[1].lerp(after[1], k)
+	var heading = lerp_angle(before[2], after[2], k)
+	ar_camera.global_transform = _ar_camera_transform(pos, Vector3(cos(heading), 0, sin(heading)))
 
 
 # The kart's physics body the camera rides on
@@ -728,9 +756,8 @@ func _position_tag_label(label: Label3D, center: Array, corners: Array) -> void:
 	# doesn't cover the marker
 	var tag_h_px := 0.0
 	if corners.size() == 4:
-		var top_y = min(float(corners[0][1]), float(corners[1][1]))
-		var bot_y = max(float(corners[2][1]), float(corners[3][1]))
-		tag_h_px = bot_y - top_y
+		var ys = corners.map(func(c): return float(c[1]))
+		tag_h_px = ys.max() - ys.min()
 	var lift = (tag_h_px / float(ar_frame_h)) * ar_backdrop_size.y * 0.6 + 8.0
 
 	label.position = Vector3(pos.x, pos.y + lift, pos.z)
@@ -941,9 +968,6 @@ func _process_pose() -> void:
 			xrp_x = float(data.get("x", 0.0))
 			xrp_y = float(data.get("y", 0.0))
 			xrp_angle = float(data.get("angle", 0.0))
-			xrp_trail.append(Vector2(xrp_x, xrp_y))
-			if xrp_trail.size() > TRAIL_MAX:
-				xrp_trail.remove_at(0)
 
 	if xrp_connected:
 		var now = Time.get_ticks_msec() / 1000.0

@@ -1,11 +1,9 @@
 """
 xrp_raw_sensors.py
 
-Slim XRP-side script with persistent logging AND silent-failure
-detection.
-
-Gamepad protocol from laptop (trimmed):
-    [0x55][0x04][1][throttle_byte][2][steer_byte]   = 6 bytes
+Gamepad protocol from laptop:
+    [0x55][0x06][1][throttle_byte][2][steer_byte][3][seq]   = 8 bytes
+    (seq is echoed back as "ACK,<seq>" for the game's latency measurement)
 
 After a crash/disconnect, plug XRP into USB, open Thonny, and run:
     print(open('/xrp_log.txt').read())
@@ -20,11 +18,11 @@ from XRPLib.defaults import *
 # WiFi Config
 # ============================================================
 # Networks to join, in order of preference. The XRP joins whichever one
-# it can see, so the same file works with the Pi hotspot OR CornellCup-Web.
+# it can see, so the same file works on any of them.
 # Open network -> password "" (giving a password to an open network makes
 # the Pico W attempt WPA2 and fail).
 WIFI_NETWORKS = [
-    ("AR-Kart", "cornellcup"),   
+    ("AR-Kart", "cornellcup"),                  # the kart router (2.4 GHz)
     ("XRP-Robot", ""),                          # Pi hotspot (open)
     ("CornellCup-Web", "passwordhere"),
 ]
@@ -42,44 +40,40 @@ LATENCY_PORT = 6003
 GAMEPAD_PORT = 4002
 SEND_RATE_HZ = 100
 
-YAW_CORRECTION_PORT = 5007 # XRP listens for yaw correction from Laptop
-
 # ============================================================
 # Robot config
 # ============================================================
 JOYSTICK_DEADBAND = 0.05
 
-# Lowered from 200 to roughly halve the motors' current draw (brownout protection)
+# Kept low to limit the motors' current draw (brownout protection)
 MAX_DRIVE_RPM = 50
 
 # Throttle ramping (brownout protection) — limits how fast the motor command
-# can change. 3.0 per second means 0->full takes ~330 ms, which avoids the
-# inrush-current spikes that browned out the power rail. Measured in time, not
+# can change. 10.0 per second means 0->full takes ~100 ms; lower it if the
+# inrush-current spikes start browning out the power rail. Measured in time, not
 # loop passes, so it doesn't change with LOOP_SLEEP_MS.
 # Larger value = snappier response but higher current spikes.
-THROTTLE_RAMP_PER_SEC = 8.0   # 
-# The same, but for slowing down and stopping, so letting go of the stick stops
-# the kart in ~170 ms instead of ~330 ms. The brownouts came from speeding up;
-# braking draws less, but if the LOAD log lines show bigger voltage dips when
-# stopping, lower this toward THROTTLE_RAMP_PER_SEC
-THROTTLE_RAMP_DOWN_PER_SEC = 8.0
+THROTTLE_RAMP_PER_SEC = 10.0   # 
+# The same, but for slowing down and stopping (10.0 = full -> stopped in ~100 ms).
+# The brownouts came from speeding up; braking draws less, but if the LOAD log
+# lines show bigger voltage dips when stopping, lower this
+THROTTLE_RAMP_DOWN_PER_SEC = 10.0
 
 # Main loop pause between passes. Gamepad packets are read once per pass,
 # so this is the most a new command waits on the XRP before it's applied
 LOOP_SLEEP_MS = 1
 
-ENCODER_PERCENT_OFFSET = 1/0.95 # based on empirical data gathered (the encoders seem to report about 15% less distance than acutally traveled)
+ENCODER_PERCENT_OFFSET = 1/0.95 # based on empirical data gathered (the encoders seem to report about 5% less distance than actually traveled)
 
 
-# From xrpgodot.py (SERVO_CENTER / SERVO_RANGE), the values the kart
-# currently drives straight with.
-STEER_CENTER_DEG = 100.0
-STEER_RANGE_DEG = 75.0
+# Servo angle the kart drives straight at, and how far either side full lock is
+STEER_CENTER_DEG = 90.0
+STEER_RANGE_DEG = 60.0
 
 # Steering ramping (brownout protection) — limits how fast the servo is told
 # to move, since a servo snapping across its range draws a burst of current.
-# 800 deg/s means center -> full lock (75 deg) takes ~95 ms, and full left ->
-# full right (150 deg) takes ~190 ms, close to how fast the servo itself turns.
+# 800 deg/s means center -> full lock (60 deg) takes ~75 ms, and full left ->
+# full right (120 deg) takes ~150 ms, close to how fast the servo itself turns.
 # Larger value = snappier steering.
 STEER_RAMP_DEG_PER_SEC = 800.0
 
@@ -90,7 +84,7 @@ GAMEPAD_HEADER = 0x55
 # GAMEPAD_TIMEOUT_MS; this only decides who may drive next.)
 CONTROL_LEASE_MS = 1000
 # No gamepad packet for this long = connection lost, motors stop. The game sends
-# at least every ~20-33 ms, so this is roughly 10 missed packets in a row
+# every frame (~17 ms), so this is roughly 18 missed packets in a row
 GAMEPAD_TIMEOUT_MS = 300
 # How often the failsafe timer checks for a lost connection
 FAILSAFE_CHECK_MS = 50
@@ -339,7 +333,9 @@ def battery_str(v=None):
 # Heading helpers
 # ============================================================
 HEADING_SIGN = 1.0
-HEADING_OFFSET = math.pi/2 # 90 degrees
+# Heading reported at startup: 90°, the start heading in fusion's map frame.
+# (Gyro drift is corrected below while parked, and by fusion from the AprilTags.)
+HEADING_OFFSET = math.pi/2
 
 def wrap_pi(a):
     return (a + math.pi) % (2.0 * math.pi) - math.pi
@@ -353,9 +349,54 @@ def clamp(v, lo, hi):
 
 
 def imu_heading_rad():
-    global HEADING_OFFSET
     roll_deg = imu.get_roll()
     return wrap_pi( HEADING_OFFSET - (HEADING_SIGN * math.radians(roll_deg)))
+
+
+# ============================================================
+# Gyro recalibration while parked
+# ============================================================
+# The boot calibration is off if the XRP moved during it, and then the heading
+# drifts steadily (~9°/s seen). Whenever the wheels haven't turned for
+# RECAL_WINDOW_S, the heading change over that time is that error, so it's added
+# to the gyro offset XRPLib subtracts. imu.calibrate() can't be used for this:
+# it blocks for seconds and stops the heading updates meanwhile
+RECAL_WINDOW_S = 2.0
+# A bigger turn than this while the wheels are still is someone turning the
+# kart by hand, not gyro error, so it's ignored
+RECAL_MAX_DEG_PER_S = 20.0
+# Index of get_roll()'s axis in XRPLib's gyro_offsets
+HEADING_GYRO_AXIS = 1
+
+_recal_start_ms = None
+_recal_start_roll = 0.0
+_recal_enc = None
+
+def recalibrate_gyro_if_still(total_l, total_r, driving):
+    """Called with the encoder totals on every sensor packet."""
+    global _recal_start_ms, _recal_start_roll, _recal_enc
+    now = time.ticks_ms()
+    if driving or (total_l, total_r) != _recal_enc:
+        # moving: start the window over
+        _recal_enc = (total_l, total_r)
+        _recal_start_ms = now
+        _recal_start_roll = imu.get_roll()
+        return
+    elapsed_s = time.ticks_diff(now, _recal_start_ms) / 1000.0
+    if elapsed_s < RECAL_WINDOW_S:
+        return
+    roll = imu.get_roll()
+    rate = (roll - _recal_start_roll) / elapsed_s   # deg/s
+    _recal_start_ms = now
+    _recal_start_roll = roll
+    if abs(rate) > RECAL_MAX_DEG_PER_S:
+        return
+    try:
+        imu.gyro_offsets[HEADING_GYRO_AXIS] += rate * 1000.0   # offsets are in mdps
+    except Exception:
+        return
+    if abs(rate) > 0.5:
+        log_info("IMU", "recalibrated while parked: heading was drifting {:+.1f} deg/s".format(rate))
 
 
 # ============================================================
@@ -416,12 +457,22 @@ def disable_wifi_power_save():
     except Exception as e:
         log_warn("WIFI", "could not turn off power saving: " + str(e))
 
-def stop_motors():
+def stop_drive():
     # set_speed(0) cancels XRPLib's speed controller. set_effort(0) alone does
     # NOT: the controller's background timer keeps driving at the last target
     # speed, which is why the kart used to keep going after losing connection.
     motor_three.set_speed(0)
     motor_four.set_speed(0)
+    # set_speed(0) doesn't clear the controller's memory, though. Left in place,
+    # the next start begins with the push built up before the stop (forward
+    # while trying to reverse, so it hesitates), and the first update counts the
+    # whole pause as one step, which can wind it to full power (the kart surging
+    # past the throttle). Cleared, every start begins fresh
+    motor_three.speedController.clear_history()
+    motor_four.speedController.clear_history()
+
+def stop_motors():
+    stop_drive()
     servo_three.set_angle(STEER_CENTER_DEG)
 
 
@@ -625,41 +676,11 @@ log_info("MOTOR", "connection-loss failsafe on ({} ms timeout)".format(GAMEPAD_T
 # Started after the 3 s IMU calibration; fed in the main loop and in every long wait
 start_watchdog()
 
-def create_yaw_socket():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(("0.0.0.0", YAW_CORRECTION_PORT))
-    sock.settimeout(0.0)
-    return sock
-
-def process_absolute_yaw(sock):
-    global HEADING_OFFSET
-
-    try:
-        raw, addr = sock.recvfrom(128)
-    except OSError:
-        return
-
-    try:
-        parts = raw.decode("utf-8").strip().split(",")
-
-        if len(parts) != 2 or parts[0] != "TAG_YAW":
-            return
-
-        tag_yaw = float(parts[1])
-
-        difference_in_heading = tag_yaw - imu_heading_rad()
-
-        HEADING_OFFSET = HEADING_OFFSET + difference_in_heading
-
-    except (ValueError, UnicodeDecodeError):
-        pass
-
-
 # ============================================================
 # Main loop
 # ============================================================
 def main():
-    global joy_x, joy_y, gamepad_active, gamepad_last_recv, gamepad_ever_received, failsafe_tripped
+    global joy_x, joy_y, gamepad_active, gamepad_last_recv, failsafe_tripped
     global controller_ip
 
     # The throttle currently applied to the motors, ramped toward joy_y
@@ -720,8 +741,6 @@ def main():
     last_load_log = time.ticks_ms()
 
     log_info("LOOP", "streaming at {} Hz to {}".format(SEND_RATE_HZ, dest))
-
-    yaw_sock = create_yaw_socket()
 
     while True:
         now = time.ticks_ms()
@@ -828,7 +847,6 @@ def main():
         # ---- Receive gamepad ----
         try:
             while True:
-                process_absolute_yaw(yaw_sock)
                 data, addr = sock_recv.recvfrom(64)
                 sender = addr[0]
                 t_rx = time.ticks_ms()
@@ -877,21 +895,21 @@ def main():
         # (only while connected: on connection loss the motors stop at once)
         if gamepad_active:
             target = max(-1.0, min(1.0, joy_y))
-            # slowing down (toward zero) uses the faster ramp, speeding up the gentle one
+            # slowing down (toward zero) and speeding up each have their own ramp
             slowing = (applied_throttle > 0 and target < applied_throttle) or \
                       (applied_throttle < 0 and target > applied_throttle)
             ramp = THROTTLE_RAMP_DOWN_PER_SEC if slowing else THROTTLE_RAMP_PER_SEC
             max_step = ramp * loop_dt_s
             new_throttle = applied_throttle + max(-max_step, min(max_step, target - applied_throttle))
-            # when reversing, the fast ramp only goes as far as stopped; the other
-            # direction then builds up at the gentle rate
+            # when reversing, the slowing ramp only goes as far as stopped (which
+            # clears the speed controllers, below); the other direction then
+            # builds up at the speeding-up rate
             if slowing and new_throttle * applied_throttle < 0:
                 new_throttle = 0.0
             applied_throttle = new_throttle
 
             if abs(applied_throttle) < JOYSTICK_DEADBAND:
-                motor_three.set_speed(0.0)
-                motor_four.set_speed(0.0)
+                stop_drive()
             else:
                 target_rpm = clamp(applied_throttle, -1.0, 1.0) * MAX_DRIVE_RPM
                 motor_three.set_speed(target_rpm)
@@ -918,6 +936,7 @@ def main():
                 total_l = motor_three.get_position() * ENCODER_PERCENT_OFFSET
                 total_r = motor_four.get_position() * ENCODER_PERCENT_OFFSET
                 heading = imu_heading_rad()
+                recalibrate_gyro_if_still(total_l, total_r, abs(applied_throttle) >= JOYSTICK_DEADBAND)
                 sensor_seq += 1
                 msg = "RAW2,{},{:.6f},{:.6f},{:.6f}".format(sensor_seq, total_l, total_r, heading)
                 # Straight to the laptop while it's driving us, otherwise broadcast
@@ -951,7 +970,6 @@ except KeyboardInterrupt:
     log_info("EXIT", "KeyboardInterrupt")
     stop_motors()
 except Exception as e:
-    import sys
     log_error("CRASH", "Uncaught: {}: {}".format(type(e).__name__, e))
     try:
         import io
@@ -970,3 +988,4 @@ finally:
             _log_file.close()
     except Exception:
         pass
+
