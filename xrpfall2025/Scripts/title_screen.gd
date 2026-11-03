@@ -2,7 +2,8 @@ extends Control
 
 @onready var background: TextureRect = $BackgroundImage
 
-# func _ready():
+func _ready():
+	SoundManager.play_menu_music()
 	# bounce_background()
 
 func _on_start_button_pressed() -> void:
