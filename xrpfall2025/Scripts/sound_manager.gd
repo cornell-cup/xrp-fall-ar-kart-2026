@@ -4,8 +4,9 @@ extends Node
 @export var race_start_sfx: AudioStream = preload("res://Assets/Sound/SFX/RaceButtonClick.mp3")
 @export var match_finish_sfx: AudioStream = preload("res://Assets/Sound/SFX/GameComplete.mp3")
 
-# Menu Background Music
+# Background Music
 @export var menu_music: AudioStream = preload("res://Assets/Sound/BackgroundMusic/Option_1_Menu_maksymmalko-game-game-music-581017-OOG.ogg")
+@export var race_music: AudioStream = preload("res://Assets/Sound/BackgroundMusic/Option_1_Race_sub_clair-game-music-628077-OOG.ogg")
 
 var _click_player: AudioStreamPlayer
 var _event_player: AudioStreamPlayer
