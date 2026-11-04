@@ -36,6 +36,11 @@ public partial class Item : Node
 	// Store which car hit this item for burst direction
 	private Vector3 lastHitDirection = Vector3.Forward;
 
+	//how much bigger than the model's own size the box is drawn and picked up
+	private const float BOXSCALE = 1.5f;
+	//how high the middle of the box floats above the item's position (it bobs around this)
+	private const float HOVERHEIGHT = 1.5f;
+
 	private Vector3 Position
 	{
 		get { return area3d.Position; }
@@ -49,8 +54,11 @@ public partial class Item : Node
 	{
 		get
 		{
+			//centered on the floating box and as big as it's drawn, so a car
+			//picks it up where it can see it
 			Aabb temp = cylinder.GetAabb();
-			temp.Position = area3d.GlobalPosition - temp.Size / 2;
+			temp.Size *= BOXSCALE;
+			temp.Position = area3d.GlobalPosition + new Vector3(0, HOVERHEIGHT, 0) - temp.Size / 2;
 			return temp;
 		}
 	}
@@ -66,6 +74,7 @@ public partial class Item : Node
 		//node path will need to be updated when we get a formal player car model
 		Position = new Vector3(2, 0, 1);
 		timer = new Stopwatch();
+		cylinder.Scale = Vector3.One * BOXSCALE;
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -94,7 +103,7 @@ public partial class Item : Node
 		}
 
 		cylinder.Rotation = new Vector3(sway, faceY + swingY, cylinder.Rotation.Z);
-		cylinder.Position = new Vector3(cylinder.Position.X, bob + 0.5f, cylinder.Position.Z);
+		cylinder.Position = new Vector3(cylinder.Position.X, bob + HOVERHEIGHT, cylinder.Position.Z);
 		
 		//if a timer is going, then reset the item and the timer
 		if (timer.ElapsedMilliseconds > 10000)
@@ -239,7 +248,7 @@ public partial class Item : Node
 			piece.Material = mat;
 
 			area3d.GetParent().AddChild(piece);
-			piece.GlobalPosition = area3d.GlobalPosition + new Vector3(0, 0.5f, 0);
+			piece.GlobalPosition = area3d.GlobalPosition + new Vector3(0, HOVERHEIGHT, 0);
 
 			// Spread: forward bias + some sideways + upward
 			float fwd = (float)(rng.NextDouble() * 12 + 2);            // 2-8 forward

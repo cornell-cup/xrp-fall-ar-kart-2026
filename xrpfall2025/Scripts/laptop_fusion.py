@@ -383,19 +383,21 @@ CAMERA_LATENCY_S = 0.15
 # How much of the filter's recent past is kept for that comparison
 POSE_HISTORY_S = 1.0
 # A small or far tag's angle can flip between two answers ~12° apart. Tag headings
-# further than this from the gyro's are ignored, unless every tag has disagreed for
-# TAG_HEADING_RESYNC_S (then the gyro is the one that's off, so the tag is trusted)
+# further than this from the gyro's are ignored, unless the tags have kept
+# disagreeing (and agreeing with each other) for TAG_HEADING_RESYNC_S: then the
+# gyro is the one that's off, so the tags are trusted
 TAG_HEADING_GATE_DEG = 6.0
 TAG_HEADING_RESYNC_S = 1.0
 # Added to the XRP's IMU heading; tags adjust it gradually to correct gyro drift
 imu_heading_offset = 0.0
 # The XRP's gyro heading creeps even while it stands still (~9°/s in one run),
 # which turned the game kart, and the AR track outline with it, in place. Once
-# the wheels haven't turned for STILL_AFTER_S, any heading change is drift: it's
-# cancelled, and its rate is learned so it's taken out while driving too
+# the wheels haven't turned for STILL_AFTER_S, any heading change is drift, so
+# it's cancelled. (The drift rate itself is corrected on the XRP, which
+# recalibrates its gyro whenever it's parked. Learning it here from packet
+# timings went wrong when driving back and forth quickly: it learned the jolts
+# at each stop as drift, then turned the kart by itself while driving)
 STILL_AFTER_S = 0.3
-# How quickly the learned drift rate follows the measured one, per packet
-GYRO_BIAS_GAIN = 0.02
 
 # ============================================================
 # Detector
@@ -670,14 +672,14 @@ def sensor_ekf_thread():
     last_tag_time = 0.0
     # the part of the last tag's difference (x, y, theta) not worked in yet
     tag_residual = [0.0, 0.0, 0.0]
-    # when tag headings last agreed with the gyro's
-    tag_heading_agreed = time.time()
-    # Gyro drift (see STILL_AFTER_S): when the wheels last turned, the last IMU
-    # heading and when it came, and the learned drift rate in rad/s
+    # Tag headings that disagree with the gyro (see TAG_HEADING_RESYNC_S): since
+    # when they have, the last one, and when it was seen
+    tag_disagree_since = None
+    tag_disagree_heading = 0.0
+    tag_disagree_last = 0.0
+    # Gyro drift (see STILL_AFTER_S): when the wheels last turned, and the last IMU heading
     moved_time = time.time()
     last_raw_heading = None
-    last_heading_time = None
-    gyro_bias = 0.0
 
     while running:
         try:
@@ -745,19 +747,13 @@ def sensor_ekf_thread():
 
         # ---- Gyro drift ----
         if last_raw_heading is not None:
-            d_heading = (heading - last_raw_heading + math.pi) % (2 * math.pi) - math.pi
-            dt = now - last_heading_time
             if enc_l != 0.0 or enc_r != 0.0:
                 moved_time = now
             if now - moved_time >= STILL_AFTER_S:
-                # standing still: hold the heading, and learn how fast it was drifting
-                imu_heading_offset -= d_heading
-                if 0.0 < dt < 0.2:
-                    gyro_bias += GYRO_BIAS_GAIN * (d_heading / dt - gyro_bias)
-            else:
-                imu_heading_offset -= gyro_bias * dt
-            imu_heading_offset = (imu_heading_offset + math.pi) % (2 * math.pi) - math.pi
-        last_raw_heading, last_heading_time = heading, now
+                # standing still: hold the heading
+                d_heading = (heading - last_raw_heading + math.pi) % (2 * math.pi) - math.pi
+                imu_heading_offset = (imu_heading_offset - d_heading + math.pi) % (2 * math.pi) - math.pi
+        last_raw_heading = heading
 
         if ekf is None:
             with ekf_lock:
@@ -775,7 +771,6 @@ def sensor_ekf_thread():
                     # start facing 90° like the position starts at 0,0, even if the
                     # XRP's heading drifted before fusion started
                     imu_heading_offset = ekf.wrap_pi(np.pi/2 - heading)
-                    gyro_bias = 0.0
                     pose_history = []
                     tag_residual = [0.0, 0.0, 0.0]
                     print(f"[EKF] Initialized at heading={heading:.3f} rad from {addr[0]}")
@@ -808,11 +803,22 @@ def sensor_ekf_thread():
                 tag_pos_x = pose_w["tag_x"] - (c * pose_w["rel_x"] - s * pose_w["rel_y"])
                 tag_pos_y = pose_w["tag_y"] - (s * pose_w["rel_x"] + c * pose_w["rel_y"])
                 heading_diff = ekf.wrap_pi(pose_w["theta"] - then[3])
-                if (abs(heading_diff) <= math.radians(TAG_HEADING_GATE_DEG)
-                        or now - tag_heading_agreed > TAG_HEADING_RESYNC_S):
-                    tag_heading_agreed = now
+                gate = math.radians(TAG_HEADING_GATE_DEG)
+                if abs(heading_diff) <= gate:
+                    tag_disagree_since = None
                 else:
-                    heading_diff = 0.0   # probably the flipped answer
+                    # Only a run of tags that keep disagreeing, and agree with each
+                    # other, for TAG_HEADING_RESYNC_S is trusted over the gyro. A gap
+                    # without tags starts the run over, so a single flipped reading
+                    # after a gap isn't taken as the truth
+                    if (tag_disagree_since is None
+                            or now - tag_disagree_last > TAG_HEADING_RESYNC_S
+                            or abs(ekf.wrap_pi(pose_w["theta"] - tag_disagree_heading)) > gate):
+                        tag_disagree_since = now
+                    tag_disagree_heading = pose_w["theta"]
+                    tag_disagree_last = now
+                    if now - tag_disagree_since < TAG_HEADING_RESYNC_S:
+                        heading_diff = 0.0   # probably the flipped answer
                 tag_residual = [tag_pos_x - then[1], tag_pos_y - then[2], heading_diff]
 
             # Work a little of it in on every packet

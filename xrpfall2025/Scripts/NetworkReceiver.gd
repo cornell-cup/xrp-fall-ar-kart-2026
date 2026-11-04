@@ -144,7 +144,7 @@ const CAM_CALIB_H: float = 480.0
 # flips it both ways too), so the AR backdrop rotates the feed 180°
 const CAM_UPSIDE_DOWN: bool = true
 # How far the real camera is tilted up from level (negative = down)
-const CAM_TILT_UP_DEG: float = 1.0
+const CAM_TILT_UP_DEG: float = 2.0
 # Where the real camera's lens sits on the kart, in metres: height above the
 # floor, distance ahead of the kart's center, and sideways (positive = right).
 # Measure these on the robot; the defaults are where the camera sat on the kart model
@@ -260,8 +260,8 @@ func _ready() -> void:
 	_start_fusion()
 	await get_tree().create_timer(4.0).timeout
 
-	# Show the AR popup after fusion + video are wired up
-	call_deferred("_show_ar_dialog")
+	# AR mode is always on; it attaches once a race with a kart camera loads
+	call_deferred("_enable_ar")
 
 
 func _process(_delta: float) -> void:
@@ -422,38 +422,10 @@ func _cleanup() -> void:
 # AR mode setup
 # ============================================================
 
-func _show_ar_dialog() -> void:
-	var dialog = ConfirmationDialog.new()
-	dialog.title = "AR Camera"
-	dialog.dialog_text = "Enable AR Camera?\n\nThis will use the kart's live camera as the game background\nwith floating labels over detected tags."
-	dialog.ok_button_text = "Yes, use camera"
-	dialog.cancel_button_text = "No, normal mode"
-	dialog.size = Vector2i(420, 170)
-	dialog.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN
-	dialog.confirmed.connect(_on_ar_yes)
-	dialog.canceled.connect(_on_ar_no)
-
-	var canvas = CanvasLayer.new()
-	canvas.layer = 100
-	canvas.name = "ARDialogLayer"
-	add_child(canvas)
-	canvas.add_child(dialog)
-	dialog.popup_centered()
-
-
-func _on_ar_yes() -> void:
+func _enable_ar() -> void:
 	ar_enabled = true
-	var dl = get_node_or_null("ARDialogLayer")
-	if dl: dl.queue_free()
 	print("[AR] AR mode on, waiting for a race to attach to")
 	_try_attach_ar()
-
-
-func _on_ar_no() -> void:
-	ar_enabled = false
-	var dl = get_node_or_null("ARDialogLayer")
-	if dl: dl.queue_free()
-	print("[AR] Normal mode")
 
 
 # Sets up AR on the current race scene if it has a kart camera. Returns false
