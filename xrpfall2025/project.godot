@@ -19,6 +19,7 @@ config/icon="res://Assets/Images/icon.svg"
 
 NetworkReceiver="*res://Scripts/NetworkReceiver.gd"
 LevelData="*res://Scripts/level_data.gd"
+SoundManager="*res://Scripts/sound_manager.gd"
 
 [debug_draw_3d]
 

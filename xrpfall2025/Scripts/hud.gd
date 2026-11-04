@@ -57,6 +57,7 @@ var stopwatch_running: bool = false
 
 # On game start
 func _ready():
+	SoundManager.play_race_music()
 	# The countdown is started by SceneManager once the race is set up
 
 	
@@ -123,6 +124,11 @@ func _process(delta: float) -> void:
 		if stopwatch_running and not get_tree().paused:
 			race_time += delta
 			stopwatch_label.text = format_time(race_time)
+			
+			# TEST: End the game if the timer hits 10 seconds
+			if race_time >= 10.0:
+				finished_race()
+				return
 		
 			# FinishedRace is checked too because the final crossing doesn't change Lap
 			if player_node.Lap != current_lap or player_node.FinishedRace:
