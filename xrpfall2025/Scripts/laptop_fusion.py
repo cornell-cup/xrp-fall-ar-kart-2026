@@ -361,8 +361,8 @@ TAG_WORLD = {
 # ============================================================
 # EKF
 # ============================================================
-WHEEL_RADIUS = 0.03   # meters (wheel diameter / 2)
-TRACK_WIDTH  = 0.109   # meters between the two driven wheels
+WHEEL_RADIUS = 0.04176   # meters (wheel diameter / 2)
+CAR_WIDTH  = 0.11784   # meters between the two driven wheels
 r_xy = 0.4
 r_th = 5e-2
 q_th = math.radians(1.0) ** 2
@@ -764,7 +764,7 @@ def sensor_ekf_thread():
                 if ekf is None:
                     ekf = ackermann_simple_ekf(
                         wheel_radius=WHEEL_RADIUS,
-                        distance_between_wheels=TRACK_WIDTH,
+                        distance_between_wheels=CAR_WIDTH,
                         initial_position_uncertainty=r_xy,
                         initial_heading_uncertainty=r_th,
                         sensor_uncertainty=q_th,

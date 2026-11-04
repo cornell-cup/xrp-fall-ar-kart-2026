@@ -894,6 +894,9 @@ def main():
         # ---- Apply commands, with throttle ramping ----
         # (only while connected: on connection loss the motors stop at once)
         if gamepad_active:
+
+            servo_three.set_angle(STEER_CENTER_DEG)
+
             target = max(-1.0, min(1.0, joy_y))
             # slowing down (toward zero) and speeding up each have their own ramp
             slowing = (applied_throttle > 0 and target < applied_throttle) or \
@@ -911,20 +914,46 @@ def main():
             if abs(applied_throttle) < JOYSTICK_DEADBAND:
                 stop_drive()
             else:
+                turning = max(-1.0, min(1.0, joy_x)) * (MAX_DRIVE_RPM/2)
                 target_rpm = clamp(applied_throttle, -1.0, 1.0) * MAX_DRIVE_RPM
-                motor_three.set_speed(target_rpm)
-                motor_four.set_speed(target_rpm)
+                motor_three.set_speed(target_rpm + turning)
+                motor_four.set_speed(target_rpm - turning)
 
-            steer_norm = max(-1.0, min(1.0, joy_x))
-            steer_angle = STEER_CENTER_DEG + steer_norm * STEER_RANGE_DEG
-            steer_angle = max(STEER_CENTER_DEG - STEER_RANGE_DEG,
-                              min(STEER_CENTER_DEG + STEER_RANGE_DEG, steer_angle))
-            max_steer_step = STEER_RAMP_DEG_PER_SEC * loop_dt_s
-            applied_steer += max(-max_steer_step, min(max_steer_step, steer_angle - applied_steer))
-            servo_three.set_angle(applied_steer)
 
             if abs(applied_throttle) >= JOYSTICK_DEADBAND or abs(applied_steer - STEER_CENTER_DEG) > 1.0:
                 note_driving()
+
+            # target = max(-1.0, min(1.0, joy_y))
+            # # slowing down (toward zero) and speeding up each have their own ramp
+            # slowing = (applied_throttle > 0 and target < applied_throttle) or \
+            #           (applied_throttle < 0 and target > applied_throttle)
+            # ramp = THROTTLE_RAMP_DOWN_PER_SEC if slowing else THROTTLE_RAMP_PER_SEC
+            # max_step = ramp * loop_dt_s
+            # new_throttle = applied_throttle + max(-max_step, min(max_step, target - applied_throttle))
+            # # when reversing, the slowing ramp only goes as far as stopped (which
+            # # clears the speed controllers, below); the other direction then
+            # # builds up at the speeding-up rate
+            # if slowing and new_throttle * applied_throttle < 0:
+            #     new_throttle = 0.0
+            # applied_throttle = new_throttle
+
+            # if abs(applied_throttle) < JOYSTICK_DEADBAND:
+            #     stop_drive()
+            # else:
+            #     target_rpm = clamp(applied_throttle, -1.0, 1.0) * MAX_DRIVE_RPM
+            #     motor_three.set_speed(target_rpm)
+            #     motor_four.set_speed(target_rpm)
+
+            # steer_norm = max(-1.0, min(1.0, joy_x))
+            # steer_angle = STEER_CENTER_DEG + steer_norm * STEER_RANGE_DEG
+            # steer_angle = max(STEER_CENTER_DEG - STEER_RANGE_DEG,
+            #                   min(STEER_CENTER_DEG + STEER_RANGE_DEG, steer_angle))
+            # max_steer_step = STEER_RAMP_DEG_PER_SEC * loop_dt_s
+            # applied_steer += max(-max_steer_step, min(max_steer_step, steer_angle - applied_steer))
+            # servo_three.set_angle(applied_steer)
+
+            # if abs(applied_throttle) >= JOYSTICK_DEADBAND or abs(applied_steer - STEER_CENTER_DEG) > 1.0:
+            #     note_driving()
         else:
             # stop_motors() re-centers the servo whenever control is lost
             applied_steer = STEER_CENTER_DEG
