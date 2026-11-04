@@ -51,6 +51,8 @@ var stopwatch_running: bool = false
 
 # On game start
 func _ready():
+	SoundManager.play_race_music()
+	connect("countdown_finished", Callable(self, "_on_countdown_finished"))
 	# When I want it to start at the beginning of the race instead I would add
 	# $HUD.start_countdown() to scene manager script instead
 	start_countdown() 
