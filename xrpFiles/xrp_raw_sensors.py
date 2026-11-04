@@ -46,14 +46,14 @@ SEND_RATE_HZ = 100
 JOYSTICK_DEADBAND = 0.05
 
 # Kept low to limit the motors' current draw (brownout protection)
-MAX_DRIVE_RPM = 50
+MAX_DRIVE_RPM = 80
 
 # Throttle ramping (brownout protection) — limits how fast the motor command
 # can change. 10.0 per second means 0->full takes ~100 ms; lower it if the
 # inrush-current spikes start browning out the power rail. Measured in time, not
 # loop passes, so it doesn't change with LOOP_SLEEP_MS.
 # Larger value = snappier response but higher current spikes.
-THROTTLE_RAMP_PER_SEC = 10.0   # 
+THROTTLE_RAMP_PER_SEC = 20.0   # 
 # The same, but for slowing down and stopping (10.0 = full -> stopped in ~100 ms).
 # The brownouts came from speeding up; braking draws less, but if the LOAD log
 # lines show bigger voltage dips when stopping, lower this
@@ -916,8 +916,8 @@ def main():
             else:
                 turning = max(-1.0, min(1.0, joy_x)) * (MAX_DRIVE_RPM/2)
                 target_rpm = clamp(applied_throttle, -1.0, 1.0) * MAX_DRIVE_RPM
-                motor_three.set_speed(target_rpm + turning)
-                motor_four.set_speed(target_rpm - turning)
+                motor_three.set_speed(target_rpm - turning)
+                motor_four.set_speed(target_rpm + turning)
 
 
             if abs(applied_throttle) >= JOYSTICK_DEADBAND or abs(applied_steer - STEER_CENTER_DEG) > 1.0:
