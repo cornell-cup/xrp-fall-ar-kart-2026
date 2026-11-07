@@ -82,6 +82,7 @@ xrpfall2025/apriltag_detector.exe
 wpilibtestinggrounds/xrpExample/gradle/wrapper/gradle-wrapper.jar
 
 # Generated code, caches, and build/export output
+repomix-output.xml
 **/__pycache__/
 **/.gradle/
 **/.wpilib/
