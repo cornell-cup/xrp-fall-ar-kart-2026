@@ -32,10 +32,10 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -661.0
-offset_top = 3.0
-offset_right = 656.0
-offset_bottom = 431.0
+offset_left = -736.0
+offset_top = -47.0
+offset_right = 769.0
+offset_bottom = 442.0
 grow_horizontal = 2
 texture = ExtResource("3_logo")
 expand_mode = 1
@@ -63,10 +63,26 @@ layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="Icon" type="TextureRect" parent="IconsHBox/RobotColumn"]
+[node name="IconAnchor" type="Control" parent="IconsHBox/RobotColumn"]
 custom_minimum_size = Vector2(360, 360)
 layout_mode = 2
 size_flags_horizontal = 4
+
+[node name="Icon" type="TextureRect" parent="IconsHBox/RobotColumn/IconAnchor"]
+custom_minimum_size = Vector2(360, 360)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -357.0
+offset_top = -250.5
+offset_right = 298.0
+offset_bottom = 404.5
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(180, 180)
 texture = ExtResource("4_car")
 expand_mode = 1
 stretch_mode = 5
@@ -84,10 +100,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -90.0
+offset_left = -122.0
 offset_top = -90.0
-offset_right = 90.0
-offset_bottom = 90.0
+offset_right = 106.0
+offset_bottom = 138.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(90, 90)
@@ -114,23 +130,32 @@ texture = ExtResource("8_checkmark")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="StatusLabel" type="Label" parent="IconsHBox/RobotColumn"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 36
-text = "Searching..."
-horizontal_alignment = 1
-
 [node name="CameraColumn" type="VBoxContainer" parent="IconsHBox"]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="Icon" type="TextureRect" parent="IconsHBox/CameraColumn"]
+[node name="IconAnchor" type="Control" parent="IconsHBox/CameraColumn"]
 custom_minimum_size = Vector2(360, 360)
 layout_mode = 2
 size_flags_horizontal = 4
+
+[node name="Icon" type="TextureRect" parent="IconsHBox/CameraColumn/IconAnchor"]
+custom_minimum_size = Vector2(360, 360)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -180.0
+offset_right = 180.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(180, 180)
 texture = ExtResource("5_camera")
 expand_mode = 1
 stretch_mode = 5
@@ -150,8 +175,8 @@ anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -90.0
 offset_top = -90.0
-offset_right = 90.0
-offset_bottom = 90.0
+offset_right = 125.0
+offset_bottom = 125.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(90, 90)
@@ -178,23 +203,32 @@ texture = ExtResource("8_checkmark")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="StatusLabel" type="Label" parent="IconsHBox/CameraColumn"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 36
-text = "Searching..."
-horizontal_alignment = 1
-
 [node name="ControllerColumn" type="VBoxContainer" parent="IconsHBox"]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="Icon" type="TextureRect" parent="IconsHBox/ControllerColumn"]
+[node name="IconAnchor" type="Control" parent="IconsHBox/ControllerColumn"]
 custom_minimum_size = Vector2(360, 360)
 layout_mode = 2
 size_flags_horizontal = 4
+
+[node name="Icon" type="TextureRect" parent="IconsHBox/ControllerColumn/IconAnchor"]
+custom_minimum_size = Vector2(360, 360)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -293.0
+offset_top = -257.5
+offset_right = 391.0
+offset_bottom = 426.5
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(180, 180)
 texture = ExtResource("6_controller")
 expand_mode = 1
 stretch_mode = 5
@@ -212,10 +246,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -90.0
+offset_left = -63.0
 offset_top = -90.0
-offset_right = 90.0
-offset_bottom = 90.0
+offset_right = 167.0
+offset_bottom = 140.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(90, 90)
@@ -242,13 +276,6 @@ texture = ExtResource("8_checkmark")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="StatusLabel" type="Label" parent="IconsHBox/ControllerColumn"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 36
-text = "Searching..."
-horizontal_alignment = 1
-
 [node name="FooterLabel" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = 7
@@ -256,10 +283,10 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -576.0
-offset_top = -106.0
-offset_right = 624.0
-offset_bottom = -36.0
+offset_left = -600.0
+offset_top = -77.0
+offset_right = 600.0
+offset_bottom = -7.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
