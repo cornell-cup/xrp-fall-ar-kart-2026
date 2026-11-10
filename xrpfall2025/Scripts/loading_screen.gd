@@ -10,24 +10,21 @@ extends Control
 @onready var camera_checkmark: TextureRect = $IconsHBox/CameraColumn/IndicatorAnchor/Checkmark
 @onready var controller_checkmark: TextureRect = $IconsHBox/ControllerColumn/IndicatorAnchor/Checkmark
 
-# Footer label
+# UI labels & buttons
 @onready var footer_label: Label = $FooterLabel
+@onready var play_offline_button: Button = get_node_or_null("PlayOfflineButton")
 
-# Rotation speed: 0.5 turns per second (180 deg/s) - slow, readable arcade pace
+# Rotation speed: 0.5 turns per second (180 deg/s)
 @export var spin_speed: float = TAU * 0.5
 
-# Manual adjustment in pixels to shift the spindle into the exact center hole of the ring
+# Manual adjustment in pixels to center the spindle
 @export var pivot_adjustment: Vector2 = Vector2(0, -18)
 
-# Simulation / Mock delays (in seconds)
-@export_group("Simulation Settings")
-@export var mock_mode: bool = true
-@export var robot_delay: float = 3.0
-@export var camera_delay: float = 4.0
-@export var controller_delay: float = 5.0
+# State management
+var is_offline_mode: bool = false
+var transition_started: bool = false
 
 func _ready() -> void:
-	# Initialize indicator visibility
 	_reset_indicators()
 
 	# Wait one frame for containers to finish computing layout dimensions
@@ -38,12 +35,12 @@ func _ready() -> void:
 		if spinner:
 			spinner.resized.connect(_recenter_all_pivots)
 
-	# Start the mock connection sequence
-	if mock_mode:
-		_start_simulation()
+	# Connect Play Offline button if present
+	if play_offline_button and not play_offline_button.pressed.is_connected(_on_play_offline_pressed):
+		play_offline_button.pressed.connect(_on_play_offline_pressed)
 
 func _process(delta: float) -> void:
-	# Rotate continuously around the calibrated spindle
+	# 1. Rotate active spinners
 	var step = delta * spin_speed
 	if robot_spinner and robot_spinner.visible:
 		robot_spinner.rotation += step
@@ -51,6 +48,10 @@ func _process(delta: float) -> void:
 		camera_spinner.rotation += step
 	if controller_spinner and controller_spinner.visible:
 		controller_spinner.rotation += step
+
+	# 2. Mode A: Live Hardware Polling (only active while NOT in offline mode)
+	if not is_offline_mode and not transition_started:
+		_poll_live_hardware()
 
 func _recenter_all_pivots() -> void:
 	_center_pivot(robot_spinner)
@@ -73,24 +74,50 @@ func _reset_indicators() -> void:
 	if footer_label:
 		footer_label.text = "Verifying Kart Peripherals..."
 
-func _start_simulation() -> void:
-	get_tree().create_timer(robot_delay).timeout.connect(_on_robot_connected)
-	get_tree().create_timer(camera_delay).timeout.connect(_on_camera_connected)
-	get_tree().create_timer(controller_delay).timeout.connect(_on_controller_connected)
+# Mode A: Checks real-world connectivity via NetworkReceiver and Input API
+func _poll_live_hardware() -> void:
+	var net = get_node_or_null("/root/NetworkReceiver")
+	if net:
+		# Robot: true when telemetry packets stream from EKF
+		if net.xrp_connected and not robot_checkmark.visible:
+			_set_connected(robot_spinner, robot_checkmark)
 
-func _on_robot_connected() -> void:
-	if robot_spinner: robot_spinner.visible = false
-	if robot_checkmark: robot_checkmark.visible = true
-	_check_all_connected()
+		# Camera: true when video frames are actively confirmed over TCP
+		if (net.get("_video_confirmed") or net.tcp_connected) and not camera_checkmark.visible:
+			_set_connected(camera_spinner, camera_checkmark)
 
-func _on_camera_connected() -> void:
-	if camera_spinner: camera_spinner.visible = false
-	if camera_checkmark: camera_checkmark.visible = true
-	_check_all_connected()
+		# Controller: true when gamepad detected by NetworkReceiver or Godot Input
+		if (net.gamepad_connected or Input.get_connected_joypads().size() > 0) and not controller_checkmark.visible:
+			_set_connected(controller_spinner, controller_checkmark)
+	else:
+		# Fallback check for gamepad if running scene without NetworkReceiver
+		if Input.get_connected_joypads().size() > 0 and not controller_checkmark.visible:
+			_set_connected(controller_spinner, controller_checkmark)
 
-func _on_controller_connected() -> void:
-	if controller_spinner: controller_spinner.visible = false
-	if controller_checkmark: controller_checkmark.visible = true
+# Mode B: Triggered when user clicks "Play Offline"
+func _on_play_offline_pressed() -> void:
+	if is_offline_mode or transition_started:
+		return
+
+	is_offline_mode = true
+	if play_offline_button:
+		play_offline_button.disabled = true
+
+	if footer_label:
+		footer_label.text = "Starting Offline Mode..."
+
+	# Trigger staggered mock delays for remaining unconnected devices
+	if not robot_checkmark.visible:
+		get_tree().create_timer(3.0).timeout.connect(func(): _set_connected(robot_spinner, robot_checkmark))
+	if not camera_checkmark.visible:
+		get_tree().create_timer(4.0).timeout.connect(func(): _set_connected(camera_spinner, camera_checkmark))
+	if not controller_checkmark.visible:
+		get_tree().create_timer(5.0).timeout.connect(func(): _set_connected(controller_spinner, controller_checkmark))
+
+# Unified handler: hides spinner, shows checkmark, checks completion
+func _set_connected(spinner: TextureRect, checkmark: TextureRect) -> void:
+	if spinner: spinner.visible = false
+	if checkmark: checkmark.visible = true
 	_check_all_connected()
 
 func _check_all_connected() -> void:
@@ -99,5 +126,17 @@ func _check_all_connected() -> void:
 	var controller_ready = controller_checkmark and controller_checkmark.visible
 
 	if robot_ready and camera_ready and controller_ready:
+		if transition_started:
+			return
+		transition_started = true
+
 		if footer_label:
-			footer_label.text = "All Devices connected!"
+			footer_label.text = "All Devices connected!" if not is_offline_mode else "Offline Mode Ready!"
+
+		# Hide the skip button once ready
+		if play_offline_button:
+			play_offline_button.visible = false
+
+		# Pause for 1.2 seconds so player sees completion, then load title screen
+		await get_tree().create_timer(1.2).timeout
+		get_tree().change_scene_to_file("res://Scenes/GameplayScenes/title_screen.tscn")
