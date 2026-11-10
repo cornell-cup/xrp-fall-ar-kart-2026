@@ -314,3 +314,22 @@ mouse_default_cursor_shape = 2
 theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = ExtResource("9_buttonstyle")
 text = "Play Offline"
+
+[node name="RetryButton" type="Button" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -550.0
+offset_top = -130.0
+offset_right = -360.0
+offset_bottom = -50.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = ExtResource("9_buttonstyle")
+text = "Retry"
