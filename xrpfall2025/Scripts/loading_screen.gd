@@ -11,14 +11,20 @@ extends Control
 @onready var controller_checkmark: TextureRect = $IconsHBox/ControllerColumn/IndicatorAnchor/Checkmark
 
 # UI labels & buttons
-@onready var footer_label: Label = $FooterLabel
+@onready var footer_label: Label = get_node_or_null("FooterLabel")
 @onready var play_offline_button: Button = get_node_or_null("PlayOfflineButton")
+@onready var retry_button: Button = get_node_or_null("RetryButton")
 
 # Rotation speed: 0.5 turns per second (180 deg/s)
 @export var spin_speed: float = TAU * 0.5
 
 # Manual adjustment in pixels to center the spindle
 @export var pivot_adjustment: Vector2 = Vector2(0, -18)
+
+# Timeout settings
+@export var timeout_duration: float = 15.0
+var time_elapsed: float = 0.0
+var has_timed_out: bool = false
 
 # State management
 var is_offline_mode: bool = false
@@ -35,9 +41,11 @@ func _ready() -> void:
 		if spinner:
 			spinner.resized.connect(_recenter_all_pivots)
 
-	# Connect Play Offline button if present
+	# Connect buttons
 	if play_offline_button and not play_offline_button.pressed.is_connected(_on_play_offline_pressed):
 		play_offline_button.pressed.connect(_on_play_offline_pressed)
+	if retry_button and not retry_button.pressed.is_connected(_on_retry_pressed):
+		retry_button.pressed.connect(_on_retry_pressed)
 
 func _process(delta: float) -> void:
 	# 1. Rotate active spinners
@@ -49,9 +57,15 @@ func _process(delta: float) -> void:
 	if controller_spinner and controller_spinner.visible:
 		controller_spinner.rotation += step
 
-	# 2. Mode A: Live Hardware Polling (only active while NOT in offline mode)
+	# 2. Mode A: Live Hardware Polling (only active while NOT in offline mode and NOT timed out)
 	if not is_offline_mode and not transition_started:
-		_poll_live_hardware()
+		if not has_timed_out:
+			_poll_live_hardware()
+			
+			# Handle Timeout
+			time_elapsed += delta
+			if time_elapsed >= timeout_duration:
+				_on_timeout()
 
 func _recenter_all_pivots() -> void:
 	_center_pivot(robot_spinner)
@@ -73,6 +87,9 @@ func _reset_indicators() -> void:
 
 	if footer_label:
 		footer_label.text = "Verifying Kart Peripherals..."
+		
+	if retry_button:
+		retry_button.visible = false
 
 # Mode A: Checks real-world connectivity via NetworkReceiver and Input API
 func _poll_live_hardware() -> void:
@@ -86,13 +103,38 @@ func _poll_live_hardware() -> void:
 		if (net.get("_video_confirmed") or net.tcp_connected) and not camera_checkmark.visible:
 			_set_connected(camera_spinner, camera_checkmark)
 
-		# Controller: true when gamepad detected by NetworkReceiver or Godot Input
+		# Gamepad: true when gamepad detected by NetworkReceiver or Godot Input
 		if (net.gamepad_connected or Input.get_connected_joypads().size() > 0) and not controller_checkmark.visible:
 			_set_connected(controller_spinner, controller_checkmark)
 	else:
 		# Fallback check for gamepad if running scene without NetworkReceiver
 		if Input.get_connected_joypads().size() > 0 and not controller_checkmark.visible:
 			_set_connected(controller_spinner, controller_checkmark)
+
+func _on_timeout() -> void:
+	has_timed_out = true
+	if retry_button:
+		retry_button.visible = true
+		
+	# Dynamically build the list of missing devices
+	var missing_devices = []
+	if not robot_checkmark.visible:
+		missing_devices.append("Robot")
+	if not camera_checkmark.visible:
+		missing_devices.append("Camera")
+	if not controller_checkmark.visible:
+		missing_devices.append("Gamepad")
+		
+	if footer_label:
+		footer_label.text = "Connection Timeout. Could not find: " + ", ".join(missing_devices)
+
+func _on_retry_pressed() -> void:
+	has_timed_out = false
+	time_elapsed = 0.0
+	if retry_button:
+		retry_button.visible = false
+	if footer_label:
+		footer_label.text = "Verifying Kart Peripherals..."
 
 # Mode B: Triggered when user clicks "Play Offline"
 func _on_play_offline_pressed() -> void:
@@ -102,6 +144,8 @@ func _on_play_offline_pressed() -> void:
 	is_offline_mode = true
 	if play_offline_button:
 		play_offline_button.disabled = true
+	if retry_button:
+		retry_button.visible = false
 
 	if footer_label:
 		footer_label.text = "Starting Offline Mode..."
@@ -133,9 +177,11 @@ func _check_all_connected() -> void:
 		if footer_label:
 			footer_label.text = "All Devices connected!" if not is_offline_mode else "Offline Mode Ready!"
 
-		# Hide the skip button once ready
+		# Hide the buttons once ready
 		if play_offline_button:
 			play_offline_button.visible = false
+		if retry_button:
+			retry_button.visible = false
 
 		# Pause for 1.2 seconds so player sees completion, then load title screen
 		await get_tree().create_timer(1.2).timeout
