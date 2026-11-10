@@ -1,5 +1,7 @@
 extends Control
 
+const CONNECTING_DEVICES_TEXT: String = "Connecting Devices..."
+
 # Spinner node references
 @onready var robot_spinner: TextureRect = $IconsHBox/RobotColumn/IndicatorAnchor/Spinner
 @onready var camera_spinner: TextureRect = $IconsHBox/CameraColumn/IndicatorAnchor/Spinner
@@ -86,7 +88,7 @@ func _reset_indicators() -> void:
 	if controller_spinner: controller_spinner.visible = true
 
 	if footer_label:
-		footer_label.text = "Verifying Kart Peripherals..."
+		footer_label.text = CONNECTING_DEVICES_TEXT
 		
 	if retry_button:
 		retry_button.visible = false
@@ -134,7 +136,7 @@ func _on_retry_pressed() -> void:
 	if retry_button:
 		retry_button.visible = false
 	if footer_label:
-		footer_label.text = "Verifying Kart Peripherals..."
+		footer_label.text = CONNECTING_DEVICES_TEXT
 
 # Mode B: Triggered when user clicks "Play Offline"
 func _on_play_offline_pressed() -> void:
