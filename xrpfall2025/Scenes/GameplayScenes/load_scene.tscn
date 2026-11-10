@@ -294,7 +294,7 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 44
-text = "Verifying Kart Peripherals..."
+text = "Connecting devices..."
 horizontal_alignment = 1
 
 [node name="PlayOfflineButton" type="Button" parent="."]
