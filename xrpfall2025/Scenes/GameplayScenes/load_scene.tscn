@@ -27,7 +27,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.04, 0.38, 0.95, 1)
+color = Color(0.0705882, 0.0823529, 0.12549, 1)
 
 [node name="TopLogo" type="TextureRect" parent="."]
 custom_minimum_size = Vector2(800, 260)

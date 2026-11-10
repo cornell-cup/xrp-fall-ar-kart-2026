@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://dx66fcni2re15"]
+[gd_scene load_steps=10 format=3 uid="uid://dx66fcni2re15"]
 
 [ext_resource type="Script" uid="uid://cbmfp2bx883lo" path="res://Scripts/loading_screen.gd" id="2_fadcs"]
 [ext_resource type="Theme" uid="uid://fkat5bpgiklk" path="res://ScreenMainTheme.tres" id="2_theme"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://co8aeitxnar4j" path="res://Assets/Images/new-2026/load-icons/load-icon-controller-BG-clear.png" id="6_controller"]
 [ext_resource type="Texture2D" uid="uid://cux0ai8s37s75" path="res://Assets/Images/new-2026/load-icons/load-icon-spinner-1-BG-clear.png" id="7_spinner"]
 [ext_resource type="Texture2D" uid="uid://b3dhg61ey845t" path="res://Assets/Images/new-2026/load-icons/load-icon-checkmark-BG-clear.png" id="8_checkmark"]
+[ext_resource type="StyleBox" uid="uid://blm332pcbh3n3" path="res://UI/buttonstyle.tres" id="9_buttonstyle"]
 
 [node name="LoadingScreen" type="Control"]
 layout_mode = 3
@@ -34,10 +35,10 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -736.0
-offset_top = -47.0
-offset_right = 769.0
-offset_bottom = 442.0
+offset_left = -656.0
+offset_top = -75.0
+offset_right = 661.0
+offset_bottom = 353.0
 grow_horizontal = 2
 texture = ExtResource("3_logo")
 expand_mode = 1
@@ -277,3 +278,56 @@ grow_vertical = 2
 texture = ExtResource("8_checkmark")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="FooterLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.369
+anchor_right = 0.5
+anchor_bottom = 0.369
+offset_left = -607.0
+offset_top = -70.52
+offset_right = 593.0
+offset_bottom = -0.52002
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 44
+text = "Connecting devices..."
+horizontal_alignment = 1
+
+[node name="PlayOfflineButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -290.0
+offset_top = -168.0
+offset_bottom = -88.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = ExtResource("9_buttonstyle")
+text = "Play Offline"
+
+[node name="RetryButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -194.0
+offset_top = -695.0
+offset_right = -4.0
+offset_bottom = -615.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = ExtResource("9_buttonstyle")
+text = "Retry"
