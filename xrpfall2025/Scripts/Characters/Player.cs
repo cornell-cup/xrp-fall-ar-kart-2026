@@ -59,12 +59,6 @@ public partial class Player : Car
 			(GetParent() as CarManager)?.UseItem(this);
 		}
 
-		// Put the kart back on the road. The real XRP's position can't be reset, so only without it
-		if (Input.IsActionJustPressed("reset_kart") && !IsXrpActive())
-		{
-			ResetToTrack();
-		}
-
 		//draw gizmos
 		//DebugDraw3D.DrawBox(AABB.Position, Godot.Quaternion.Identity, Vector3.One, color);
 		//GD.Print("Player State: " + Current);

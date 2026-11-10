@@ -34,7 +34,7 @@ func _input(event: InputEvent) -> void:
 		elif event.keycode == KEY_G and event.pressed:
 			generate_path()
 		elif event.keycode == KEY_Q and event.pressed:
-			get_tree().change_scene_to_file("res://Scenes/GameplayScenes/title_screen.tscn")
+			SceneTransition.change_scene("res://Scenes/GameplayScenes/title_screen.tscn")
 			pass
 	elif event is InputEventMouseButton:
 		# pan camera

@@ -1,425 +1,541 @@
-[gd_scene load_steps=23 format=3 uid="uid://cexyth8mmkpa5"]
+[gd_scene load_steps=25 format=3 uid="uid://cexyth8mmkpa5"]
 
-[ext_resource type="Theme" uid="uid://fkat5bpgiklk" path="res://ScreenMainTheme.tres" id="1_qqu8f"]
-[ext_resource type="Theme" uid="uid://bqodo202t6svm" path="res://UI/button_theme.tres" id="1_upek8"]
-[ext_resource type="ButtonGroup" uid="uid://bamt45mhkoyvk" path="res://UI/car_buttons.tres" id="1_wutij"]
-[ext_resource type="Script" uid="uid://cmn3yomsk53u2" path="res://Scripts/customization_screen.gd" id="2_qqu8f"]
-[ext_resource type="Texture2D" uid="uid://b042olkg5sc2b" path="res://Assets/Images/new-2026/blue-bg-PNG.png" id="3_l8wsh"]
-[ext_resource type="FontFile" uid="uid://b67jbu37t1tvi" path="res://UI/Kenney Future Narrow.ttf" id="5_wqq3l"]
-[ext_resource type="ButtonGroup" uid="uid://dqoxyk1apmlvs" path="res://UI/map_buttons.tres" id="7_q7vb7"]
-[ext_resource type="Texture2D" uid="uid://d0nqsgbhxp72n" path="res://Assets/Images/new-2026/kart-clear-PNG.png" id="10_q7vb7"]
-[ext_resource type="Texture2D" uid="uid://7rvbgrm2ye30" path="res://Assets/Images/new-2026/start-race-clear-V2-PNG.png" id="11_q5g2k"]
-[ext_resource type="Texture2D" uid="uid://dbpsfbshfs0m7" path="res://Assets/Images/new-2026/island-clear-PNG.png" id="11_qqu8f"]
-[ext_resource type="Theme" uid="uid://bee3jtcppvowa" path="res://RedTextTheme.tres" id="12_q5g2k"]
-[ext_resource type="Texture2D" uid="uid://bask28u1q7icc" path="res://Assets/Images/new-2026/logo-clear-PNG.png" id="13_hys36"]
-[ext_resource type="Texture2D" uid="uid://dk3bqpsnn756p" path="res://Assets/Images/new-2026/NEW-back-button-PNG.png" id="14_mntij"]
-[ext_resource type="Texture2D" uid="uid://bfkjk87oq7wdr" path="res://Assets/Images/bluebutton.png" id="14_wqq3l"]
+[ext_resource type="Script" uid="uid://cmn3yomsk53u2" path="res://Scripts/customization_screen.gd" id="1_script"]
+[ext_resource type="Theme" uid="uid://dtpq031k23ppy" path="res://UI/ar_kart_ui/godot/ar_kart_theme.tres" id="2_theme"]
+[ext_resource type="Script" uid="uid://dbf37k71wdla4" path="res://UI/ar_kart_ui/godot/streak_background.gd" id="3_streaks"]
+[ext_resource type="ButtonGroup" uid="uid://bamt45mhkoyvk" path="res://UI/car_buttons.tres" id="4_cars"]
+[ext_resource type="ButtonGroup" uid="uid://dqoxyk1apmlvs" path="res://UI/map_buttons.tres" id="5_maps"]
+[ext_resource type="Texture2D" uid="uid://bjq5o8nfx4eo7" path="res://UI/ar_kart_ui/icons/round_button_back@2x.png" id="6_back"]
+[ext_resource type="FontVariation" path="res://UI/rubik_black.tres" id="7_black"]
+[ext_resource type="PackedScene" path="res://Scenes/Prefabs/status_bar.tscn" id="9_statusbar"]
+[ext_resource type="Script" uid="uid://op70qnfkwf5d" path="res://Scripts/hover_button.gd" id="hover_button"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l8wsh"]
-bg_color = Color(1, 0.839216, 0.2, 1)
-border_width_left = 12
-border_width_top = 12
-border_width_right = 12
-border_width_bottom = 12
-border_color = Color(0.901961, 0.541176, 0, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_none"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q5g2k"]
-bg_color = Color(1, 0.701961, 0, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_selected"]
+bg_color = Color(1, 1, 1, 1)
 border_width_left = 6
 border_width_top = 6
 border_width_right = 6
-border_width_bottom = 6
-border_color = Color(0.622654, 0.391189, 0.31356, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
+border_width_bottom = 10
+border_color = Color(0, 0.439, 1, 1)
+corner_radius_top_left = 36
+corner_radius_top_right = 36
+corner_radius_bottom_right = 36
+corner_radius_bottom_left = 36
+corner_detail = 20
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q7vb7"]
-bg_color = Color(0.4, 0.8, 1, 1)
-border_width_left = 12
-border_width_top = 12
-border_width_right = 12
-border_width_bottom = 12
-border_color = Color(0, 0.466667, 0.8, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_hover"]
+bg_color = Color(0.965, 0.973, 0.988, 1)
+border_width_bottom = 10
+border_color = Color(0.765, 0.8, 0.855, 1)
+corner_radius_top_left = 36
+corner_radius_top_right = 36
+corner_radius_bottom_right = 36
+corner_radius_bottom_left = 36
+corner_detail = 20
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mntij"]
-bg_color = Color(0.2, 1, 1, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(1, 1, 1, 1)
+border_width_bottom = 10
+border_color = Color(0.765, 0.8, 0.855, 1)
+corner_radius_top_left = 36
+corner_radius_top_right = 36
+corner_radius_bottom_right = 36
+corner_radius_bottom_left = 36
+corner_detail = 20
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wqq3l"]
-bg_color = Color(0.109804, 1, 0.0862745, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aqua"]
+bg_color = Color(0.243, 0.835, 0.851, 1)
+border_width_bottom = 8
+border_color = Color(0.157, 0.667, 0.69, 1)
+corner_radius_top_left = 128
+corner_radius_top_right = 128
+corner_radius_bottom_right = 128
+corner_radius_bottom_left = 128
+corner_detail = 20
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qqu8f"]
-bg_color = Color(0.2, 0.6, 1, 1)
-border_width_left = 12
-border_width_top = 12
-border_width_right = 12
-border_width_bottom = 12
-border_color = Color(0, 0.333333, 0.643137, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_check"]
+bg_color = Color(0, 0.439, 1, 1)
+border_width_bottom = 4
+border_color = Color(0, 0.322, 0.761, 1)
+corner_radius_top_left = 32
+corner_radius_top_right = 32
+corner_radius_bottom_right = 32
+corner_radius_bottom_left = 32
+corner_detail = 20
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hys36"]
-bg_color = Color(0.2, 0.6, 1, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_red"]
+bg_color = Color(0.878, 0.118, 0.22, 1)
+border_width_bottom = 8
+border_color = Color(0.557, 0.039, 0.11, 1)
+corner_radius_top_left = 128
+corner_radius_top_right = 128
+corner_radius_bottom_right = 128
+corner_radius_bottom_left = 128
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_green"]
+bg_color = Color(0.475, 0.808, 0.29, 1)
+border_width_bottom = 8
+border_color = Color(0.29, 0.62, 0.169, 1)
+corner_radius_top_left = 128
+corner_radius_top_right = 128
+corner_radius_bottom_right = 128
+corner_radius_bottom_left = 128
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_map_panel"]
+content_margin_left = 32.0
+content_margin_top = 28.0
+content_margin_right = 32.0
+content_margin_bottom = 36.0
+bg_color = Color(0.918, 0.902, 0.878, 1)
+border_width_bottom = 10
+border_color = Color(0.765, 0.8, 0.855, 1)
+corner_radius_top_left = 44
+corner_radius_top_right = 44
+corner_radius_bottom_right = 44
+corner_radius_bottom_left = 44
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_map_selected"]
+bg_color = Color(1, 1, 1, 1)
 border_width_left = 6
 border_width_top = 6
 border_width_right = 6
-border_width_bottom = 6
-border_color = Color(0, 0.262773, 0.442322, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
+border_width_bottom = 10
+border_color = Color(0, 0.439, 1, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+corner_detail = 20
 
-[sub_resource type="Theme" id="Theme_mntij"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_map_option"]
+bg_color = Color(1, 1, 1, 1)
+border_width_bottom = 8
+border_color = Color(0.765, 0.8, 0.855, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_custom_hover"]
+bg_color = Color(0.949, 0.937, 0.918, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.604, 0.651, 0.722, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_custom"]
+bg_color = Color(0.918, 0.902, 0.878, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.604, 0.651, 0.722, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_icon_box"]
+bg_color = Color(0.882, 0.906, 0.941, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[sub_resource type="Theme" id="Theme_dialog"]
 
 [node name="CustomizationScreen" type="Control"]
+texture_filter = 4
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("1_qqu8f")
-script = ExtResource("2_qqu8f")
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
 
-[node name="SunSkyBackground" type="ColorRect" parent="."]
+[node name="Background" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.216, 0.219067, 0.4, 1)
+mouse_filter = 2
+script = ExtResource("3_streaks")
+streak_count = 14
 
-[node name="ImageBackground" type="TextureRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("3_l8wsh")
-expand_mode = 1
-stretch_mode = 4
+[node name="BackButton" type="TextureButton" parent="." groups=["back_sfx"]]
+layout_mode = 0
+offset_left = 84.0
+offset_top = 66.0
+offset_right = 198.0
+offset_bottom = 190.0
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("6_back")
+ignore_texture_size = true
+stretch_mode = 5
+script = ExtResource("hover_button")
+
+[node name="TitleText" type="Label" parent="."]
+layout_mode = 0
+offset_left = 312.0
+offset_top = 62.0
+offset_right = 1100.0
+offset_bottom = 192.0
+theme_override_colors/font_shadow_color = Color(0.765, 0.8, 0.855, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 8
+theme_override_fonts/font = ExtResource("7_black")
+theme_override_font_sizes/font_size = 104
+text = "SELECT KART"
+vertical_alignment = 1
 
 [node name="CarOptions" type="HBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 1341.0
-offset_top = 502.0
-offset_right = 1726.0
-offset_bottom = 602.0
+offset_left = 84.0
+offset_top = 258.0
+offset_right = 1206.0
+offset_bottom = 724.0
+theme_override_constants/separation = 39
 
-[node name="Car1" type="Button" parent="CarOptions"]
-visible = false
-custom_minimum_size = Vector2(445, 200)
+[node name="Car1" type="Button" parent="CarOptions" groups=["confirm_sfx"]]
+custom_minimum_size = Vector2(348, 466)
 layout_mode = 2
-theme = ExtResource("1_upek8")
-theme_override_fonts/font = ExtResource("5_wqq3l")
-theme_override_font_sizes/font_size = 100
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_none")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_card_selected")
+theme_override_styles/hover = SubResource("StyleBoxFlat_card_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_card_selected")
+theme_override_styles/normal = SubResource("StyleBoxFlat_card")
 toggle_mode = true
-button_group = ExtResource("1_wutij")
-text = "Aqua"
-expand_icon = true
+button_pressed = true
+button_group = ExtResource("4_cars")
+script = ExtResource("hover_button")
 
-[node name="Car2" type="Button" parent="CarOptions"]
-visible = false
-custom_minimum_size = Vector2(100, 100)
+[node name="Circle" type="Panel" parent="CarOptions/Car1"]
+layout_mode = 0
+offset_left = 46.0
+offset_top = 42.0
+offset_right = 302.0
+offset_bottom = 298.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_aqua")
+
+[node name="Name" type="Label" parent="CarOptions/Car1"]
+layout_mode = 0
+offset_top = 330.0
+offset_right = 348.0
+offset_bottom = 420.0
+theme_type_variation = &"DarkLabel"
+theme_override_fonts/font = ExtResource("7_black")
+theme_override_font_sizes/font_size = 60
+text = "AQUA"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Check" type="Panel" parent="CarOptions/Car1"]
+layout_mode = 0
+offset_left = 290.0
+offset_top = -16.0
+offset_right = 362.0
+offset_bottom = 56.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_check")
+
+[node name="Mark" type="Line2D" parent="CarOptions/Car1/Check"]
+points = PackedVector2Array(21, 37, 32, 47, 52, 25)
+width = 8.0
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Car2" type="Button" parent="CarOptions" groups=["confirm_sfx"]]
+custom_minimum_size = Vector2(348, 466)
 layout_mode = 2
-theme = ExtResource("1_upek8")
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_none")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_card_selected")
+theme_override_styles/hover = SubResource("StyleBoxFlat_card_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_card_selected")
+theme_override_styles/normal = SubResource("StyleBoxFlat_card")
 toggle_mode = true
-button_group = ExtResource("1_wutij")
-text = "Red"
-expand_icon = true
+button_group = ExtResource("4_cars")
+script = ExtResource("hover_button")
 
-[node name="Car3" type="Button" parent="CarOptions"]
-visible = false
-custom_minimum_size = Vector2(100, 100)
-layout_mode = 2
-theme = ExtResource("1_upek8")
-toggle_mode = true
-button_group = ExtResource("1_wutij")
-text = "Green"
-expand_icon = true
+[node name="Circle" type="Panel" parent="CarOptions/Car2"]
+layout_mode = 0
+offset_left = 46.0
+offset_top = 42.0
+offset_right = 302.0
+offset_bottom = 298.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_red")
 
-[node name="MapOptions" type="HBoxContainer" parent="."]
+[node name="Name" type="Label" parent="CarOptions/Car2"]
+layout_mode = 0
+offset_top = 330.0
+offset_right = 348.0
+offset_bottom = 420.0
+theme_type_variation = &"DarkLabel"
+theme_override_fonts/font = ExtResource("7_black")
+theme_override_font_sizes/font_size = 60
+text = "RED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Check" type="Panel" parent="CarOptions/Car2"]
 visible = false
 layout_mode = 0
-offset_left = 264.0
-offset_top = 478.0
-offset_right = 718.0
-offset_bottom = 596.0
+offset_left = 290.0
+offset_top = -16.0
+offset_right = 362.0
+offset_bottom = 56.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_check")
 
-[node name="Map1" type="Button" parent="MapOptions"]
-custom_minimum_size = Vector2(455, 230)
+[node name="Mark" type="Line2D" parent="CarOptions/Car2/Check"]
+points = PackedVector2Array(21, 37, 32, 47, 52, 25)
+width = 8.0
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Car3" type="Button" parent="CarOptions" groups=["confirm_sfx"]]
+custom_minimum_size = Vector2(348, 466)
 layout_mode = 2
-theme = ExtResource("1_upek8")
-theme_override_font_sizes/font_size = 100
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_none")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_card_selected")
+theme_override_styles/hover = SubResource("StyleBoxFlat_card_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_card_selected")
+theme_override_styles/normal = SubResource("StyleBoxFlat_card")
 toggle_mode = true
-button_group = ExtResource("7_q7vb7")
+button_group = ExtResource("4_cars")
+script = ExtResource("hover_button")
+
+[node name="Circle" type="Panel" parent="CarOptions/Car3"]
+layout_mode = 0
+offset_left = 46.0
+offset_top = 42.0
+offset_right = 302.0
+offset_bottom = 298.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_green")
+
+[node name="Name" type="Label" parent="CarOptions/Car3"]
+layout_mode = 0
+offset_top = 330.0
+offset_right = 348.0
+offset_bottom = 420.0
+theme_type_variation = &"DarkLabel"
+theme_override_fonts/font = ExtResource("7_black")
+theme_override_font_sizes/font_size = 60
+text = "GREEN"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Check" type="Panel" parent="CarOptions/Car3"]
+visible = false
+layout_mode = 0
+offset_left = 290.0
+offset_top = -16.0
+offset_right = 362.0
+offset_bottom = 56.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_check")
+
+[node name="Mark" type="Line2D" parent="CarOptions/Car3/Check"]
+points = PackedVector2Array(21, 37, 32, 47, 52, 25)
+width = 8.0
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="MapPanel" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_left = 1278.0
+offset_top = 258.0
+offset_right = 1836.0
+offset_bottom = 752.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_map_panel")
+
+[node name="MapOptions" type="VBoxContainer" parent="MapPanel"]
+layout_mode = 2
+theme_override_constants/separation = 26
+
+[node name="MapText" type="Label" parent="MapPanel/MapOptions"]
+layout_mode = 2
+theme_type_variation = &"DarkLabel"
+theme_override_fonts/font = ExtResource("7_black")
+theme_override_font_sizes/font_size = 52
+text = "SELECT MAP"
+
+[node name="Map1" type="Button" parent="MapPanel/MapOptions" groups=["confirm_sfx"]]
+custom_minimum_size = Vector2(0, 168)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_none")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_map_selected")
+theme_override_styles/hover = SubResource("StyleBoxFlat_map_option")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_map_selected")
+theme_override_styles/normal = SubResource("StyleBoxFlat_map_option")
+toggle_mode = true
+button_pressed = true
+button_group = ExtResource("5_maps")
+script = ExtResource("hover_button")
+
+[node name="TrackIcon" type="Line2D" parent="MapPanel/MapOptions/Map1"]
+position = Vector2(34, 46)
+points = PackedVector2Array(14, 30, 36, 20, 62, 30, 84, 26, 100, 8, 118, 6, 128, 24, 124, 52, 104, 70, 64, 76, 22, 72, 6, 56)
+closed = true
+width = 12.0
+default_color = Color(0.086, 0.11, 0.157, 1)
+joint_mode = 2
+antialiased = true
+
+[node name="Name" type="Label" parent="MapPanel/MapOptions/Map1"]
+layout_mode = 0
+offset_left = 196.0
+offset_top = 34.0
+offset_right = 480.0
+offset_bottom = 96.0
+theme_type_variation = &"DarkLabel"
+theme_override_fonts/font = ExtResource("7_black")
+theme_override_font_sizes/font_size = 46
 text = "CIRCUIT"
-expand_icon = true
 
-[node name="Map2" type="Button" parent="MapOptions"]
-visible = false
-custom_minimum_size = Vector2(100, 100)
+[node name="Info" type="Label" parent="MapPanel/MapOptions/Map1"]
+layout_mode = 0
+offset_left = 198.0
+offset_top = 96.0
+offset_right = 480.0
+offset_bottom = 132.0
+theme_override_colors/font_color = Color(0.357, 0.396, 0.471, 1)
+theme_override_font_sizes/font_size = 26
+text = "3 laps"
+
+[node name="FileSelect" type="Button" parent="MapPanel/MapOptions"]
+custom_minimum_size = Vector2(0, 168)
 layout_mode = 2
-theme = ExtResource("1_upek8")
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_none")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_map_selected")
+theme_override_styles/hover = SubResource("StyleBoxFlat_custom_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_map_selected")
+theme_override_styles/normal = SubResource("StyleBoxFlat_custom")
 toggle_mode = true
-button_group = ExtResource("7_q7vb7")
-expand_icon = true
+button_group = ExtResource("5_maps")
+script = ExtResource("hover_button")
 
-[node name="Map3" type="Button" parent="MapOptions"]
-visible = false
-custom_minimum_size = Vector2(100, 100)
-layout_mode = 2
-theme = ExtResource("1_upek8")
-toggle_mode = true
-button_group = ExtResource("7_q7vb7")
-expand_icon = true
+[node name="IconBox" type="Panel" parent="MapPanel/MapOptions/FileSelect"]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 26.0
+offset_right = 144.0
+offset_bottom = 142.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_icon_box")
 
-[node name="FileDialog" type="FileDialog" parent="MapOptions"]
+[node name="Plus" type="Label" parent="MapPanel/MapOptions/FileSelect/IconBox"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"DarkLabel"
+theme_override_fonts/font = ExtResource("7_black")
+theme_override_font_sizes/font_size = 64
+text = "+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Name" type="Label" parent="MapPanel/MapOptions/FileSelect"]
+layout_mode = 0
+offset_left = 172.0
+offset_top = 26.0
+offset_right = 480.0
+offset_bottom = 80.0
+theme_type_variation = &"DarkLabel"
+theme_override_fonts/font = ExtResource("7_black")
+theme_override_font_sizes/font_size = 35
+text = "CUSTOM TRACK"
+
+[node name="Info" type="Label" parent="MapPanel/MapOptions/FileSelect"]
+layout_mode = 0
+offset_left = 174.0
+offset_top = 80.0
+offset_right = 480.0
+offset_bottom = 148.0
+theme_override_colors/font_color = Color(0.357, 0.396, 0.471, 1)
+theme_override_font_sizes/font_size = 24
+text = "Load from Track
+Builder"
+text_overrun_behavior = 3
+
+[node name="FileDialog" type="FileDialog" parent="."]
 title = "Open a File"
-position = Vector2i(35, 220)
-theme = SubResource("Theme_mntij")
+size = Vector2i(900, 520)
+theme = SubResource("Theme_dialog")
 ok_button_text = "Open"
 file_mode = 0
 filters = PackedStringArray("*.tscn;text/tscn")
 
-[node name="FileSelect" type="Button" parent="MapOptions"]
-layout_mode = 2
-text = "Open Select Dialog"
-
-[node name="TitleText" type="Label" parent="."]
-visible = false
+[node name="StatusBar" parent="." instance=ExtResource("9_statusbar")]
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -356.0
-offset_top = -11.0
-offset_right = 999.0
-offset_bottom = 214.0
-grow_horizontal = 2
-theme = ExtResource("12_q5g2k")
-theme_override_font_sizes/font_size = 151
-text = "Get Ready..."
-
-[node name="MapText" type="Label" parent="."]
-visible = false
-layout_mode = 0
-offset_left = 96.0
-offset_top = 322.0
-offset_right = 999.0
-offset_bottom = 504.0
-theme = ExtResource("12_q5g2k")
-theme_override_colors/font_shadow_color = Color(0.4524, 0.61074, 0.78, 1)
-theme_override_font_sizes/font_size = 130
-text = "Select Map"
-
-[node name="CarText" type="Label" parent="."]
-visible = false
-layout_mode = 0
-offset_left = 1079.0
-offset_top = 320.0
-offset_right = 1965.0
-offset_bottom = 563.0
-theme = ExtResource("12_q5g2k")
-theme_override_colors/font_shadow_color = Color(0.415686, 0.564706, 0.721569, 1)
-theme_override_font_sizes/font_size = 130
-text = "Select Car"
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -708.0
+offset_top = 70.0
+offset_right = -84.0
+offset_bottom = 136.0
+grow_horizontal = 0
 
 [node name="ConfirmButton" type="Button" parent="."]
-visible = false
 layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
+anchors_preset = 3
+anchor_left = 1.0
 anchor_top = 1.0
-anchor_right = 0.5
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -160.0
-offset_top = -272.0
-offset_right = 223.0
-offset_bottom = -96.0
-grow_horizontal = 2
+offset_left = -530.0
+offset_top = -212.0
+offset_right = -84.0
+offset_bottom = -52.0
+grow_horizontal = 0
 grow_vertical = 0
-theme = ExtResource("1_upek8")
-theme_override_fonts/font = ExtResource("5_wqq3l")
-theme_override_font_sizes/font_size = 105
-text = "RACE!"
-icon = ExtResource("14_wqq3l")
-clip_text = true
-icon_alignment = 1
-expand_icon = true
-
-[node name="BackButton" type="Button" parent="."]
-visible = false
-layout_mode = 0
-offset_left = 8.0
-offset_top = 952.0
-offset_right = 266.0
-offset_bottom = 1070.0
-text = "↩"
-clip_text = true
-icon_alignment = 1
-expand_icon = true
-
-[node name="TopArLogo" type="TextureRect" parent="."]
-custom_minimum_size = Vector2(600, 220)
-layout_mode = 0
-offset_left = 563.0
-offset_top = -93.0
-offset_right = 1400.0
-offset_bottom = 744.0
-texture = ExtResource("13_hys36")
-expand_mode = 1
-stretch_mode = 4
-
-[node name="MiddlePanels" type="HBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -565.0
-offset_top = -122.0
-offset_right = 565.0
-offset_bottom = 278.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 40
-
-[node name="KartPanel" type="PanelContainer" parent="MiddlePanels"]
-custom_minimum_size = Vector2(350, 400)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_l8wsh")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="MiddlePanels/KartPanel"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="MiddlePanels/KartPanel/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(0.290196, 0.145098, 0, 1)
-theme_override_colors/font_outline_color = Color(0.290196, 0.145098, 0, 1)
-theme_override_constants/shadow_offset_y = 6
-theme_override_constants/outline_size = 12
-theme_override_font_sizes/font_size = 40
-text = "SELECT KART"
-horizontal_alignment = 1
-
-[node name="PanelContainer" type="PanelContainer" parent="MiddlePanels/KartPanel/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_q5g2k")
-
-[node name="TextureRect" type="TextureRect" parent="MiddlePanels/KartPanel/VBoxContainer/PanelContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-texture = ExtResource("10_q7vb7")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="RacePanel" type="PanelContainer" parent="MiddlePanels"]
-custom_minimum_size = Vector2(350, 400)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_q7vb7")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="MiddlePanels/RacePanel"]
-layout_mode = 2
-
-[node name="TextureRect" type="TextureRect" parent="MiddlePanels/RacePanel/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-texture = ExtResource("11_q5g2k")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="RaceButton" type="Button" parent="MiddlePanels/RacePanel" groups=["custom_sfx"]]
-layout_mode = 2
-focus_mode = 0
 mouse_default_cursor_shape = 2
-theme_override_font_sizes/font_size = 70
-theme_override_styles/hover = SubResource("StyleBoxFlat_mntij")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_wqq3l")
-flat = true
-
-[node name="Label" type="Label" parent="MiddlePanels/RacePanel/RaceButton"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -111.0
-offset_top = 21.0
-offset_right = 117.0
-offset_bottom = 102.0
-grow_horizontal = 2
-theme_override_colors/font_color = Color(1, 0.2, 0, 1)
-theme_override_colors/font_shadow_color = Color(0.4, 0, 0, 1)
-theme_override_colors/font_outline_color = Color(0.4, 0, 0, 1)
-theme_override_font_sizes/font_size = 72
+theme_override_fonts/font = ExtResource("7_black")
+theme_override_font_sizes/font_size = 92
 text = "RACE!"
+script = ExtResource("hover_button")
+hover_sound = true
 
-[node name="MapPanel" type="PanelContainer" parent="MiddlePanels"]
-custom_minimum_size = Vector2(350, 400)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_qqu8f")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="MiddlePanels/MapPanel"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="MiddlePanels/MapPanel/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(0.290196, 0.145098, 0, 1)
-theme_override_colors/font_outline_color = Color(0.290196, 0.145098, 0, 1)
-theme_override_constants/shadow_offset_y = 6
-theme_override_constants/outline_size = 12
-theme_override_font_sizes/font_size = 40
-text = "SELECT MAP"
-horizontal_alignment = 1
-
-[node name="PanelContainer" type="PanelContainer" parent="MiddlePanels/MapPanel/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_hys36")
-
-[node name="TextureRect" type="TextureRect" parent="MiddlePanels/MapPanel/VBoxContainer/PanelContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-texture = ExtResource("11_qqu8f")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="BackButtonNew" type="TextureButton" parent="."]
-custom_minimum_size = Vector2(300, 300)
-layout_mode = 0
-offset_left = -8.0
-offset_top = 789.0
-offset_right = 292.0
-offset_bottom = 1089.0
-mouse_default_cursor_shape = 2
-texture_normal = ExtResource("14_mntij")
-ignore_texture_size = true
-stretch_mode = 5
-
-[connection signal="pressed" from="MapOptions/FileSelect" to="." method="_on_file_select_pressed"]
-[connection signal="pressed" from="ConfirmButton" to="." method="_on_confirm_button_pressed"]
 [connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
-[connection signal="pressed" from="MiddlePanels/RacePanel/RaceButton" to="." method="_on_confirm_button_pressed"]
-[connection signal="pressed" from="BackButtonNew" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="MapPanel/MapOptions/Map1" to="." method="_on_circuit_pressed"]
+[connection signal="pressed" from="MapPanel/MapOptions/FileSelect" to="." method="_on_file_select_pressed"]
+[connection signal="pressed" from="ConfirmButton" to="." method="_on_confirm_button_pressed"]

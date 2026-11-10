@@ -1,0 +1,129 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://Scripts/status_bar.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://UI/ar_kart_ui/status/icon_robot@2x.png" id="2_robot"]
+[ext_resource type="Texture2D" path="res://UI/ar_kart_ui/status/icon_controller@2x.png" id="3_controller"]
+[ext_resource type="Texture2D" path="res://UI/ar_kart_ui/status/icon_camera@2x.png" id="4_camera"]
+[ext_resource type="Texture2D" path="res://UI/ar_kart_ui/status/dot_disconnected@2x.png" id="5_dot"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar"]
+content_margin_left = 33.0
+content_margin_top = 12.0
+content_margin_right = 33.0
+content_margin_bottom = 12.0
+bg_color = Color(0.133, 0.169, 0.231, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.765, 0.8, 0.855, 1)
+corner_radius_top_left = 27
+corner_radius_top_right = 27
+corner_radius_bottom_right = 27
+corner_radius_bottom_left = 27
+corner_detail = 20
+shadow_color = Color(0.043, 0.059, 0.09, 1)
+shadow_size = 1
+shadow_offset = Vector2(0, 8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_divider"]
+bg_color = Color(0.227, 0.267, 0.337, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[node name="StatusBar" type="PanelContainer"]
+texture_filter = 4
+custom_minimum_size = Vector2(624, 0)
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bar")
+script = ExtResource("1_script")
+
+[node name="Row" type="HBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="XrpIcon" type="TextureRect" parent="Row"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("2_robot")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="XrpLabel" type="Label" parent="Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "XRP"
+
+[node name="XrpDot" type="TextureRect" parent="Row"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("5_dot")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Divider1" type="Panel" parent="Row"]
+custom_minimum_size = Vector2(3, 36)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_divider")
+
+[node name="ControllerIcon" type="TextureRect" parent="Row"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("3_controller")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ControllerLabel" type="Label" parent="Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "Controller"
+
+[node name="ControllerDot" type="TextureRect" parent="Row"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("5_dot")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Divider2" type="Panel" parent="Row"]
+custom_minimum_size = Vector2(3, 36)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_divider")
+
+[node name="CameraIcon" type="TextureRect" parent="Row"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("4_camera")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CameraLabel" type="Label" parent="Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "Camera"
+
+[node name="CameraDot" type="TextureRect" parent="Row"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("5_dot")
+expand_mode = 1
+stretch_mode = 5

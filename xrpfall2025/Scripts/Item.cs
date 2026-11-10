@@ -211,6 +211,9 @@ public partial class Item : Node
 	{
 		SpawnBurst();
 		cylinder.Hide();
+		// only the player's own pickups make a sound
+		if (c is Player)
+			GetNode("/root/SoundManager").Call("play_item_pickup");
 	}
 
 	/// <summary>

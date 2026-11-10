@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://bd4sj4dkmbaqg"]
+[gd_scene load_steps=15 format=3 uid="uid://bd4sj4dkmbaqg"]
 
 [ext_resource type="PackedScene" uid="uid://sdm8yxrkofoh" path="res://Scenes/Prefabs/item_manager.tscn" id="1_evp6a"]
 [ext_resource type="PackedScene" uid="uid://dnkv3f1fu5fc8" path="res://Scenes/Prefabs/scene_manager.tscn" id="1_hx62u"]
@@ -8,8 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://dqemkqrkjrxoy" path="res://Scenes/Prefabs/checkpoint_manager.tscn" id="5_hbpqu"]
 [ext_resource type="PackedScene" uid="uid://b0pyubict3ifh" path="res://Scenes/Prefabs/finishline.tscn" id="5_t5l7q"]
 [ext_resource type="Script" uid="uid://bonnmavfkfsmn" path="res://Scenes/GameplayScenes/track_loader.gd" id="5_v66ti"]
-[ext_resource type="Script" uid="uid://cwl05w7v58gy5" path="res://Scenes/GameplayScenes/camera_feed.gd" id="9_t5l7q"]
-[ext_resource type="Script" path="res://Scripts/minimap.gd" id="10_minimap"]
+[ext_resource type="Script" path="res://Scripts/minimap_2d.gd" id="10_minimap"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
 size = Vector3(400, 1, 400)
@@ -37,11 +36,10 @@ checkpointManager = NodePath("../Checkpoint Manager")
 
 [node name="Track" parent="." instance=ExtResource("2_hx62u")]
 
-[node name="TrackLoader" type="Node" parent="." node_paths=PackedStringArray("minimapCamera")]
+[node name="TrackLoader" type="Node" parent="."]
 script = ExtResource("5_v66ti")
 filePath = "res://test_save5.tscn"
 scale = 50.0
-minimapCamera = NodePath("../MinimapSystem/MarginContainer/SubViewportContainer/SubViewport/minimapCamera")
 
 [node name="FileDialog" type="FileDialog" parent="TrackLoader"]
 title = "Open a File"
@@ -81,40 +79,18 @@ cull_mask = 1047553
 
 [node name="HUD" parent="CanvasLayer" instance=ExtResource("2_pw4we")]
 
-[node name="MinimapSystem" type="Node" parent="."]
-script = ExtResource("10_minimap")
+[node name="MinimapSystem" type="CanvasLayer" parent="."]
+layer = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="MinimapSystem"]
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -239.0
-offset_top = -253.0
-grow_horizontal = 0
-grow_vertical = 0
-
-[node name="SubViewportContainer" type="SubViewportContainer" parent="MinimapSystem/MarginContainer"]
-layout_mode = 2
-stretch = true
-
-[node name="SubViewport" type="SubViewport" parent="MinimapSystem/MarginContainer/SubViewportContainer"]
-handle_input_locally = false
-size = Vector2i(239, 253)
-render_target_update_mode = 4
-
-[node name="minimapCamera" type="Camera3D" parent="MinimapSystem/MarginContainer/SubViewportContainer/SubViewport"]
-transform = Transform3D(-4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 0, 200, 0)
-cull_mask = 1047554
-
-[node name="CameraFeedLayer" type="CanvasLayer" parent="."]
-script = ExtResource("9_t5l7q")
-
-[node name="VideoRect" type="TextureRect" parent="CameraFeedLayer"]
+[node name="Minimap" type="Control" parent="MinimapSystem"]
+layout_mode = 3
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
+offset_left = 52.0
+offset_top = -386.0
+offset_right = 372.0
+offset_bottom = -60.0
 grow_vertical = 0
-expand_mode = 1
-stretch_mode = 4
+mouse_filter = 2
+script = ExtResource("10_minimap")

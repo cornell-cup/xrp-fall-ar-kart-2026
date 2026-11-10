@@ -82,6 +82,16 @@ public partial class Car : Node
 	protected float trackProgress = 0;
 	//where along the track the car was last physics frame
 	private float lastTrackOffset = 0;
+
+	//Driving back along the track for this long counts as going the wrong way
+	protected const double WRONGWAYSECONDS = 2;
+	//Slower than this (in laps per second) either way counts as neither, so pose jitter
+	//while stopped doesn't count as driving backwards
+	protected const float WRONGWAYMINRATE = 0.01f;
+	//laps per second along the track, smoothed so one jumpy frame doesn't flip it
+	private float progressRate = 0;
+	//how long the car has been going backwards along the track
+	private double wrongWayTime = 0;
 	#endregion
 
 	#region car mesh and size related fields
@@ -209,6 +219,14 @@ public partial class Car : Node
 	}
 
 	/// <summary>
+	/// Has the car been driving backwards along the track for WRONGWAYSECONDS?
+	/// </summary>
+	public bool IsWrongWay
+	{
+		get { return wrongWayTime >= WRONGWAYSECONDS; }
+	}
+
+	/// <summary>
 	/// Is the car further from the middle of the road than the road is wide?
 	/// </summary>
 	public bool IsOffTrack
@@ -258,7 +276,7 @@ public partial class Car : Node
 	/// <param name="delta">Delta time</param>
 	public override void _PhysicsProcess(double delta)
 	{
-		UpdateTrackProgress();
+		UpdateTrackProgress(delta);
 
 		// Vertical velocity
 		if (!charbody3d.IsOnFloor()) // If in the air, fall towards the floor. Literally gravity
@@ -305,7 +323,7 @@ public partial class Car : Node
 	/// <summary>
 	/// Adds however far the car moved along the track since last frame to its track progress
 	/// </summary>
-	private void UpdateTrackProgress()
+	private void UpdateTrackProgress(double delta)
 	{
 		if (track == null) return;
 
@@ -318,6 +336,12 @@ public partial class Car : Node
 
 		trackProgress += change;
 		lastTrackOffset = offset;
+
+		//going backwards keeps adding up; going forwards clears it; stopped leaves it as it is
+		float rate = (float)(change / delta) / length;
+		progressRate = Mathf.Lerp(progressRate, rate, 1 - Mathf.Exp(-(float)delta / 0.3f));
+		if (progressRate < -WRONGWAYMINRATE) wrongWayTime += delta;
+		else if (progressRate > WRONGWAYMINRATE) wrongWayTime = 0;
 	}
 
 	/// <summary>

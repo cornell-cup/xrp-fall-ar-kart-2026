@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://ckroufi0l422b" path="res://Scripts/Characters/Player.cs" id="1_4flbx"]
 [ext_resource type="PackedScene" uid="uid://u7we301bvb4s" path="res://Assets/3dmodels/XRP_Car.fbx" id="2_0ctox"]
-[ext_resource type="Texture2D" uid="uid://ci5vhy1sk3rp2" path="res://Assets/Images/player_arrow.png" id="2_4ntmi"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_onrkg"]
 size = Vector3(5.715, 3.16874, 11.43)
@@ -25,11 +24,6 @@ shape = SubResource("BoxShape3D_onrkg")
 
 [node name="XRP_Car" parent="Node3D/Player/CollisionShape3D" instance=ExtResource("2_0ctox")]
 transform = Transform3D(-17.84502, 0, 0, 0, 17.84502, 0, 0, 0, -17.84502, 0, -1.5071, 1.07305)
-
-[node name="arrow" type="Sprite3D" parent="Node3D/Player/CollisionShape3D/XRP_Car"]
-transform = Transform3D(-0.27, 0, 0, 0, 0, 0.27, 0, 0.27, 0, 0, 0.2, 0.06)
-layers = 2
-texture = ExtResource("2_4ntmi")
 
 [node name="fpsCamera" type="Camera3D" parent="Node3D/Player/CollisionShape3D/XRP_Car"]
 transform = Transform3D(-0.2, -6.54983e-09, 1.62114e-08, 0, 0.185437, 0.0749214, -1.74846e-08, 0.0749214, -0.185437, -2.01605e-08, 0.2, 0.230609)

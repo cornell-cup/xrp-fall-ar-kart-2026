@@ -38,6 +38,8 @@ const GAMEPAD_RELAY_HOST: String = "127.0.0.1"
 var udp_pose_in: PacketPeerUDP = PacketPeerUDP.new()
 var pose_last_received: float = 0.0
 const POSE_TIMEOUT: float = 8.0
+# The race scene, which AR mode attaches to and restarts when the camera comes or goes
+const RACE_SCENE: String = "res://Scenes/GameplayScenes/main.tscn"
 
 # ---- Gamepad ----
 var udp_gamepad: PacketPeerUDP = PacketPeerUDP.new()
@@ -96,6 +98,15 @@ var _fusion_log: FileAccess = null
 # ---- Latest video frame ----
 var video_texture: ImageTexture = null
 var _video_confirmed: bool = false
+# When the last camera frame arrived (Time.get_ticks_msec), for the menus' camera badge
+var last_video_frame_ms: int = -1
+# When the current unbroken run of camera frames started, or -1 while there's none
+var _video_live_since_ms: int = -1
+# The camera counts as connected once frames have kept coming for CAMERA_CONNECT_MS,
+# and as gone after CAMERA_TIMEOUT_MS without one. The gap between them stops a
+# flaky stream from flipping AR on and off (each flip restarts the race)
+const CAMERA_CONNECT_MS: int = 1000
+const CAMERA_TIMEOUT_MS: int = 2000
 
 # ---- Robot state (legacy names) ----
 var xrp_x: float = 0.0
@@ -104,6 +115,7 @@ var xrp_angle: float = 0.0
 var xrp_connected: bool = false
 
 # ---- AR mode ----
+# On while the Pi camera is connected; otherwise the race uses the regular kart camera
 var ar_enabled: bool = false
 var ar_backdrop_mesh: MeshInstance3D = null
 var ar_camera: Camera3D = null
@@ -154,9 +166,9 @@ const CAM_SIDEWAYS_M: float = 0.0
 
 
 # In AR mode the real floor and gates are in the video, so these virtual pieces
-# are only drawn on the minimap (render layer 2) and not on the kart camera (layer 1)
+# are moved to render layer 2, which no camera draws, off the kart camera (layer 1)
 const AR_HIDDEN_NODES: Array[String] = ["Ground", "TrackLoader", "Finishline"]
-const MINIMAP_ONLY_LAYER: int = 2
+const HIDDEN_LAYER: int = 2
 # ...except the track's edge lines, which stay on the kart camera too as an outline
 # of the track over the video
 const AR_KEPT_NODES: Array[String] = ["InnerEdge", "OuterEdge"]
@@ -256,12 +268,8 @@ func _ready() -> void:
 		print("[NetworkReceiver] Controller already connected: %s" % Input.get_joy_name(0))
 
 	# The video connection is made (and remade) by the retry in _process, once
-	# fusion's video server is up
+	# fusion's video server is up. AR mode follows the camera, see _update_ar_mode
 	_start_fusion()
-	await get_tree().create_timer(4.0).timeout
-
-	# AR mode is always on; it attaches once a race with a kart camera loads
-	call_deferred("_enable_ar")
 
 
 func _process(_delta: float) -> void:
@@ -272,6 +280,8 @@ func _process(_delta: float) -> void:
 	_process_pose()
 	_process_ar_tags()
 	_process_gamepad_send(_delta)
+
+	_update_ar_mode()
 
 	# AR mode attaches to the kart camera of whichever race scene is loaded.
 	# Scene changes (title screen -> race, restart) free the old backdrop, so reattach
@@ -396,8 +406,14 @@ func _kill_old_fusion() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		_cleanup()
-		get_tree().quit()
+		quit_game()
+
+
+# Quits the game, stopping fusion first. get_tree().quit() on its own would
+# leave fusion running in the background
+func quit_game() -> void:
+	_cleanup()
+	get_tree().quit()
 
 
 func _cleanup() -> void:
@@ -422,10 +438,32 @@ func _cleanup() -> void:
 # AR mode setup
 # ============================================================
 
-func _enable_ar() -> void:
-	ar_enabled = true
-	print("[AR] AR mode on, waiting for a race to attach to")
-	_try_attach_ar()
+# Is the Pi camera's video coming in? (see CAMERA_CONNECT_MS)
+func camera_connected() -> bool:
+	if _video_live_since_ms < 0:
+		return false
+	var now = Time.get_ticks_msec()
+	if now - last_video_frame_ms > CAMERA_TIMEOUT_MS:
+		_video_live_since_ms = -1
+		return false
+	return now - _video_live_since_ms >= CAMERA_CONNECT_MS
+
+
+# AR mode is on exactly while the camera is connected. AR rebuilds the race's
+# kart camera and hides the virtual world, which can't be undone in place, so a
+# race that's running when the camera connects or drops restarts in the new mode
+func _update_ar_mode() -> void:
+	var want_ar = camera_connected()
+	if want_ar == ar_enabled:
+		return
+	ar_enabled = want_ar
+	print("[AR] Camera %s, AR mode %s" % ["connected" if want_ar else "lost", "on" if want_ar else "off"])
+	var scene = get_tree().current_scene
+	if scene != null and scene.scene_file_path == RACE_SCENE:
+		print("[AR] Restarting the race in %s mode" % ("AR" if want_ar else "regular"))
+		SceneTransition.change_scene(RACE_SCENE)
+	elif want_ar:
+		_try_attach_ar()
 
 
 # Sets up AR on the current race scene if it has a kart camera. Returns false
@@ -551,7 +589,7 @@ func _units_per_metre() -> float:
 
 # The camera rides on the player's own kart model, whose wheels and body would
 # block part of the view. In real life it's the robot itself, so hide it from
-# the kart camera (and from shadows). Its minimap icons are on another layer
+# the kart camera (and from shadows)
 func _hide_own_kart(cam: Camera3D) -> void:
 	var model = cam.get_parent()
 	for node in model.find_children("*", "VisualInstance3D", true, false):
@@ -598,18 +636,25 @@ func _setup_camera_backdrop(cam: Camera3D) -> void:
 
 
 # Zooms the kart camera so the screen is filled by the video with no gaps,
-# using the same field of view as the real camera so virtual objects line up
+# using the same field of view as the real camera so virtual objects line up.
+# The real camera's optical center isn't in the middle of the picture, so an
+# ordinary (centered) view had to crop the wider side down to the narrower one.
+# An off-center frustum looks at the middle of the video instead, so the whole
+# width fits on screen (~60° across instead of ~52°)
 func _update_ar_camera_fov() -> void:
 	if not is_instance_valid(ar_camera):
 		return
-	var pp = _principal_point()
-	# the widest the view can be on each side before running off the edge of the video
-	var half_w = min(pp.x, 1.0 - pp.x) * ar_backdrop_size.x
-	var half_h = min(pp.y, 1.0 - pp.y) * ar_backdrop_size.y
 	var screen = get_viewport().get_visible_rect().size
-	half_w = min(half_w, half_h * screen.x / screen.y)
+	# as much of the video as fits the screen's shape: the full width on a
+	# widescreen, the full height on a narrower window
+	var shown_w = min(ar_backdrop_size.x, ar_backdrop_size.y * screen.x / screen.y)
+	# frustum size and offset are measured at the near plane
+	var scale = ar_camera.near / AR_BACKDROP_DIST
+	ar_camera.projection = Camera3D.PROJECTION_FRUSTUM
 	ar_camera.keep_aspect = Camera3D.KEEP_WIDTH
-	ar_camera.fov = rad_to_deg(2.0 * atan(half_w / AR_BACKDROP_DIST))
+	ar_camera.size = shown_w * scale
+	ar_camera.frustum_offset = Vector2(
+		ar_backdrop_mesh.position.x, ar_backdrop_mesh.position.y) * scale
 
 
 func _hide_world() -> void:
@@ -618,18 +663,18 @@ func _hide_world() -> void:
 		return
 	for node_name in AR_HIDDEN_NODES:
 		var node = scene.get_node_or_null(node_name)
-		if node: _move_to_minimap_layer(node)
+		if node: _move_to_hidden_layer(node)
 	for node_name in AR_KEPT_NODES:
 		var node = scene.find_child(node_name, true, false)
 		if node is VisualInstance3D:
-			node.layers = 3   # kart camera and minimap
+			node.layers = 3
 
 
-func _move_to_minimap_layer(node: Node) -> void:
+func _move_to_hidden_layer(node: Node) -> void:
 	if node is VisualInstance3D:
-		node.layers = MINIMAP_ONLY_LAYER
+		node.layers = HIDDEN_LAYER
 	for child in node.get_children():
-		_move_to_minimap_layer(child)
+		_move_to_hidden_layer(child)
 
 
 # ============================================================
@@ -834,6 +879,10 @@ func _process_video() -> void:
 	ar_frame_h = latest_h
 
 	_frames_shown_this_period += 1
+	var now_ms = Time.get_ticks_msec()
+	if _video_live_since_ms < 0 or now_ms - last_video_frame_ms > CAMERA_TIMEOUT_MS:
+		_video_live_since_ms = now_ms
+	last_video_frame_ms = now_ms
 
 	if not _video_confirmed:
 		_video_confirmed = true
