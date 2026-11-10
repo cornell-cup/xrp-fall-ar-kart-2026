@@ -1,14 +1,13 @@
-[gd_scene load_steps=10 format=3 uid="uid://dx66fcni2re15"]
+[gd_scene load_steps=9 format=3 uid="uid://dx66fcni2re15"]
 
-[ext_resource type="Script" path="res://Scripts/loading_screen.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cbmfp2bx883lo" path="res://Scripts/loading_screen.gd" id="2_fadcs"]
 [ext_resource type="Theme" uid="uid://fkat5bpgiklk" path="res://ScreenMainTheme.tres" id="2_theme"]
 [ext_resource type="Texture2D" uid="uid://bask28u1q7icc" path="res://Assets/Images/new-2026/logo-clear-PNG.png" id="3_logo"]
-[ext_resource type="Texture2D" path="res://Assets/Images/new-2026/load-icons/load-icon-car-BG-clear.png" id="4_car"]
-[ext_resource type="Texture2D" path="res://Assets/Images/new-2026/load-icons/load-icon-camera-BG-clear.png" id="5_camera"]
-[ext_resource type="Texture2D" path="res://Assets/Images/new-2026/load-icons/load-icon-controller-BG-clear.png" id="6_controller"]
-[ext_resource type="Texture2D" path="res://Assets/Images/new-2026/load-icons/load-icon-spinner-1-BG-clear.png" id="7_spinner"]
-[ext_resource type="Texture2D" path="res://Assets/Images/new-2026/load-icons/load-icon-checkmark-BG-clear.png" id="8_checkmark"]
-[ext_resource type="StyleBox" uid="uid://blm332pcbh3n3" path="res://UI/buttonstyle.tres" id="9_buttonstyle"]
+[ext_resource type="Texture2D" uid="uid://cdahx52thfqxw" path="res://Assets/Images/new-2026/load-icons/load-icon-car-BG-clear.png" id="4_car"]
+[ext_resource type="Texture2D" uid="uid://ddhdg4y01hd5d" path="res://Assets/Images/new-2026/load-icons/load-icon-camera-BG-clear.png" id="5_camera"]
+[ext_resource type="Texture2D" uid="uid://co8aeitxnar4j" path="res://Assets/Images/new-2026/load-icons/load-icon-controller-BG-clear.png" id="6_controller"]
+[ext_resource type="Texture2D" uid="uid://cux0ai8s37s75" path="res://Assets/Images/new-2026/load-icons/load-icon-spinner-1-BG-clear.png" id="7_spinner"]
+[ext_resource type="Texture2D" uid="uid://b3dhg61ey845t" path="res://Assets/Images/new-2026/load-icons/load-icon-checkmark-BG-clear.png" id="8_checkmark"]
 
 [node name="LoadingScreen" type="Control"]
 layout_mode = 3
@@ -18,7 +17,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("2_theme")
-script = ExtResource("1_script")
+script = ExtResource("2_fadcs")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
@@ -35,10 +34,10 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -400.0
-offset_top = 30.0
-offset_right = 400.0
-offset_bottom = 290.0
+offset_left = -736.0
+offset_top = -47.0
+offset_right = 769.0
+offset_bottom = 442.0
 grow_horizontal = 2
 texture = ExtResource("3_logo")
 expand_mode = 1
@@ -79,10 +78,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -180.0
-offset_top = -180.0
-offset_right = 180.0
-offset_bottom = 180.0
+offset_left = -357.0
+offset_top = -250.5
+offset_right = 298.0
+offset_bottom = 404.5
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(180, 180)
@@ -98,15 +97,15 @@ size_flags_horizontal = 4
 [node name="Spinner" type="TextureRect" parent="IconsHBox/RobotColumn/IndicatorAnchor"]
 custom_minimum_size = Vector2(180, 180)
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
+anchors_preset = -1
+anchor_left = 0.456
 anchor_top = 0.5
-anchor_right = 0.5
+anchor_right = 0.456
 anchor_bottom = 0.5
-offset_left = -90.0
+offset_left = -114.08
 offset_top = -90.0
-offset_right = 90.0
-offset_bottom = 90.0
+offset_right = 113.92
+offset_bottom = 138.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(90, 90)
@@ -132,13 +131,6 @@ grow_vertical = 2
 texture = ExtResource("8_checkmark")
 expand_mode = 1
 stretch_mode = 6
-
-[node name="StatusLabel" type="Label" parent="IconsHBox/RobotColumn"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 36
-text = "Searching..."
-horizontal_alignment = 1
 
 [node name="CameraColumn" type="VBoxContainer" parent="IconsHBox"]
 custom_minimum_size = Vector2(400, 0)
@@ -178,15 +170,15 @@ size_flags_horizontal = 4
 [node name="Spinner" type="TextureRect" parent="IconsHBox/CameraColumn/IndicatorAnchor"]
 custom_minimum_size = Vector2(180, 180)
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
+anchors_preset = -1
+anchor_left = 0.597
 anchor_top = 0.5
-anchor_right = 0.5
+anchor_right = 0.597
 anchor_bottom = 0.5
-offset_left = -90.0
+offset_left = -107.46
 offset_top = -90.0
-offset_right = 90.0
-offset_bottom = 90.0
+offset_right = 107.54
+offset_bottom = 125.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(90, 90)
@@ -213,13 +205,6 @@ texture = ExtResource("8_checkmark")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="StatusLabel" type="Label" parent="IconsHBox/CameraColumn"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 36
-text = "Searching..."
-horizontal_alignment = 1
-
 [node name="ControllerColumn" type="VBoxContainer" parent="IconsHBox"]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
@@ -239,10 +224,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -180.0
-offset_top = -180.0
-offset_right = 180.0
-offset_bottom = 180.0
+offset_left = -293.0
+offset_top = -257.5
+offset_right = 391.0
+offset_bottom = 426.5
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(180, 180)
@@ -258,15 +243,15 @@ size_flags_horizontal = 4
 [node name="Spinner" type="TextureRect" parent="IconsHBox/ControllerColumn/IndicatorAnchor"]
 custom_minimum_size = Vector2(180, 180)
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
+anchors_preset = -1
+anchor_left = 0.789
 anchor_top = 0.5
-anchor_right = 0.5
+anchor_right = 0.789
 anchor_bottom = 0.5
-offset_left = -90.0
+offset_left = -115.02
 offset_top = -90.0
-offset_right = 90.0
-offset_bottom = 90.0
+offset_right = 114.98
+offset_bottom = 140.0
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(90, 90)
@@ -293,13 +278,6 @@ texture = ExtResource("8_checkmark")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="StatusLabel" type="Label" parent="IconsHBox/ControllerColumn"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 36
-text = "Searching..."
-horizontal_alignment = 1
-
 [node name="FooterLabel" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = 7
@@ -308,30 +286,12 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -600.0
-offset_top = -120.0
+offset_top = -77.0
 offset_right = 600.0
-offset_bottom = -50.0
+offset_bottom = -7.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 44
 text = "Verifying Kart Peripherals..."
 horizontal_alignment = 1
-
-[node name="PlayOfflineButton" type="Button" parent="."]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -340.0
-offset_top = -130.0
-offset_right = -50.0
-offset_bottom = -50.0
-grow_horizontal = 0
-grow_vertical = 0
-mouse_default_cursor_shape = 2
-theme_override_font_sizes/font_size = 32
-theme_override_styles/normal = ExtResource("9_buttonstyle")
-text = "Play Offline"
