@@ -277,21 +277,3 @@ grow_vertical = 2
 texture = ExtResource("8_checkmark")
 expand_mode = 1
 stretch_mode = 6
-
-[node name="FooterLabel" type="Label" parent="."]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -600.0
-offset_top = -77.0
-offset_right = 600.0
-offset_bottom = -7.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 44
-text = "Verifying Kart Peripherals..."
-horizontal_alignment = 1
