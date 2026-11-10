@@ -1,103 +1,279 @@
-extends Control
+[gd_scene load_steps=9 format=3 uid="uid://dx66fcni2re15"]
 
-# Spinner node references
-@onready var robot_spinner: TextureRect = $IconsHBox/RobotColumn/IndicatorAnchor/Spinner
-@onready var camera_spinner: TextureRect = $IconsHBox/CameraColumn/IndicatorAnchor/Spinner
-@onready var controller_spinner: TextureRect = $IconsHBox/ControllerColumn/IndicatorAnchor/Spinner
+[ext_resource type="Script" uid="uid://cbmfp2bx883lo" path="res://Scripts/loading_screen.gd" id="2_fadcs"]
+[ext_resource type="Theme" uid="uid://fkat5bpgiklk" path="res://ScreenMainTheme.tres" id="2_theme"]
+[ext_resource type="Texture2D" uid="uid://bask28u1q7icc" path="res://Assets/Images/new-2026/logo-clear-PNG.png" id="3_logo"]
+[ext_resource type="Texture2D" uid="uid://cdahx52thfqxw" path="res://Assets/Images/new-2026/load-icons/load-icon-car-BG-clear.png" id="4_car"]
+[ext_resource type="Texture2D" uid="uid://ddhdg4y01hd5d" path="res://Assets/Images/new-2026/load-icons/load-icon-camera-BG-clear.png" id="5_camera"]
+[ext_resource type="Texture2D" uid="uid://co8aeitxnar4j" path="res://Assets/Images/new-2026/load-icons/load-icon-controller-BG-clear.png" id="6_controller"]
+[ext_resource type="Texture2D" uid="uid://cux0ai8s37s75" path="res://Assets/Images/new-2026/load-icons/load-icon-spinner-1-BG-clear.png" id="7_spinner"]
+[ext_resource type="Texture2D" uid="uid://b3dhg61ey845t" path="res://Assets/Images/new-2026/load-icons/load-icon-checkmark-BG-clear.png" id="8_checkmark"]
 
-# Checkmark node references
-@onready var robot_checkmark: TextureRect = $IconsHBox/RobotColumn/IndicatorAnchor/Checkmark
-@onready var camera_checkmark: TextureRect = $IconsHBox/CameraColumn/IndicatorAnchor/Checkmark
-@onready var controller_checkmark: TextureRect = $IconsHBox/ControllerColumn/IndicatorAnchor/Checkmark
+[node name="LoadingScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("2_fadcs")
 
-# Footer label
-@onready var footer_label: Label = $FooterLabel
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.38, 0.95, 1)
 
-# Rotation speed: 0.5 turns per second (180 deg/s) - slow, readable arcade pace
-@export var spin_speed: float = TAU * 0.5
+[node name="TopLogo" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(800, 260)
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -736.0
+offset_top = -47.0
+offset_right = 769.0
+offset_bottom = 442.0
+grow_horizontal = 2
+texture = ExtResource("3_logo")
+expand_mode = 1
+stretch_mode = 5
 
-# Manual adjustment in pixels to shift the spindle into the exact center hole of the ring
-@export var pivot_adjustment: Vector2 = Vector2(0, -18)
+[node name="IconsHBox" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -860.0
+offset_top = -200.0
+offset_right = 860.0
+offset_bottom = 400.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 100
+alignment = 1
 
-# Simulation / Mock delays (in seconds)
-@export_group("Simulation Settings")
-@export var mock_mode: bool = true
-@export var robot_delay: float = 3.0
-@export var camera_delay: float = 4.0
-@export var controller_delay: float = 5.0
+[node name="RobotColumn" type="VBoxContainer" parent="IconsHBox"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
 
-func _ready() -> void:
-	# Initialize indicator visibility
-	_reset_indicators()
+[node name="IconAnchor" type="Control" parent="IconsHBox/RobotColumn"]
+custom_minimum_size = Vector2(360, 360)
+layout_mode = 2
+size_flags_horizontal = 4
 
-	# Wait one frame for containers to finish computing layout dimensions
-	await get_tree().process_frame
-	_recenter_all_pivots()
+[node name="Icon" type="TextureRect" parent="IconsHBox/RobotColumn/IconAnchor"]
+custom_minimum_size = Vector2(360, 360)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -357.0
+offset_top = -250.5
+offset_right = 298.0
+offset_bottom = 404.5
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(180, 180)
+texture = ExtResource("4_car")
+expand_mode = 1
+stretch_mode = 5
 
-	for spinner in [robot_spinner, camera_spinner, controller_spinner]:
-		if spinner:
-			spinner.resized.connect(_recenter_all_pivots)
+[node name="IndicatorAnchor" type="Control" parent="IconsHBox/RobotColumn"]
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 2
+size_flags_horizontal = 4
 
-	# Start the mock connection sequence
-	if mock_mode:
-		_start_simulation()
+[node name="Spinner" type="TextureRect" parent="IconsHBox/RobotColumn/IndicatorAnchor"]
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.456
+anchor_top = 0.5
+anchor_right = 0.456
+anchor_bottom = 0.5
+offset_left = -114.08
+offset_top = -90.0
+offset_right = 113.92
+offset_bottom = 138.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(90, 90)
+texture = ExtResource("7_spinner")
+expand_mode = 1
+stretch_mode = 6
 
-func _process(delta: float) -> void:
-	# Rotate continuously around the calibrated spindle
-	var step = delta * spin_speed
-	if robot_spinner and robot_spinner.visible:
-		robot_spinner.rotation += step
-	if camera_spinner and camera_spinner.visible:
-		camera_spinner.rotation += step
-	if controller_spinner and controller_spinner.visible:
-		controller_spinner.rotation += step
+[node name="Checkmark" type="TextureRect" parent="IconsHBox/RobotColumn/IndicatorAnchor"]
+visible = false
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -90.0
+offset_top = -90.0
+offset_right = 90.0
+offset_bottom = 90.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("8_checkmark")
+expand_mode = 1
+stretch_mode = 6
 
-func _recenter_all_pivots() -> void:
-	_center_pivot(robot_spinner)
-	_center_pivot(camera_spinner)
-	_center_pivot(controller_spinner)
+[node name="CameraColumn" type="VBoxContainer" parent="IconsHBox"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
 
-func _center_pivot(spinner: TextureRect) -> void:
-	if spinner and is_instance_valid(spinner):
-		spinner.pivot_offset = (spinner.size / 2.0) + pivot_adjustment
+[node name="IconAnchor" type="Control" parent="IconsHBox/CameraColumn"]
+custom_minimum_size = Vector2(360, 360)
+layout_mode = 2
+size_flags_horizontal = 4
 
-func _reset_indicators() -> void:
-	if robot_checkmark: robot_checkmark.visible = false
-	if camera_checkmark: camera_checkmark.visible = false
-	if controller_checkmark: controller_checkmark.visible = false
+[node name="Icon" type="TextureRect" parent="IconsHBox/CameraColumn/IconAnchor"]
+custom_minimum_size = Vector2(360, 360)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -180.0
+offset_right = 180.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(180, 180)
+texture = ExtResource("5_camera")
+expand_mode = 1
+stretch_mode = 5
 
-	if robot_spinner: robot_spinner.visible = true
-	if camera_spinner: camera_spinner.visible = true
-	if controller_spinner: controller_spinner.visible = true
+[node name="IndicatorAnchor" type="Control" parent="IconsHBox/CameraColumn"]
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 2
+size_flags_horizontal = 4
 
-	if footer_label:
-		footer_label.text = "Verifying Kart Peripherals..."
+[node name="Spinner" type="TextureRect" parent="IconsHBox/CameraColumn/IndicatorAnchor"]
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.597
+anchor_top = 0.5
+anchor_right = 0.597
+anchor_bottom = 0.5
+offset_left = -107.46
+offset_top = -90.0
+offset_right = 107.54
+offset_bottom = 125.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(90, 90)
+texture = ExtResource("7_spinner")
+expand_mode = 1
+stretch_mode = 6
 
-func _start_simulation() -> void:
-	get_tree().create_timer(robot_delay).timeout.connect(_on_robot_connected)
-	get_tree().create_timer(camera_delay).timeout.connect(_on_camera_connected)
-	get_tree().create_timer(controller_delay).timeout.connect(_on_controller_connected)
+[node name="Checkmark" type="TextureRect" parent="IconsHBox/CameraColumn/IndicatorAnchor"]
+visible = false
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -90.0
+offset_top = -90.0
+offset_right = 90.0
+offset_bottom = 90.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("8_checkmark")
+expand_mode = 1
+stretch_mode = 6
 
-func _on_robot_connected() -> void:
-	if robot_spinner: robot_spinner.visible = false
-	if robot_checkmark: robot_checkmark.visible = true
-	_check_all_connected()
+[node name="ControllerColumn" type="VBoxContainer" parent="IconsHBox"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
 
-func _on_camera_connected() -> void:
-	if camera_spinner: camera_spinner.visible = false
-	if camera_checkmark: camera_checkmark.visible = true
-	_check_all_connected()
+[node name="IconAnchor" type="Control" parent="IconsHBox/ControllerColumn"]
+custom_minimum_size = Vector2(360, 360)
+layout_mode = 2
+size_flags_horizontal = 4
 
-func _on_controller_connected() -> void:
-	if controller_spinner: controller_spinner.visible = false
-	if controller_checkmark: controller_checkmark.visible = true
-	_check_all_connected()
+[node name="Icon" type="TextureRect" parent="IconsHBox/ControllerColumn/IconAnchor"]
+custom_minimum_size = Vector2(360, 360)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -293.0
+offset_top = -257.5
+offset_right = 391.0
+offset_bottom = 426.5
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(180, 180)
+texture = ExtResource("6_controller")
+expand_mode = 1
+stretch_mode = 5
 
-func _check_all_connected() -> void:
-	var robot_ready = robot_checkmark and robot_checkmark.visible
-	var camera_ready = camera_checkmark and camera_checkmark.visible
-	var controller_ready = controller_checkmark and controller_checkmark.visible
+[node name="IndicatorAnchor" type="Control" parent="IconsHBox/ControllerColumn"]
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 2
+size_flags_horizontal = 4
 
-	if robot_ready and camera_ready and controller_ready:
-		if footer_label:
-			footer_label.text = "All Devices connected!"
+[node name="Spinner" type="TextureRect" parent="IconsHBox/ControllerColumn/IndicatorAnchor"]
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.789
+anchor_top = 0.5
+anchor_right = 0.789
+anchor_bottom = 0.5
+offset_left = -115.02
+offset_top = -90.0
+offset_right = 114.98
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(90, 90)
+texture = ExtResource("7_spinner")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Checkmark" type="TextureRect" parent="IconsHBox/ControllerColumn/IndicatorAnchor"]
+visible = false
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -90.0
+offset_top = -90.0
+offset_right = 90.0
+offset_bottom = 90.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("8_checkmark")
+expand_mode = 1
+stretch_mode = 6
