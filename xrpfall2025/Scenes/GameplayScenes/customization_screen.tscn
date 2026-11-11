@@ -189,6 +189,7 @@ mouse_default_cursor_shape = 2
 texture_normal = ExtResource("6_back")
 ignore_texture_size = true
 stretch_mode = 5
+hover_sound = true
 script = ExtResource("hover_button")
 
 [node name="TitleText" type="Label" parent="."]
