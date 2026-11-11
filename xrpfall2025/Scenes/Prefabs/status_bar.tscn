@@ -1,10 +1,10 @@
 [gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://Scripts/status_bar.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://UI/ar_kart_ui/status/icon_robot@2x.png" id="2_robot"]
-[ext_resource type="Texture2D" path="res://UI/ar_kart_ui/status/icon_controller@2x.png" id="3_controller"]
-[ext_resource type="Texture2D" path="res://UI/ar_kart_ui/status/icon_camera@2x.png" id="4_camera"]
-[ext_resource type="Texture2D" path="res://UI/ar_kart_ui/status/dot_disconnected@2x.png" id="5_dot"]
+[ext_resource type="Texture2D" path="res://Assets/ar_kart_ui/status/icon_robot@2x.png" id="2_robot"]
+[ext_resource type="Texture2D" path="res://Assets/ar_kart_ui/status/icon_controller@2x.png" id="3_controller"]
+[ext_resource type="Texture2D" path="res://Assets/ar_kart_ui/status/icon_camera@2x.png" id="4_camera"]
+[ext_resource type="Texture2D" path="res://Assets/ar_kart_ui/status/dot_disconnected@2x.png" id="5_dot"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar"]
 content_margin_left = 33.0

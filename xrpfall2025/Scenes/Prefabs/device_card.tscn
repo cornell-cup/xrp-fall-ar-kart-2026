@@ -1,9 +1,9 @@
 [gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://Scripts/device_card.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://UI/ar_kart_ui/loading/device_card_searching@2x.png" id="2_card"]
-[ext_resource type="Texture2D" path="res://UI/ar_kart_ui/loading/status_searching_ring@2x.png" id="3_ring"]
-[ext_resource type="FontFile" path="res://UI/ar_kart_ui/fonts/Rubik.ttf" id="4_rubik"]
+[ext_resource type="Texture2D" path="res://Assets/ar_kart_ui/loading/device_card_searching@2x.png" id="2_card"]
+[ext_resource type="Texture2D" path="res://Assets/ar_kart_ui/loading/status_searching_ring@2x.png" id="3_ring"]
+[ext_resource type="FontFile" path="res://Assets/ar_kart_ui/fonts/Rubik.ttf" id="4_rubik"]
 
 [sub_resource type="FontVariation" id="FontVariation_extrabold"]
 base_font = ExtResource("4_rubik")

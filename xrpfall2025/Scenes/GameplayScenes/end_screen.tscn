@@ -1,11 +1,11 @@
 [gd_scene load_steps=13 format=3 uid="uid://cbp7qp5e2ngx5"]
 
 [ext_resource type="Script" uid="uid://dtk177h4s1wmh" path="res://Scripts/end_screen.gd" id="1_ro61g"]
-[ext_resource type="Theme" uid="uid://dtpq031k23ppy" path="res://UI/ar_kart_ui/godot/ar_kart_theme.tres" id="2_theme"]
-[ext_resource type="Script" uid="uid://dbf37k71wdla4" path="res://UI/ar_kart_ui/godot/streak_background.gd" id="3_streaks"]
-[ext_resource type="Texture2D" uid="uid://bj7k2nl2anelr" path="res://UI/ar_kart_ui/hud/checker_strip.svg" id="4_checker"]
-[ext_resource type="Texture2D" uid="uid://bb5awdu5id2fw" path="res://UI/ar_kart_ui/hud/place_badge@2x.png" id="5_badge"]
-[ext_resource type="FontVariation" path="res://UI/rubik_black.tres" id="6_black"]
+[ext_resource type="Theme" uid="uid://dtpq031k23ppy" path="res://Assets/ar_kart_ui/godot/ar_kart_theme.tres" id="2_theme"]
+[ext_resource type="Script" uid="uid://dbf37k71wdla4" path="res://Assets/ar_kart_ui/godot/streak_background.gd" id="3_streaks"]
+[ext_resource type="Texture2D" uid="uid://bj7k2nl2anelr" path="res://Assets/ar_kart_ui/hud/checker_strip.svg" id="4_checker"]
+[ext_resource type="Texture2D" uid="uid://bb5awdu5id2fw" path="res://Assets/ar_kart_ui/hud/place_badge@2x.png" id="5_badge"]
+[ext_resource type="FontVariation" uid="uid://d37faedn21306" path="res://UI/rubik_black.tres" id="6_black"]
 [ext_resource type="Script" uid="uid://op70qnfkwf5d" path="res://Scripts/hover_button.gd" id="hover_button"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]

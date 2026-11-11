@@ -17,9 +17,9 @@ var use_tween := false # Toggle tween if wanted
 @onready var stored_item_icon: TextureRect = $StoredItem
 
 var item_textures = {
-	"Fast": preload("res://UI/ar_kart_ui/items/item_fast@2x.png"),
-	"Slow": preload("res://UI/ar_kart_ui/items/item_slow@2x.png"),
-	"Inverted": preload("res://UI/ar_kart_ui/items/item_inverted@2x.png")
+	"Fast": preload("res://Assets/ar_kart_ui/items/item_fast@2x.png"),
+	"Slow": preload("res://Assets/ar_kart_ui/items/item_slow@2x.png"),
+	"Inverted": preload("res://Assets/ar_kart_ui/items/item_inverted@2x.png")
 
 }
 

@@ -1,12 +1,12 @@
 [gd_scene load_steps=13 format=3 uid="uid://drsnmi4pkc6t5"]
 
 [ext_resource type="Script" uid="uid://cvcplcwtt1s7c" path="res://Scripts/hud.gd" id="1_p8haq"]
-[ext_resource type="Theme" uid="uid://dtpq031k23ppy" path="res://UI/ar_kart_ui/godot/ar_kart_theme.tres" id="2_theme"]
-[ext_resource type="FontVariation" path="res://UI/rubik_black.tres" id="3_black"]
-[ext_resource type="Texture2D" uid="uid://bb5awdu5id2fw" path="res://UI/ar_kart_ui/hud/place_badge@2x.png" id="4_badge"]
-[ext_resource type="Texture2D" uid="uid://cm7pd0vorx8mf" path="res://UI/ar_kart_ui/items/item_slot_empty@2x.png" id="5_slot"]
-[ext_resource type="Texture2D" uid="uid://b06g2fosl3thd" path="res://UI/ar_kart_ui/items/item_fast@2x.png" id="6_fast"]
-[ext_resource type="Texture2D" uid="uid://bovox3g7w3ngu" path="res://UI/ar_kart_ui/icons/icon_warning_white@2x.png" id="8_warning"]
+[ext_resource type="Theme" uid="uid://dtpq031k23ppy" path="res://Assets/ar_kart_ui/godot/ar_kart_theme.tres" id="2_theme"]
+[ext_resource type="FontVariation" uid="uid://d37faedn21306" path="res://UI/rubik_black.tres" id="3_black"]
+[ext_resource type="Texture2D" uid="uid://bb5awdu5id2fw" path="res://Assets/ar_kart_ui/hud/place_badge@2x.png" id="4_badge"]
+[ext_resource type="Texture2D" uid="uid://cm7pd0vorx8mf" path="res://Assets/ar_kart_ui/items/item_slot_empty@2x.png" id="5_slot"]
+[ext_resource type="Texture2D" uid="uid://b06g2fosl3thd" path="res://Assets/ar_kart_ui/items/item_fast@2x.png" id="6_fast"]
+[ext_resource type="Texture2D" uid="uid://bovox3g7w3ngu" path="res://Assets/ar_kart_ui/icons/icon_warning_white@2x.png" id="8_warning"]
 [ext_resource type="Script" uid="uid://op70qnfkwf5d" path="res://Scripts/hover_button.gd" id="hover_button"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dark_pill"]

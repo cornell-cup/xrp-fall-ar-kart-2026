@@ -7,8 +7,8 @@ extends PanelContainer
 # the robot is gone (NetworkReceiver.xrp_connected waits 8 s, too slow for this)
 const XRP_TIMEOUT_S := 1.5
 
-const DOT_CONNECTED = preload("res://UI/ar_kart_ui/status/dot_connected@2x.png")
-const DOT_DISCONNECTED = preload("res://UI/ar_kart_ui/status/dot_disconnected@2x.png")
+const DOT_CONNECTED = preload("res://Assets/ar_kart_ui/status/dot_connected@2x.png")
+const DOT_DISCONNECTED = preload("res://Assets/ar_kart_ui/status/dot_disconnected@2x.png")
 
 @onready var xrp_dot: TextureRect = $Row/XrpDot
 @onready var controller_dot: TextureRect = $Row/ControllerDot

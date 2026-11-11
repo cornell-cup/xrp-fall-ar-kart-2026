@@ -6,16 +6,16 @@ extends Control
 enum State { SEARCHING, CONNECTED, NOT_FOUND, SIMULATED }
 
 const CARDS := {
-	State.SEARCHING: preload("res://UI/ar_kart_ui/loading/device_card_searching@2x.png"),
-	State.CONNECTED: preload("res://UI/ar_kart_ui/loading/device_card_connected@2x.png"),
-	State.NOT_FOUND: preload("res://UI/ar_kart_ui/loading/device_card_not_found@2x.png"),
-	State.SIMULATED: preload("res://UI/ar_kart_ui/loading/device_card_simulated@2x.png"),
+	State.SEARCHING: preload("res://Assets/ar_kart_ui/loading/device_card_searching@2x.png"),
+	State.CONNECTED: preload("res://Assets/ar_kart_ui/loading/device_card_connected@2x.png"),
+	State.NOT_FOUND: preload("res://Assets/ar_kart_ui/loading/device_card_not_found@2x.png"),
+	State.SIMULATED: preload("res://Assets/ar_kart_ui/loading/device_card_simulated@2x.png"),
 }
 const ICONS := {
-	State.SEARCHING: preload("res://UI/ar_kart_ui/loading/status_searching_ring@2x.png"),
-	State.CONNECTED: preload("res://UI/ar_kart_ui/loading/status_connected@2x.png"),
-	State.NOT_FOUND: preload("res://UI/ar_kart_ui/loading/status_not_found@2x.png"),
-	State.SIMULATED: preload("res://UI/ar_kart_ui/loading/status_simulated@2x.png"),
+	State.SEARCHING: preload("res://Assets/ar_kart_ui/loading/status_searching_ring@2x.png"),
+	State.CONNECTED: preload("res://Assets/ar_kart_ui/loading/status_connected@2x.png"),
+	State.NOT_FOUND: preload("res://Assets/ar_kart_ui/loading/status_not_found@2x.png"),
+	State.SIMULATED: preload("res://Assets/ar_kart_ui/loading/status_simulated@2x.png"),
 }
 const TEXTS := {
 	State.SEARCHING: "Searching",

@@ -1,12 +1,12 @@
 [gd_scene load_steps=25 format=3 uid="uid://cexyth8mmkpa5"]
 
 [ext_resource type="Script" uid="uid://cmn3yomsk53u2" path="res://Scripts/customization_screen.gd" id="1_script"]
-[ext_resource type="Theme" uid="uid://dtpq031k23ppy" path="res://UI/ar_kart_ui/godot/ar_kart_theme.tres" id="2_theme"]
-[ext_resource type="Script" uid="uid://dbf37k71wdla4" path="res://UI/ar_kart_ui/godot/streak_background.gd" id="3_streaks"]
+[ext_resource type="Theme" uid="uid://dtpq031k23ppy" path="res://Assets/ar_kart_ui/godot/ar_kart_theme.tres" id="2_theme"]
+[ext_resource type="Script" uid="uid://dbf37k71wdla4" path="res://Assets/ar_kart_ui/godot/streak_background.gd" id="3_streaks"]
 [ext_resource type="ButtonGroup" uid="uid://bamt45mhkoyvk" path="res://UI/car_buttons.tres" id="4_cars"]
 [ext_resource type="ButtonGroup" uid="uid://dqoxyk1apmlvs" path="res://UI/map_buttons.tres" id="5_maps"]
-[ext_resource type="Texture2D" uid="uid://bjq5o8nfx4eo7" path="res://UI/ar_kart_ui/icons/round_button_back@2x.png" id="6_back"]
-[ext_resource type="FontVariation" path="res://UI/rubik_black.tres" id="7_black"]
+[ext_resource type="Texture2D" uid="uid://bjq5o8nfx4eo7" path="res://Assets/ar_kart_ui/icons/round_button_back@2x.png" id="6_back"]
+[ext_resource type="FontVariation" uid="uid://d37faedn21306" path="res://UI/rubik_black.tres" id="7_black"]
 [ext_resource type="PackedScene" path="res://Scenes/Prefabs/status_bar.tscn" id="9_statusbar"]
 [ext_resource type="Script" uid="uid://op70qnfkwf5d" path="res://Scripts/hover_button.gd" id="hover_button"]
 
