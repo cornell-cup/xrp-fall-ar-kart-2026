@@ -1,10 +1,10 @@
 extends Node
 
 @export var click_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/ui_press.wav")
-# For buttons in the "back_sfx" group (going back to a previous screen)
+# "back_sfx" group:
 @export var back_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/ui_back.wav")
 @export var hover_sfx: AudioStream = preload("res://Assets/Sound/SFX/UI/hover.wav")
-# Buttons in the "confirm_sfx" group (picking a kart or map)
+# "confirm_sfx" group:
 @export var race_start_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/ui_confirm.wav")
 @export var match_finish_sfx: AudioStream = preload("res://Assets/Sound/SFX/GameComplete.mp3")
 
@@ -18,13 +18,12 @@ extends Node
 @export var item_boost_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/item_boost.wav")
 @export var item_slow_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/item_slow.wav")
 @export var item_inverted_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/item_inverted.wav")
-# For things the player can't do (not used yet)
 @export var error_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/ui_error.wav")
 
-# Background Music (all set to loop in their import settings)
+# Background Music 
 @export var menu_music: AudioStream = preload("res://Assets/Sound/BackgroundMusic/KARTS.mp3")
 @export var select_music: AudioStream = preload("res://Assets/Sound/BackgroundMusic/Choose_Your_Racer.mp3")
-# Each race plays one of these, picked at random
+
 @export var race_music: Array[AudioStream] = [
 	preload("res://Assets/Sound/BackgroundMusic/Flowey_Speedway.mp3"),
 	preload("res://Assets/Sound/BackgroundMusic/Highway_Hustle.mp3"),
@@ -33,21 +32,20 @@ extends Node
 	preload("res://Assets/Sound/BackgroundMusic/Bouncing_Pyramids.mp3"),
 	preload("res://Assets/Sound/BackgroundMusic/Retro_Roundabout.mp3"),
 ]
-# Plays over the pause menu while the race song waits
+
 @export var pause_music: AudioStream = preload("res://Assets/Sound/BackgroundMusic/Ghost_Trials.mp3")
 @export var results_music: AudioStream = preload("res://Assets/Sound/BackgroundMusic/Race_Results.mp3")
 
 # How long one song takes to fade into the next, in seconds
 const CROSSFADE_S := 1.0
-# Switching between the race song and the pause music
+
 const PAUSE_FADE_S := 0.4
+
 # Fading out the race music under the finish fanfare is quicker
 const FINISH_FADE_S := 0.4
-# The results music starts this long before the fanfare ends, over its quiet
-# ring-out (below -30 dB for its last ~1.1 s), so the two run together without a pause
 const FANFARE_LEAD_S := 0.8
-# The pause music sits under the other music's volume (-6 dB is about half as loud)
 const PAUSE_MUSIC_DB := -6.0
+
 # How many in-race sounds can play over each other
 const SFX_VOICES := 4
 const SILENT_DB := -60.0
@@ -65,14 +63,12 @@ var _active := 0
 var _last_race_music: AudioStream = null
 var _pause_player: AudioStreamPlayer
 var _pause_tween: Tween
-# Bumped on every music change, so a song queued behind the finish fanfare is
-# dropped if the player has already moved on to another screen
+
 var _music_request := 0
-# A one-off, slower crossfade for the next song change (see slow_next_crossfade)
+
 var _next_crossfade_s := 0.0
 
 func _ready() -> void:
-	# keeps running while the game is paused, for the pause menu's music and fades
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 	_click_player = AudioStreamPlayer.new()
@@ -81,7 +77,7 @@ func _ready() -> void:
 
 	_hover_player = AudioStreamPlayer.new()
 	_hover_player.bus = "Master"
-	_hover_player.volume_db = linear_to_db(0.25)   # half as loud as the other sounds
+	_hover_player.volume_db = linear_to_db(0.25)   
 	add_child(_hover_player)
 
 	_event_player = AudioStreamPlayer.new()
@@ -105,8 +101,6 @@ func _ready() -> void:
 	add_child(_pause_player)
 
 	get_tree().node_added.connect(_on_node_added)
-	# The first scene's buttons are created before this autoload is ready, so
-	# node_added already fired for them; wire those up here
 	for button in get_tree().root.find_children("*", "BaseButton", true, false):
 		_on_node_added(button)
 
@@ -132,7 +126,6 @@ func play_back() -> void:
 		_click_player.stream = back_sfx
 		_click_player.play()
 
-# Only the main menu buttons hover with a sound, see hover_button.gd
 func play_hover() -> void:
 	if hover_sfx != null:
 		_hover_player.stream = hover_sfx
@@ -169,7 +162,6 @@ func play_final_lap() -> void:
 func play_off_track() -> void:
 	play_sfx(off_track_sfx)
 
-# Driving through an item box. Called from Item.cs
 func play_item_pickup() -> void:
 	play_sfx(item_box_break_sfx, true)
 
@@ -185,7 +177,6 @@ func play_item_inverted() -> void:
 func play_error() -> void:
 	play_sfx(error_sfx)
 
-# Race music fades out under the finish fanfare, then the results music fades in
 func play_match_finish() -> void:
 	_music_request += 1
 	var request = _music_request
@@ -193,36 +184,29 @@ func play_match_finish() -> void:
 	if match_finish_sfx != null:
 		_event_player.stream = match_finish_sfx
 		_event_player.play()
-		# go by the fanfare's own playback position, so the handover stays in sync
 		var handover = maxf(match_finish_sfx.get_length() - FANFARE_LEAD_S, 0.0)
 		while _event_player.playing and _event_player.get_playback_position() < handover:
 			await get_tree().process_frame
-	# straight in at full volume, so the track's opening isn't lost to a fade
 	if request == _music_request:
 		_play_music(results_music, 0.0)
 
 func play_menu_music() -> void:
 	_play_music(menu_music)
 
-# The loading screen borrows the pause menu's song
 func play_loading_music() -> void:
 	_play_music(pause_music)
 
 func play_select_music() -> void:
 	_play_music(select_music)
 
-# Fades out whatever's playing, e.g. the kart select music while a race counts down
 func stop_music() -> void:
 	_music_request += 1
 	_stop_pause_music()
 	_fade(_active, SILENT_DB, CROSSFADE_S, true)
 
-# Called when the race countdown ends; the track starts at full volume, as nothing
-# else is playing by then
 func play_race_music() -> void:
 	if race_music.is_empty():
 		return
-	# a different song from last race when there's a choice
 	var choices = race_music.filter(func(s): return s != _last_race_music)
 	if choices.is_empty():
 		choices = race_music
@@ -232,7 +216,6 @@ func play_race_music() -> void:
 func play_results_music() -> void:
 	_play_music(results_music)
 
-# The race song fades down and holds its place while the pause music fades in
 func pause_race_music() -> void:
 	var race = _music_players[_active]
 	if _music_tweens[_active]:
@@ -249,7 +232,6 @@ func pause_race_music() -> void:
 		_pause_player.play()
 		_pause_tween = _tween_volume(_pause_player, PAUSE_MUSIC_DB, PAUSE_FADE_S)
 
-# ...and picks up again where it left off
 func resume_race_music() -> void:
 	_stop_pause_music()
 	var race = _music_players[_active]

@@ -1,14 +1,8 @@
 extends Control
 
-# First screen of the game: waits for the XRP robot, the camera and a gamepad.
-# - each device's card turns green as soon as it's detected
-# - after a timeout the missing ones turn red, with RETRY and PLAY OFFLINE
-# - PLAY OFFLINE fills in the missing devices (blue) straight away
-# - once all three are ready, CONTINUE goes to the title screen
 
 const TITLE_SCENE := "res://Scenes/GameplayScenes/title_screen.tscn"
 
-# Same as the status bar: fusion only sends poses while it hears the XRP
 const XRP_TIMEOUT_S := 1.5
 
 # Seconds the loading music takes to hand over to the title music
@@ -21,7 +15,6 @@ const HEADING_GREEN := Color("#3DDC84")
 const CONNECTING_HEADING := "CONNECTING DEVICES..."
 const CONNECTING_SUBTITLE := "Make sure the robot is on and the gamepad is paired"
 
-# Seconds to search before showing which devices weren't found
 @export var timeout_duration: float = 15.0
 
 var time_elapsed: float = 0.0
@@ -48,7 +41,6 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	# Live hardware polling, while searching (not timed out, not offline, not done)
 	if is_offline_mode or all_ready or has_timed_out:
 		return
 	_poll_live_hardware()
@@ -99,8 +91,6 @@ func _on_retry_pressed() -> void:
 			card.set_state(card.State.SEARCHING)
 	_show_connecting()
 
-
-# Offline mode: devices that aren't connected are filled in straight away
 func _on_play_offline_pressed() -> void:
 	if is_offline_mode or all_ready:
 		return

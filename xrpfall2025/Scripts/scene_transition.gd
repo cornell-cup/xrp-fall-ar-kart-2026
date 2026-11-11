@@ -1,9 +1,5 @@
 extends CanvasLayer
 
-# Animated wipe between screens: red, blue and navy bands, slanted like the menu
-# streaks, sweep in from the right to cover the screen, the scene changes while
-# it's covered, then they sweep off to the left. Use change_scene() (or
-# change_to_node() for a scene that needs data first) instead of the SceneTree's
 
 const COVER_S := 0.6
 const REVEAL_S := 0.35
@@ -20,8 +16,8 @@ var _busy := false
 
 
 func _ready() -> void:
-	layer = 100   # above every scene's UI
-	process_mode = Node.PROCESS_MODE_ALWAYS   # works from the pause menu too
+	layer = 100   
+	process_mode = Node.PROCESS_MODE_ALWAYS  
 	_wipe.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_wipe.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_wipe.draw.connect(_draw_bands)
@@ -49,7 +45,6 @@ func _run(swap: Callable) -> void:
 		return
 	_busy = true
 	_wipe.visible = true
-	# no clicks get through while the screen is changing
 	_wipe.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var tween = create_tween()
@@ -57,9 +52,7 @@ func _run(swap: Callable) -> void:
 	await tween.finished
 
 	swap.call()
-	# a new screen never starts paused (leaving from the pause menu)
 	get_tree().paused = false
-	# let the new scene load and draw once before uncovering it
 	await get_tree().process_frame
 	await get_tree().process_frame
 

@@ -6,19 +6,16 @@ var total_time: float = 0.0
 const BEST_ROW_COLOR := Color("#E6F0FF")
 const BEST_ROW_BORDER := Color("#0070FF")
 
-# I should put all the buttons in a container so it's more efficient to turn them visible/invis
 func _ready() -> void:
 	SoundManager.play_match_finish()
 	$HomeButton.visible = true
 	$RestartButton.visible = true
 	$Background.visible = true
 
-# Set lap times
 func set_lap_times(times: Array, overall_time: float):
 	lap_times = times
 	total_time = overall_time
 
-	# The fastest finished lap gets highlighted
 	var best := -1
 	for i in lap_times.size():
 		if lap_times[i] > 0.0 and (best == -1 or lap_times[i] < lap_times[best]):
@@ -37,7 +34,6 @@ func set_lap_times(times: Array, overall_time: float):
 
 	$LapCard/Rows/FinalTime/Row/TotalTimeLabel.text = format_time(total_time)
 
-# Finishing place, shown in the badge
 func set_place(place: int):
 	$PlaceBadge/Number.text = str(place)
 	match place:
@@ -50,31 +46,22 @@ func set_place(place: int):
 		_:
 			$PlaceBadge/Suffix.text = "th"
 
-# Return home. Moves to title screen
 func _on_home_button_pressed() -> void:
-
 	switch_screens()
-
 	SceneTransition.change_scene("res://Scenes/GameplayScenes/title_screen.tscn")
-	pass # Replace with function body.
+	pass 
 
-# Restart game. Goes back to main scene
 func _on_restart_button_pressed() -> void:
-
-	switch_screens() # Used to reset things mainly
-
+	switch_screens() 
 	SceneTransition.change_scene("res://Scenes/GameplayScenes/main.tscn")
+	pass 
 
-	pass # Replace with function body.
-
-# this is copied from hud which is sloppy, but a temporary easier fix
 func format_time(time_sec: float) -> String:
 	var minutes = int(time_sec) / 60
 	var seconds = int(time_sec) % 60
 	var milliseconds = int((time_sec - int(time_sec)) * 100)
 	return "%02d:%02d.%02d" % [minutes, seconds, milliseconds]
 
-# The end screen is the current scene, so changing scenes frees it
 func switch_screens() -> void:
 	lap_times.clear()
 	total_time = 0.0
