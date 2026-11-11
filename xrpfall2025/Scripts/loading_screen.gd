@@ -81,6 +81,7 @@ func _on_timeout() -> void:
 			missing.append(card.device_name.to_lower())
 	_set_heading("CONNECTION TIMED OUT", HEADING_RED, "Could not find: " + ", ".join(missing))
 	retry_button.visible = true
+	SoundManager.play_error()
 
 
 func _on_retry_pressed() -> void:
@@ -95,14 +96,17 @@ func _on_play_offline_pressed() -> void:
 	if is_offline_mode or all_ready:
 		return
 	is_offline_mode = true
+	# the devices ready sound plays instead of each card's click
 	for card in _cards():
 		if not card.is_ready():
-			card.set_state(card.State.SIMULATED)
+			card.set_state(card.State.SIMULATED, false)
 	_check_all_ready()
 
 
 func _set_connected(card) -> void:
-	card.set_state(card.State.CONNECTED)
+	# the last device to connect gets the devices ready sound instead of a click
+	var others_ready = _cards().all(func(c): return c == card or c.is_ready())
+	card.set_state(card.State.CONNECTED, not others_ready)
 	_check_all_ready()
 
 
@@ -113,6 +117,7 @@ func _check_all_ready() -> void:
 		if not card.is_ready():
 			return
 	all_ready = true
+	SoundManager.play_devices_ready()
 	if is_offline_mode:
 		_set_heading("OFFLINE MODE READY!", HEADING_GREEN, "You can connect devices later from the title screen")
 	else:

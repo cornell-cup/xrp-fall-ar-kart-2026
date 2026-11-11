@@ -6,6 +6,10 @@ extends Node
 @export var hover_sfx: AudioStream = preload("res://Assets/Sound/SFX/UI/hover.wav")
 # "confirm_sfx" group:
 @export var race_start_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/ui_confirm.wav")
+# "race_sfx" group (the RACE! button on kart select):
+@export var race_press_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/race_start_press.wav")
+# Loading screen, once all three devices are connected or simulated
+@export var devices_ready_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/devices_ready.wav")
 @export var match_finish_sfx: AudioStream = preload("res://Assets/Sound/SFX/GameComplete.mp3")
 
 # In-race sounds
@@ -15,6 +19,8 @@ extends Node
 @export var final_lap_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/final_lap.wav")
 @export var off_track_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/off_track.wav")
 @export var item_box_break_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/item_box_break.wav")
+# Plays whenever the player uses any item, alongside that item's own sound
+@export var item_use_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/item_use.wav")
 @export var item_boost_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/item_boost.wav")
 @export var item_slow_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/item_slow.wav")
 @export var item_inverted_sfx: AudioStream = preload("res://Assets/Sound/SFX/Kart/item_inverted.wav")
@@ -113,6 +119,8 @@ func _on_node_added(node: Node) -> void:
 			press_sound = play_back
 		elif node.is_in_group("confirm_sfx"):
 			press_sound = play_race_start
+		elif node.is_in_group("race_sfx"):
+			press_sound = play_race_press
 		if not node.pressed.is_connected(press_sound):
 			node.pressed.connect(press_sound)
 
@@ -120,6 +128,12 @@ func play_click() -> void:
 	if click_sfx != null:
 		_click_player.stream = click_sfx
 		_click_player.play()
+
+func play_race_press() -> void:
+	play_sfx(race_press_sfx)
+
+func play_devices_ready() -> void:
+	play_sfx(devices_ready_sfx)
 
 func play_back() -> void:
 	if back_sfx != null:
@@ -164,6 +178,9 @@ func play_off_track() -> void:
 
 func play_item_pickup() -> void:
 	play_sfx(item_box_break_sfx, true)
+
+func play_item_use() -> void:
+	play_sfx(item_use_sfx)
 
 func play_item_boost() -> void:
 	play_sfx(item_boost_sfx)

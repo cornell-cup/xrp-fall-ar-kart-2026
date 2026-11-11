@@ -515,7 +515,7 @@ offset_right = -84.0
 offset_bottom = 136.0
 grow_horizontal = 0
 
-[node name="ConfirmButton" type="Button" parent="."]
+[node name="ConfirmButton" type="Button" parent="." groups=["race_sfx"]]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0

@@ -76,7 +76,8 @@ func _process(delta: float) -> void:
 		status_icon.rotation += SPIN_SPEED * delta
 
 
-func set_state(new_state: State) -> void:
+# play_sound: false when a louder sound is about to cover it (devices ready)
+func set_state(new_state: State, play_sound := true) -> void:
 	var changed := new_state != state
 	state = new_state
 	card.texture = CARDS[state]
@@ -88,13 +89,14 @@ func set_state(new_state: State) -> void:
 	if is_ready():
 		_border_style.border_color = BORDER_COLORS[state]
 		if changed:
-			_play_connected()
+			_play_connected(play_sound)
 
 
 # The card pops out and back, the check pops in, with the button press sound
 # (for both a real connection and a simulated one)
-func _play_connected() -> void:
-	SoundManager.play_click()
+func _play_connected(play_sound: bool) -> void:
+	if play_sound:
+		SoundManager.play_click()
 	if _pop:
 		_pop.kill()
 	scale = Vector2.ONE

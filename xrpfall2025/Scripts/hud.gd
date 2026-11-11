@@ -360,6 +360,9 @@ func finished_race():
 # Called by CarManager's ItemUsed signal whenever any car uses an item
 func _on_item_used(user, item: int, target) -> void:
 	var item_name = state_name(item)
+	# every item the player uses, on top of the item's own sound below
+	if user == player_node:
+		SoundManager.play_item_use()
 	if user == player_node and target == player_node:
 		show_item_popup("%s boost!" % item_name)
 		SoundManager.play_item_boost()
