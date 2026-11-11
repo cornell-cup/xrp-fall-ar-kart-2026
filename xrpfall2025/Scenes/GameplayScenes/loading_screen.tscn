@@ -1,0 +1,208 @@
+[gd_scene load_steps=22 format=3 uid="uid://disynh206e0g"]
+
+[ext_resource type="Script" uid="uid://uql8jbqa66w5" path="res://Scripts/loading_screen.gd" id="1_script"]
+[ext_resource type="Theme" uid="uid://dtpq031k23ppy" path="res://UI/ar_kart_ui/godot/ar_kart_theme.tres" id="2_theme"]
+[ext_resource type="Script" uid="uid://dbf37k71wdla4" path="res://UI/ar_kart_ui/godot/streak_background.gd" id="3_streaks"]
+[ext_resource type="Texture2D" uid="uid://cumb4pwnwbgx3" path="res://UI/ar_kart_ui/loading/ar_kart_racing_logo@2x.png" id="4_logo"]
+[ext_resource type="PackedScene" path="res://Scenes/Prefabs/device_card.tscn" id="5_card"]
+[ext_resource type="Texture2D" uid="uid://d4n0mqx4g0axe" path="res://UI/ar_kart_ui/loading/device_robot@2x.png" id="6_robot"]
+[ext_resource type="Texture2D" uid="uid://ts5fkv4psrf0" path="res://UI/ar_kart_ui/loading/device_camera@2x.png" id="7_camera"]
+[ext_resource type="Texture2D" uid="uid://cammplcvqkuw4" path="res://UI/ar_kart_ui/loading/device_gamepad@2x.png" id="8_gamepad"]
+[ext_resource type="FontFile" uid="uid://dkrwwpti7xy33" path="res://UI/ar_kart_ui/fonts/Rubik.ttf" id="10_rubik"]
+[ext_resource type="Script" uid="uid://op70qnfkwf5d" path="res://Scripts/hover_button.gd" id="11_hover"]
+[ext_resource type="Texture2D" uid="uid://dquhawqviyw4g" path="res://UI/ar_kart_ui/loading/button_blue_hover@2x.png" id="b_blue_hover"]
+[ext_resource type="Texture2D" uid="uid://dqumlyievce4h" path="res://UI/ar_kart_ui/loading/button_blue_normal@2x.png" id="b_blue_normal"]
+[ext_resource type="Texture2D" uid="uid://d1asjfas8o5kv" path="res://UI/ar_kart_ui/loading/button_blue_pressed@2x.png" id="b_blue_pressed"]
+[ext_resource type="Texture2D" uid="uid://d1eyhwnw4pmy7" path="res://UI/ar_kart_ui/loading/button_red_hover@2x.png" id="b_red_hover"]
+[ext_resource type="Texture2D" uid="uid://87nmsee2l526" path="res://UI/ar_kart_ui/loading/button_red_normal@2x.png" id="b_red_normal"]
+[ext_resource type="Texture2D" uid="uid://dh17nu1ua8tc7" path="res://UI/ar_kart_ui/loading/button_red_pressed@2x.png" id="b_red_pressed"]
+[ext_resource type="Texture2D" uid="uid://bxtoxw6s3ax6q" path="res://UI/ar_kart_ui/loading/button_white_hover@2x.png" id="b_white_hover"]
+[ext_resource type="Texture2D" uid="uid://b7luycygkcnfj" path="res://UI/ar_kart_ui/loading/button_white_normal@2x.png" id="b_white_normal"]
+[ext_resource type="Texture2D" uid="uid://c00o8ai4ra61" path="res://UI/ar_kart_ui/loading/button_white_pressed@2x.png" id="b_white_pressed"]
+
+[sub_resource type="FontVariation" id="FontVariation_heading"]
+base_font = ExtResource("10_rubik")
+variation_opentype = {
+2003265652: 900
+}
+spacing_glyph = 3
+
+[sub_resource type="FontVariation" id="FontVariation_medium"]
+base_font = ExtResource("10_rubik")
+variation_opentype = {
+2003265652: 500
+}
+
+[node name="LoadingScreen" type="Control"]
+texture_filter = 4
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="Background" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_streaks")
+
+[node name="Logo" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 690.0
+offset_top = 2.0
+offset_right = 1230.0
+offset_bottom = 362.0
+mouse_filter = 2
+texture = ExtResource("4_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Heading" type="Label" parent="."]
+layout_mode = 0
+offset_left = 160.0
+offset_top = 336.0
+offset_right = 1760.0
+offset_bottom = 412.0
+theme_override_fonts/font = SubResource("FontVariation_heading")
+theme_override_font_sizes/font_size = 56
+text = "CONNECTING DEVICES..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Subtitle" type="Label" parent="."]
+layout_mode = 0
+offset_left = 160.0
+offset_top = 412.0
+offset_right = 1760.0
+offset_bottom = 452.0
+theme_override_colors/font_color = Color(0.827, 0.855, 0.902, 1)
+theme_override_fonts/font = SubResource("FontVariation_medium")
+theme_override_font_sizes/font_size = 28
+text = "Make sure the robot is on and the gamepad is paired"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Cards" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 300.0
+offset_top = 482.0
+offset_right = 1620.0
+offset_bottom = 868.0
+mouse_filter = 2
+theme_override_constants/separation = 48
+alignment = 1
+
+[node name="RobotCard" parent="Cards" instance=ExtResource("5_card")]
+layout_mode = 2
+device_name = "XRP ROBOT"
+icon = ExtResource("6_robot")
+
+[node name="CameraCard" parent="Cards" instance=ExtResource("5_card")]
+layout_mode = 2
+device_name = "CAMERA"
+icon = ExtResource("7_camera")
+
+[node name="GamepadCard" parent="Cards" instance=ExtResource("5_card")]
+layout_mode = 2
+device_name = "GAMEPAD"
+icon = ExtResource("8_gamepad")
+
+[node name="Buttons" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 160.0
+offset_top = 907.0
+offset_right = 1760.0
+offset_bottom = 1025.0
+theme_override_constants/separation = 36
+alignment = 1
+
+[node name="RetryButton" type="TextureButton" parent="Buttons"]
+custom_minimum_size = Vector2(410, 118)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("b_blue_normal")
+texture_pressed = ExtResource("b_blue_pressed")
+texture_hover = ExtResource("b_blue_hover")
+ignore_texture_size = true
+stretch_mode = 0
+script = ExtResource("11_hover")
+outline_corner = 59
+
+[node name="Label" type="Label" parent="Buttons/RetryButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = SubResource("FontVariation_heading")
+theme_override_font_sizes/font_size = 40
+text = "RETRY"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlayOfflineButton" type="TextureButton" parent="Buttons"]
+custom_minimum_size = Vector2(410, 118)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("b_white_normal")
+texture_pressed = ExtResource("b_white_pressed")
+texture_hover = ExtResource("b_white_hover")
+ignore_texture_size = true
+stretch_mode = 0
+script = ExtResource("11_hover")
+hover_sound = true
+outline_corner = 59
+
+[node name="Label" type="Label" parent="Buttons/PlayOfflineButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.086, 0.11, 0.157, 1)
+theme_override_fonts/font = SubResource("FontVariation_heading")
+theme_override_font_sizes/font_size = 40
+text = "PLAY OFFLINE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ContinueButton" type="TextureButton" parent="Buttons"]
+custom_minimum_size = Vector2(410, 118)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("b_red_normal")
+texture_pressed = ExtResource("b_red_pressed")
+texture_hover = ExtResource("b_red_hover")
+ignore_texture_size = true
+stretch_mode = 0
+script = ExtResource("11_hover")
+hover_sound = true
+outline_corner = 59
+
+[node name="Label" type="Label" parent="Buttons/ContinueButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = SubResource("FontVariation_heading")
+theme_override_font_sizes/font_size = 40
+text = "CONTINUE"
+horizontal_alignment = 1
+vertical_alignment = 1

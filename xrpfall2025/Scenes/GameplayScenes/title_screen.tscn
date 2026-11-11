@@ -100,7 +100,7 @@ text = "TRACK BUILDER"
 script = ExtResource("hover_button")
 hover_sound = true
 
-[node name="QuitButton" type="TextureButton" parent="."]
+[node name="QuitButton" type="TextureButton" parent="." groups=["back_sfx"]]
 layout_mode = 0
 offset_left = 120.0
 offset_top = 52.0
@@ -114,6 +114,7 @@ texture_hover = ExtResource("quit_hover")
 ignore_texture_size = true
 stretch_mode = 5
 script = ExtResource("hover_button")
+hover_sound = true
 outline_corner = 30
 
 [node name="StatusBar" parent="." instance=ExtResource("9_statusbar")]

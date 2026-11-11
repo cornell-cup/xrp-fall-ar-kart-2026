@@ -3,7 +3,7 @@ extends Control
 ## Add a Control, set it to Full Rect, attach this script, and keep it as the
 ## first child so your menu draws on top of it.
 
-@export var streak_count: int = 30
+@export var streak_count: int = 45
 @export var min_speed: float = 230.0   # pixels per second
 @export var max_speed: float = 430.0
 @export var angle_degrees: float = -12.0
@@ -52,4 +52,8 @@ func _process(delta: float) -> void:
 
 func _respawn(panel: Panel, anywhere: bool) -> void:
 	var x := randf_range(-panel.size.x, size.x) if anywhere else size.x + randf_range(20.0, 240.0)
-	panel.position = Vector2(x, randf_range(-160.0, size.y))
+	# Streaks sink as they travel left, so ones entering on the right must be
+	# able to start above the screen or the top-left corner stays empty. The
+	# extra room at the bottom keeps the bottom edge covered too.
+	var drop := (x + 60.0) * tan(deg_to_rad(absf(angle_degrees)))
+	panel.position = Vector2(x, randf_range(-160.0 - drop, size.y + 60.0))

@@ -68,6 +68,8 @@ var _pause_tween: Tween
 # Bumped on every music change, so a song queued behind the finish fanfare is
 # dropped if the player has already moved on to another screen
 var _music_request := 0
+# A one-off, slower crossfade for the next song change (see slow_next_crossfade)
+var _next_crossfade_s := 0.0
 
 func _ready() -> void:
 	# keeps running while the game is paused, for the pause menu's music and fades
@@ -103,6 +105,10 @@ func _ready() -> void:
 	add_child(_pause_player)
 
 	get_tree().node_added.connect(_on_node_added)
+	# The first scene's buttons are created before this autoload is ready, so
+	# node_added already fired for them; wire those up here
+	for button in get_tree().root.find_children("*", "BaseButton", true, false):
+		_on_node_added(button)
 
 func _on_node_added(node: Node) -> void:
 	if node is BaseButton:
@@ -198,6 +204,10 @@ func play_match_finish() -> void:
 func play_menu_music() -> void:
 	_play_music(menu_music)
 
+# The loading screen borrows the pause menu's song
+func play_loading_music() -> void:
+	_play_music(pause_music)
+
 func play_select_music() -> void:
 	_play_music(select_music)
 
@@ -256,10 +266,21 @@ func _stop_pause_music() -> void:
 		_pause_tween = _tween_volume(_pause_player, SILENT_DB, PAUSE_FADE_S)
 		_pause_tween.tween_callback(_pause_player.stop)
 
+# Makes the next song change crossfade over this many seconds instead of
+# CROSSFADE_S, e.g. the loading screen easing into the title music
+func slow_next_crossfade(seconds: float) -> void:
+	_next_crossfade_s = seconds
+
 # fade_in_s: how long the new song takes to come in (0 = starts at full volume)
 func _play_music(stream: AudioStream, fade_in_s := CROSSFADE_S) -> void:
 	if stream == null:
 		return
+	var crossfade_s := CROSSFADE_S
+	if _next_crossfade_s > 0.0:
+		crossfade_s = _next_crossfade_s
+		if fade_in_s > 0.0:
+			fade_in_s = _next_crossfade_s
+		_next_crossfade_s = 0.0
 	_music_request += 1
 	_stop_pause_music()
 	var current = _music_players[_active]
@@ -269,10 +290,10 @@ func _play_music(stream: AudioStream, fade_in_s := CROSSFADE_S) -> void:
 		current.stop()
 	# If this track is already playing, do NOT restart it from second 0!
 	if current.stream == stream and current.playing:
-		_fade(_active, 0.0, CROSSFADE_S, false)
+		_fade(_active, 0.0, crossfade_s, false)
 		return
 	# fade the current song out on its player while the new one fades in on the other
-	_fade(_active, SILENT_DB, CROSSFADE_S, true)
+	_fade(_active, SILENT_DB, crossfade_s, true)
 	_active = 1 - _active
 	var next = _music_players[_active]
 	next.stream = stream

@@ -5,10 +5,10 @@ extends CanvasLayer
 # it's covered, then they sweep off to the left. Use change_scene() (or
 # change_to_node() for a scene that needs data first) instead of the SceneTree's
 
-const COVER_S := 0.35
+const COVER_S := 0.6
 const REVEAL_S := 0.35
 # How far each band trails the one before it, as a fraction of the sweep
-const STAGGER := 0.14
+const STAGGER := 0.2
 # Horizontal lean of the bands' edges across the screen's height
 const SLANT := 260.0
 const COLORS: Array[Color] = [Color("#D0112B"), Color("#0070FF"), Color("#161C28")]

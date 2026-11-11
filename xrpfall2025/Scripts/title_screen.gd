@@ -5,9 +5,11 @@ extends Control
 const CORNELL_CUP_URL := "https://www.cornellcuprobotics.com/"
 const XRP_URL := "https://www.experiential.bot/xrp"
 
+func wait(seconds: float) -> void:
+	await get_tree().create_timer(seconds).timeout
+
 func _ready():
 	SoundManager.play_menu_music()
-	# Clicking the logo cards opens their websites in the browser
 	$CornellCard.gui_input.connect(_on_logo_card_input.bind(CORNELL_CUP_URL))
 	$XrpCard.gui_input.connect(_on_logo_card_input.bind(XRP_URL))
 
@@ -26,6 +28,8 @@ func _on_quickstart_pressed() -> void:
 	
 
 func _on_quit_pressed() -> void:
+	$QuitButton.disabled = true
+	await wait(SoundManager.back_sfx.get_length())
 	NetworkReceiver.quit_game()
 
 
