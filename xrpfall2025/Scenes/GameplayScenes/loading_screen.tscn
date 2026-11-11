@@ -134,6 +134,7 @@ texture_hover = ExtResource("b_blue_hover")
 ignore_texture_size = true
 stretch_mode = 0
 script = ExtResource("11_hover")
+hover_sound = true
 outline_corner = 59
 
 [node name="Label" type="Label" parent="Buttons/RetryButton"]
