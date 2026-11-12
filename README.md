@@ -34,9 +34,28 @@ python -c "import cv2, numpy, pupil_apriltags, PyInstaller; print('OK')"
 ```
 
 # generate and move script
+
+macOS / Linux:
 ```bash
 cd xrpfall2025/Scripts
-pyinstaller --onefile --clean --collect-all pupil_apriltags --name laptop_fusion laptop_fusion.py
+pyinstaller --onedir --clean --noconfirm --collect-all pupil_apriltags --name laptop_fusion laptop_fusion.py
 cd ..
-mv Scripts/dist/laptop_fusion . 
+rm -rf fusion
+mv Scripts/dist/laptop_fusion fusion
+touch fusion/.gdignore
 ```
+
+Windows (PowerShell):
+```powershell
+cd xrpfall2025\Scripts
+pyinstaller --onedir --clean --noconfirm --collect-all pupil_apriltags --name laptop_fusion laptop_fusion.py
+cd ..
+Remove-Item -Recurse -Force fusion -ErrorAction SilentlyContinue
+Move-Item Scripts\dist\laptop_fusion fusion
+New-Item fusion\.gdignore -ItemType File
+```
+
+`fusion/.gdignore` stops the Godot editor from trying to import the hundreds of library files
+inside the folder. The first launch after a rebuild can take ~30 s on macOS while it checks the
+new files; after that it starts in about a second. If `fusion/` is missing, the game falls back to
+an old single-file `laptop_fusion` next to the project.

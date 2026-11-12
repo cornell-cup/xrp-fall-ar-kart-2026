@@ -1,0 +1,75 @@
+[gd_scene load_steps=5 format=3]
+
+[sub_resource type="Curve3D" id="Curve3D_final"]
+closed = true
+bake_interval = 0.01
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.277054, 0, 0, -0.4953, -0.277054, 0, 0, 0.277054, 0, 0, 0.50165, 0, -0.99695, 0, 0, -0.277054, 0, 0, 0, 1.0033, 0, -0.4953, 0, 0, 0, 0, 0, 0, 1.0033, 0, 0, 0, 0, 0, 0, 0, 0.277054, 1.0033, 0, 0.4953, 0.277054, 0, 0, -0.277054, 0, 0, 0.50165, 0, 0.99695, 0, 0, 0.277054, 0, 0, 0, 0, 0, 0.4953),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0)
+}
+point_count = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_road"]
+albedo_color = Color(0.72, 0.72, 0.72, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_edge"]
+albedo_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_start"]
+albedo_color = Color(1, 1, 1, 1)
+
+[node name="Track" type="Node3D"]
+
+[node name="Final Path" type="Path3D" parent="."]
+curve = SubResource("Curve3D_final")
+
+[node name="CSGPolygon3D" type="CSGPolygon3D" parent="."]
+layers = 3
+use_collision = true
+collision_layer = 3
+collision_mask = 3
+polygon = PackedVector2Array(-0.22225, 0, -0.22225, 0.01, 0.22225, 0.01, 0.22225, 0)
+mode = 2
+path_node = NodePath("../Final Path")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_road")
+
+[node name="InnerEdge" type="CSGPolygon3D" parent="."]
+layers = 3
+polygon = PackedVector2Array(-0.22225, 0.01, -0.22225, 0.0102, -0.21425, 0.0102, -0.21425, 0.01)
+mode = 2
+path_node = NodePath("../Final Path")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_local = true
+path_joined = true
+material = SubResource("StandardMaterial3D_edge")
+
+[node name="OuterEdge" type="CSGPolygon3D" parent="."]
+layers = 3
+polygon = PackedVector2Array(0.21425, 0.01, 0.21425, 0.0102, 0.22225, 0.0102, 0.22225, 0.01)
+mode = 2
+path_node = NodePath("../Final Path")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_local = true
+path_joined = true
+material = SubResource("StandardMaterial3D_edge")
+
+[node name="StartLine" type="CSGBox3D" parent="."]
+layers = 3
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0101, 0)
+size = Vector3(0.4445, 0.0002, 0.012)
+material = SubResource("StandardMaterial3D_start")

@@ -61,26 +61,22 @@ public partial class ItemManager : Node
 		{
 			//calculate where on the track we want to generate this row of items
 			//double theta = Mathf.DegToRad(i * 360 / itemLocations);
-			//TODO: this 50 is hardcoded for now, but should pull (or be based on) the scaling for loaded tracks
-			//see: track_loader.gd this could also potentially be changed to go from local to global position
-			Vector3 spawnPos = trackPath.Curve.GetPointPosition(i + 1) * 50 + new Vector3(0, 1, 0);
+			Vector3 spawnPos = trackPath.ToGlobal(trackPath.Curve.GetPointPosition(i + 1)) + new Vector3(0, 1, 0);
+			//the last point of a closed track sits back on the start line, skip it
+			Vector3 start = trackPath.ToGlobal(trackPath.Curve.GetPointPosition(0));
+			if (new Vector2(spawnPos.X - start.X, spawnPos.Z - start.Z).Length() < 1) continue;
 
-			//get direction vector towards the origin from this point
-			Vector3 dir = (Vector3.Zero - spawnPos).Normalized();
+			//get direction vector towards the origin from this point, flat along the ground
+			Vector3 dir = new Vector3(-spawnPos.X, 0, -spawnPos.Z).Normalized();
 			//determine the direction to generate the items in
 			for (int j = 0; j < itemsPerLocation; j++)
 			{
 				Item temp;
 				items.Add(itemPrefab.Instantiate()); //create the new item
 				AddChild(items[^1]); //add to the scene tree
-				temp = (Item)items[i]; //grab reference to call its init()
+				temp = (Item)items[^1]; //grab reference to call its init()
 				temp.CustomInit(cars, spawnPos + (5 * dir));
-				//cars subscribes to each item individually
-				foreach(Car c in cars)
-				{
-					temp.OnItemCollision += c.StartTimer;
-				}
-				
+
 			}			
 		}
 	}

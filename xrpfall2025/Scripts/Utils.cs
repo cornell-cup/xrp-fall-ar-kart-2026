@@ -100,7 +100,8 @@ public static class Utils
 
 		//transform the target position to local space
 		Transform3D pathTransform = path.GlobalTransform;
-		Vector3 localPoint = GlobalPosition * pathTransform;
+		//(GlobalPosition * pathTransform only inverts unscaled transforms, and loaded tracks are scaled)
+		Vector3 localPoint = pathTransform.AffineInverse() * GlobalPosition;
 
 		//get the nearest offset on the curve
 		float offset = curve.GetClosestOffset(localPoint);
@@ -112,6 +113,29 @@ public static class Utils
 		curvePoint = pathTransform * curvePoint;
 
 		return curvePoint;
+	}
+
+	/// <summary>
+	/// How far along the path (in the curve's own units, 0 to Curve.GetBakedLength())
+	/// the closest point to the Global Position is
+	/// </summary>
+	/// <param name="path">The Path3D to measure along</param>
+	/// <param name="GlobalPosition">Where in world space are you right now</param>
+	public static float GetClosestOffset(Path3D path, Vector3 GlobalPosition)
+	{
+		return path.Curve.GetClosestOffset(path.GlobalTransform.AffineInverse() * GlobalPosition);
+	}
+
+	/// <summary>
+	/// The point in world space that is the given offset along the path.
+	/// Offsets past either end wrap around, since tracks are closed loops
+	/// </summary>
+	/// <param name="path">The Path3D to sample</param>
+	/// <param name="offset">How far along the path, in the curve's own units</param>
+	public static Vector3 SamplePathGlobal(Path3D path, float offset)
+	{
+		float length = path.Curve.GetBakedLength();
+		return path.ToGlobal(path.Curve.SampleBaked(Mathf.PosMod(offset, length), true));
 	}
 
 	/// <summary>
@@ -248,8 +272,9 @@ public static class Utils
 	/// <returns>true if intersects, else false</returns>
 	public static bool AABBCollision(Vector3 p1, Vector3 halflength1, Vector3 p2, Vector3 halflength2)
 	{
-		Godot.Rect2 aabb1 = new Rect2(p1.X, p1.Z, halflength1.X * 2, halflength1.Z * 2);
-		Godot.Rect2 aabb2 = new Rect2(p2.X, p2.Z, halflength2.X * 2, halflength2.Z * 2);
+		//Rect2 takes its top-left corner, so offset by the halflength to center the boxes on p1/p2
+		Godot.Rect2 aabb1 = new Rect2(p1.X - halflength1.X, p1.Z - halflength1.Z, halflength1.X * 2, halflength1.Z * 2);
+		Godot.Rect2 aabb2 = new Rect2(p2.X - halflength2.X, p2.Z - halflength2.Z, halflength2.X * 2, halflength2.Z * 2);
 		if (aabb1.Intersects(aabb2)) return true;
 		else return false;
 	}

@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using System.Linq;
 
 public partial class CarManager : Node
 {
@@ -10,9 +11,22 @@ public partial class CarManager : Node
 	private int numberOfEnemies = 0;
 	private const int TOTALCARS = 3;
 	private int numberOfPlayers = 1;
+	//starting grid spacing: how far apart karts are side to side, and how far back each row is
+	//Karts are real size (5.7 x 11.4 units on the 22 unit wide road), so the side slots
+	//stay inside the lane and each row starts a kart length plus a gap behind
+	private const float GRIDSIDESPACING = 7;
+	private const float GRIDROWSPACING = 14;
 	//keep track of the only player. will need to rewrite 
 	// cooresponding logic if multiplayer is implemented
 	private Player player; 
+	//cars in the order they crossed the finish line on their last lap
+	private List<Car> finishOrder = new List<Car>();
+
+	/// <summary>
+	/// Emitted whenever a car uses its stored item. 
+	/// target is the car the effect was applied to (the user itself for Fast)
+	/// </summary>
+	[Signal] public delegate void ItemUsedEventHandler(Car user, int item, Car target);
 
 	/// <summary>
 	/// Get a reference to the list of cars in the game
@@ -32,13 +46,11 @@ public partial class CarManager : Node
 
 	public override void _Process(double delta)
 	{
-		//sort the cars into their proper placements and save this new list
-		cars = MergeSort(Cars);
-
 		//adjust the placements of each car
-		for (int i = 0; i < cars.Count; i++)
+		List<Car> placements = GetPlacements();
+		for (int i = 0; i < placements.Count; i++)
 		{
-			cars[i].PlacementChanged(i + 1);
+			placements[i].PlacementChanged(i + 1);
 		}
 
 		//figure out which car is rubber banding to the player
@@ -46,7 +58,7 @@ public partial class CarManager : Node
 		{
 			foreach (Car c in Cars)
 			{
-				if (c.Place == 2 && c.IsClass("EnemyAi"))
+				if (c.Place == 2 && c is EnemyAi)
 				{
 					EnemyAi e = (EnemyAi)c;
 					e.IsRubberbanding = true;
@@ -60,7 +72,7 @@ public partial class CarManager : Node
 			//have all cars rubber to the player for now
 			foreach (Car c in Cars)
 			{
-				if (c.IsClass("EnemyAi"))
+				if (c is EnemyAi)
 				{
 					EnemyAi e = (EnemyAi)c;
 					e.IsRubberbanding = true;
@@ -76,7 +88,7 @@ public partial class CarManager : Node
 			{
 				if (
 					(c.Place == player.Place + 1 || c.Place == player.Place - 1) 
-					&& c.IsClass("EnemyAi")
+					&& c is EnemyAi
 				)
 				{
 					EnemyAi e = (EnemyAi)c;
@@ -98,136 +110,98 @@ public partial class CarManager : Node
 	public void Init(Vector3 startingPosition, Path3D track, int totalCheckpoints)
 	{
 		numberOfEnemies = TOTALCARS - numberOfPlayers;
-		//Vector3 spawnDisplacement = new Vector3(4, 2, -4); // generated tracks
-		Vector3 spawnDisplacement = new Vector3(0, 2, 0); // loaded custom tracks
-		//spawn all enemies
-		for(int i = 0; i < numberOfEnemies; i++)
-		{
-			cars.Add((Car)enemyPrefab.Instantiate());
-			AddChild(cars[^1]);
-			((EnemyAi)cars[^1]).Init(startingPosition += spawnDisplacement, track, totalCheckpoints);
-		}
 
-		//spawn all players
+		//direction the track runs out of the start line, flattened onto the floor
+		Vector3 forward = track.ToGlobal(track.Curve.GetPointPosition(1)) - track.ToGlobal(track.Curve.GetPointPosition(0));
+		forward.Y = 0;
+		forward = forward.Normalized();
+
+		//spawn all players. Grid slot 0 is on the start line, which is
+		//where the real XRP's (0,0) gets mapped to
 		for (int i = 0; i < numberOfPlayers; i++)
 		{
 			cars.Add((Car)playerPrefab.Instantiate());
 			AddChild(cars[^1]);
-			cars[^1].Init(startingPosition += spawnDisplacement, track, totalCheckpoints);
+			cars[^1].Init(GetGridPosition(i, startingPosition, forward), track, totalCheckpoints, forward);
 			player = (Player)cars[^1];
 		}
 
+		//spawn all enemies in the slots behind the players
+		for(int i = 0; i < numberOfEnemies; i++)
+		{
+			cars.Add((Car)enemyPrefab.Instantiate());
+			AddChild(cars[^1]);
+			((EnemyAi)cars[^1]).Init(GetGridPosition(numberOfPlayers + i, startingPosition, forward), track, totalCheckpoints, forward);
+		}
+
 	}
 
 	/// <summary>
-	/// Returns whether car a is infront of car b
+	/// Where a kart starts on the starting grid. Slot 0 is centered on the start line,
+	/// then each row behind it has a kart on the left and right
 	/// </summary>
-	private bool CompareCars(Car a, Car b)
+	/// <param name="slot">Which grid slot, starting at 0</param>
+	/// <param name="startingPosition">Center of the start line</param>
+	/// <param name="forward">Direction the track runs out of the start line</param>
+	private static Vector3 GetGridPosition(int slot, Vector3 startingPosition, Vector3 forward)
 	{
-		//return the car that is infront of the other car
-		//if car a has passed less laps than car b, return b
-		if(a.Lap < b.Lap) return false;
-		//if car a and b are on the same lap, 
-		// then if car a has passed less checkpoints than car b, return b
-		else if (a.NumPassedCheckpoints < b.NumPassedCheckpoints) return false;
-		//if car a and b are on the same lap and have passed the 
-		// same number of checkpoints, then if car a is closer 
-		// to the last checkpoint than car b, return b
-		else if (a.DistanceFromLastCheckpoint() < b.DistanceFromLastCheckpoint()) return false;
-		//otherwise car a is infront of car b
-		else return true;
+		if (slot == 0) return startingPosition;
+
+		Vector3 right = forward.Cross(Vector3.Up);
+		int row = (slot + 1) / 2;
+		float side = slot % 2 == 1 ? -1 : 1;
+		return startingPosition + right * side * GRIDSIDESPACING - forward * row * GRIDROWSPACING;
 	}
 
 	/// <summary>
-	/// Given two sorted list, sort the elements 
-	/// sequencially and return a single sorted list
+	/// Uses the car's stored item. Fast boosts the user, Slow and 
+	/// Inverted hit the car one place ahead (or second place if the user is in first)
 	/// </summary>
-	private List<Car> Merge(List<Car> leftList, List<Car> rightList)
+	/// <param name="user">The car using its item</param>
+	public void UseItem(Car user)
 	{
-		List<Car> sorted = new List<Car>();
-		int lI = 0; //left list index
-		int rI = 0;	//right list index 
+		if (user.StoredItem == States.Regular) return;
 
-		//index through both lists and add them to each list in sequencial order
-		while (lI < leftList.Count && rI < rightList.Count)
-		{
-			// if the current leftList car is infront of the current 
-			// rightList car, then add it to the sorted list and increment lI
-			if(CompareCars(leftList[lI], rightList[rI]))
-			{
-				sorted.Add(leftList[lI]);
-				lI++;
-			}
-			//otherwise add the rightList car to the list and increment rI
-			else
-			{
-				sorted.Add(rightList[rI]);
-				rI++;
-			}
-		}
+		States item = user.StoredItem;
+		Car target = item == States.Fast ? user : GetItemTarget(user);
+		//nobody to hit, keep the item for later
+		if (target == null) return;
 
-		//add any remaining cars. Assumes at least either leftList or 
-		// rightList cars have been completely added to the sorted list
-		while (lI < leftList.Count)
-		{
-			sorted.Add(leftList[lI]);
-			lI++;
-		}
-		while(rI < rightList.Count)
-		{
-			sorted.Add(rightList[rI]);
-			rI++;
-		}
-
-		return sorted;
+		user.TakeStoredItem();
+		target.ApplyItemEffect(item);
+		EmitSignal(SignalName.ItemUsed, user, (int)item, target);
 	}
 
 	/// <summary>
-	/// Recursively sorts a given list of 
-	/// cars in the order of their placement
+	/// Which car an attacking item used by this car should hit
 	/// </summary>
-	/// <param name="carList"></param>
-	private List<Car> MergeSort(List<Car> carList)
+	private Car GetItemTarget(Car user)
 	{
-		//as long as the size of the list is greater than one, then we can keep splitting
-		if (1 < carList.Count)
+		int targetPlace = user.Place == 1 ? 2 : user.Place - 1;
+		foreach (Car c in cars)
 		{
-			List<Car> leftList = new List<Car>();
-			List<Car> rightList = new List<Car>();
-			int lSize, rSize;
-
-			//divide the list recursively into two halves until it can no longer be
-			if (carList.Count % 2 == 0) 
-			{ 
-				lSize = carList.Count/2;
-				rSize = carList.Count/2;
-			}
-			else
-			{
-				lSize = carList.Count/2 - 1;
-				rSize = carList.Count/2;
-			}
-
-			//create the left list
-			for(int i = 0; i < lSize; i++)
-			{
-				leftList.Add(carList[i]);
-			}
-			//create the right list
-			for(int i = rSize; i < carList.Count; i++)
-			{
-				rightList.Add(carList[i]);
-			}
-
-			//sort the first and second halves
-			MergeSort(leftList);
-			MergeSort(rightList);
-
-			//merge the two lists and return its sorted version
-			return Merge(leftList, rightList);
+			if (c != user && c.Place == targetPlace && !c.FinishedRace) return c;
 		}
-		else return null;
-		
+		return null;
+	}
+
+	/// <summary>
+	/// Sorts the cars in order of their placement. Cars that finished come first 
+	/// in the order they finished, then by laps, and finally by how far 
+	/// they have actually driven along the track
+	/// </summary>
+	private List<Car> GetPlacements()
+	{
+		foreach (Car c in cars)
+		{
+			if (c.FinishedRace && !finishOrder.Contains(c)) finishOrder.Add(c);
+		}
+
+		return cars
+			.OrderBy(c => c.FinishedRace ? finishOrder.IndexOf(c) : finishOrder.Count)
+			.ThenByDescending(c => c.Lap)
+			.ThenByDescending(c => c.TrackProgress)
+			.ToList();
 	}
 
 }

@@ -1,12 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://cbhuwjvyk2t2t"]
+[gd_scene load_steps=5 format=3 uid="uid://cbhuwjvyk2t2t"]
 
 [ext_resource type="Script" uid="uid://ckroufi0l422b" path="res://Scripts/Characters/Player.cs" id="1_4flbx"]
 [ext_resource type="PackedScene" uid="uid://u7we301bvb4s" path="res://Assets/3dmodels/XRP_Car.fbx" id="2_0ctox"]
-[ext_resource type="Texture2D" uid="uid://crf26xahoogfh" path="res://Assets/Images/greenTriangle.png" id="2_4ntmi"]
-[ext_resource type="Texture2D" uid="uid://ct5tj7qusd4kq" path="res://Assets/Images/greenCircle.png" id="3_btcbx"]
+[ext_resource type="Texture2D" uid="uid://ci5vhy1sk3rp2" path="res://Assets/Images/player_arrow.png" id="2_4ntmi"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_onrkg"]
-size = Vector3(1.35065, 1, 3.19904)
+size = Vector3(5.715, 3.16874, 11.43)
 
 [node name="Player" type="Node" node_paths=PackedStringArray("csgBox3D", "charbody3d", "carMesh")]
 script = ExtResource("1_4flbx")
@@ -17,6 +16,7 @@ carMesh = NodePath("Node3D/Player/CollisionShape3D/XRP_Car/SM_Car")
 [node name="Node3D" type="Node3D" parent="."]
 
 [node name="Player" type="CharacterBody3D" parent="Node3D"]
+collision_layer = 16
 
 [node name="Pivot" type="Node3D" parent="Node3D/Player"]
 
@@ -24,17 +24,12 @@ carMesh = NodePath("Node3D/Player/CollisionShape3D/XRP_Car/SM_Car")
 shape = SubResource("BoxShape3D_onrkg")
 
 [node name="XRP_Car" parent="Node3D/Player/CollisionShape3D" instance=ExtResource("2_0ctox")]
-transform = Transform3D(-5, 0, -4.37114e-07, 0, 5, 0, 4.37114e-07, 0, -5, 0, -0.5, 0.3)
+transform = Transform3D(-17.84502, 0, 0, 0, 17.84502, 0, 0, 0, -17.84502, 0, -1.5071, 1.07305)
 
-[node name="triangle" type="Sprite3D" parent="Node3D/Player/CollisionShape3D/XRP_Car"]
-transform = Transform3D(0.5, 8.74227e-08, 7.64273e-15, 0, -2.18557e-08, 1, 8.74227e-08, -0.5, -4.37114e-08, 0, 0.2, 3)
+[node name="arrow" type="Sprite3D" parent="Node3D/Player/CollisionShape3D/XRP_Car"]
+transform = Transform3D(-0.27, 0, 0, 0, 0, 0.27, 0, 0.27, 0, 0, 0.2, 0.06)
 layers = 2
 texture = ExtResource("2_4ntmi")
-
-[node name="circle" type="Sprite3D" parent="Node3D/Player/CollisionShape3D/XRP_Car"]
-transform = Transform3D(-0.25, -3.7749e-08, -6.60024e-15, 0, -1.09278e-08, 1, -3.7749e-08, 0.25, 4.37114e-08, 0, 0.2, 1)
-layers = 2
-texture = ExtResource("3_btcbx")
 
 [node name="fpsCamera" type="Camera3D" parent="Node3D/Player/CollisionShape3D/XRP_Car"]
 transform = Transform3D(-0.2, -6.54983e-09, 1.62114e-08, 0, 0.185437, 0.0749214, -1.74846e-08, 0.0749214, -0.185437, -2.01605e-08, 0.2, 0.230609)
@@ -42,9 +37,8 @@ cull_mask = 1047553
 current = true
 
 [node name="CSGBox3D" type="CSGBox3D" parent="Node3D/Player/CollisionShape3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00164795, -0.124939, -0.00753784)
 visible = false
-size = Vector3(1.35046, 0.750122, 3.1955)
+size = Vector3(5.715, 3.16874, 11.43)
 
 [node name="overheadCamera" type="Camera3D" parent="Node3D/Player"]
 transform = Transform3D(1, 0, 0, 0, 1.19249e-08, 1, 0, -1, 1.19249e-08, 0, 20, -5)

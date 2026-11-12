@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://b64qhy0rhdilg"]
+[gd_scene load_steps=9 format=3 uid="uid://b64qhy0rhdilg"]
 
 [ext_resource type="PackedScene" uid="uid://dnkv3f1fu5fc8" path="res://Scenes/Prefabs/scene_manager.tscn" id="1_d2rn5"]
 [ext_resource type="PackedScene" uid="uid://sdm8yxrkofoh" path="res://Scenes/Prefabs/item_manager.tscn" id="2_oes5h"]
@@ -6,7 +6,6 @@
 [ext_resource type="PackedScene" uid="uid://dqemkqrkjrxoy" path="res://Scenes/Prefabs/checkpoint_manager.tscn" id="4_a2ywa"]
 [ext_resource type="PackedScene" uid="uid://b0pyubict3ifh" path="res://Scenes/Prefabs/finishline.tscn" id="5_ptw5v"]
 [ext_resource type="PackedScene" uid="uid://cbhuwjvyk2t2t" path="res://Scenes/Prefabs/player.tscn" id="6_iweo5"]
-[ext_resource type="PackedScene" uid="uid://dry5xxoksd4yr" path="res://Scenes/Prefabs/kill_plane.tscn" id="7_f565b"]
 [ext_resource type="PackedScene" uid="uid://drsnmi4pkc6t5" path="res://Scenes/Prefabs/hud.tscn" id="8_uev1k"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d2rn5"]
@@ -14,10 +13,9 @@ albedo_color = Color(0.321569, 0.454902, 0.180392, 1)
 
 [node name="Node" type="Node"]
 
-[node name="SceneManager" parent="." node_paths=PackedStringArray("track", "itemManager", "killPlane", "finishline", "checkpointManager") instance=ExtResource("1_d2rn5")]
+[node name="SceneManager" parent="." node_paths=PackedStringArray("track", "itemManager", "finishline", "checkpointManager") instance=ExtResource("1_d2rn5")]
 track = NodePath("../Track")
 itemManager = NodePath("../ItemManager")
-killPlane = NodePath("../killPlane")
 finishline = NodePath("../Finishline")
 checkpointManager = NodePath("../Checkpoint Manager")
 
@@ -30,8 +28,6 @@ checkpointManager = NodePath("../Checkpoint Manager")
 [node name="Finishline" parent="." instance=ExtResource("5_ptw5v")]
 
 [node name="Player" parent="." instance=ExtResource("6_iweo5")]
-
-[node name="killPlane" parent="." instance=ExtResource("7_f565b")]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.35981, 0.0243341, 0.932709, -0.667748, -0.691474, 0.275637, 0.65165, -0.721991, -0.23255, 0, 18, 0)
