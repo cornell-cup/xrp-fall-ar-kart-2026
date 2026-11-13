@@ -3,13 +3,16 @@ extends Node
 # ============================================================
 # Combined network receiver — fusion + AR UI.
 #
-# Launches the bundled laptop_fusion executable on startup. From it:
+# Launches laptop_fusion on startup (the Python script in the editor, the
+# folder build in an exported game). From it:
 #   - UDP 6000: fused robot pose JSON {x, y, angle}
 #   - TCP 6001: raw RGB video frames
-#   - UDP 6002: ar_tags JSON   (NEW — for AR overlays)
+#   - UDP 6002: ar_tags JSON, for the labels over AprilTags in AR mode
 #
 # Sends to Python:
 #   - UDP 4003 (localhost): gamepad packets, Python forwards to XRP
+# And from the XRP directly:
+#   - UDP 6003: "ACK,<seq>" for each gamepad packet, for the round-trip time
 #
 # AR mode: at startup, prompts "Enable AR Camera?". If yes, the live
 # camera feed becomes the world backdrop and labels float over each
@@ -20,9 +23,9 @@ extends Node
 # with Player.cs.
 # ============================================================
 
-# Passed to laptop_fusion, which tries it first and then falls back to
-# cornellcup2.local / 10.42.0.1 / 192.168.4.95 on its own. So the kart
-# works on the Pi hotspot or CornellCup-Web without changing this.
+# Passed to laptop_fusion, which tries it first and then falls back to the
+# other addresses in its PI_CANDIDATES on its own, so the kart works on any of
+# the networks without changing this.
 const PI_IP: String = "cornellcup2.local"
 
 const POSE_PORT: int = 6000
@@ -35,14 +38,70 @@ const GAMEPAD_RELAY_HOST: String = "127.0.0.1"
 var udp_pose_in: PacketPeerUDP = PacketPeerUDP.new()
 var pose_last_received: float = 0.0
 const POSE_TIMEOUT: float = 8.0
+# The race scene, which AR mode attaches to and restarts when the camera comes or goes
+const RACE_SCENE: String = "res://Scenes/GameplayScenes/main.tscn"
 
 # ---- Gamepad ----
 var udp_gamepad: PacketPeerUDP = PacketPeerUDP.new()
 var gamepad_connected: bool = false
-const GAMEPAD_SEND_HZ: float = 20.0
-var gamepad_send_timer: float = 0.0
+# The stick is sent every frame, changed or not, so a lost packet (a lost
+# "stop" especially) is replaced one frame later
 const GAMEPAD_HEADER: int = 0x55
-const DEADZONE: float = 0.08
+# Stick readings under this count as centered. Many sticks rest a little off
+# center (0.08-0.15), which used to get through and keep the kart creeping
+const DEADZONE: float = 0.15
+
+# ---- Steering wheel (Thrustmaster TMX) ----
+# macOS has no driver for the TMX, so Scripts/wheel_bridge.py reads it over USB
+# and sends "WHEEL,<steer>,<gas>,<brake>,<buttons>" here. While it's sending,
+# the wheel drives the kart instead of the gamepad
+const WHEEL_PORT: int = 6004
+# No wheel packet for this long = wheel unplugged (the bridge sends every 50 ms)
+const WHEEL_TIMEOUT_MS: int = 500
+# How far the wheel turns lock to lock, and how far it has to be turned from
+# centre (either way) for full steering. Turning further stays at full steering.
+# 90 uses the middle fifth of the wheel's travel (180° of the 900°): 90° of
+# wheel for the servo's 60° (STEER_RANGE_DEG in xrp_raw_sensors.py), a 1.5:1
+# steering ratio. 450 = the wheel's full turn (7.5:1, like a road car, slower);
+# 60 = 1:1 (wheel angle = servo angle, quickest)
+const WHEEL_ROTATION_DEG: float = 900.0
+const WHEEL_FULL_STEER_DEG: float = 90.0
+# Steering curve: small turns of the wheel steer gently and it builds up faster
+# towards full lock (steering = fraction of full turn ^ this). 1 = linear,
+# 2 = half way round gives a quarter of full steering, 3 = gentler still near
+# centre. Full lock is full steering whatever the value
+const WHEEL_STEER_CURVE: float = 1.0
+# The wheel rests a degree or two off centre. Not rescaled, so past it the
+# angle still matches 1:1
+const WHEEL_STEER_DEADZONE_DEG: float = 2.0
+const PEDAL_DEADZONE: float = 0.03
+# Right paddle uses an item, like the gamepad's right bumper
+const WHEEL_ITEM_BUTTON: int = 0x1000
+var udp_wheel: PacketPeerUDP = PacketPeerUDP.new()
+var wheel_pid: int = -1
+var wheel_steer: float = 0.0
+var wheel_gas: float = 0.0
+var wheel_brake: float = 0.0
+var wheel_buttons: int = 0
+var _wheel_last_ms: int = -100000
+var _wheel_was_connected: bool = false
+
+# ---- Gamepad latency measurement ----
+# Every gamepad packet carries a sequence number (0-255); the XRP sends
+# "ACK,<seq>" straight back on this port when it applies the packet. The time
+# between sending and the ACK is the round trip game -> fusion -> WiFi -> XRP -> game
+const LATENCY_PORT: int = 6003
+# A packet with no ACK after this long counts as lost
+const ACK_LOST_AFTER_MS: int = 1000
+var udp_latency: PacketPeerUDP = PacketPeerUDP.new()
+var _gamepad_seq: int = 0
+var _seq_sent_ms: Dictionary = {}   # seq -> Time.get_ticks_msec() when sent
+# Stats since the last status line (every 5 s)
+var _rtt_count: int = 0
+var _rtt_sum_ms: int = 0
+var _rtt_max_ms: int = 0
+var _acks_lost: int = 0
+var _packets_sent: int = 0
 
 # ---- Video TCP ----
 var tcp_client: StreamPeerTCP = StreamPeerTCP.new()
@@ -58,46 +117,96 @@ const AR_LABEL_PIXEL_SIZE: float = 0.2
 
 # ---- Fusion process ----
 var fusion_pid: int = -1
+# Python with fusion's packages (numpy, opencv, pupil_apriltags), used to run
+# Scripts/laptop_fusion.py directly. Empty = use $AR_KART_PYTHON, or look for
+# the ar-kart conda env in the usual places
+const FUSION_PYTHON: String = ""
+# How long fusion must stay running to count as started; if it exits sooner
+# (e.g. a missing package) the next way of launching it is tried
+const FUSION_STARTUP_CHECK_S: float = 3.0
+# Fusion's output (prints, errors) is written here, next to the project
+const FUSION_LOG_FILE: String = "fusion.log"
+var _fusion_stdout: FileAccess = null
+var _fusion_stderr: FileAccess = null
+var _fusion_log: FileAccess = null
 
 # ---- Latest video frame ----
 var video_texture: ImageTexture = null
 var _video_confirmed: bool = false
+# When the last camera frame arrived (Time.get_ticks_msec), for the menus' camera badge
+var last_video_frame_ms: int = -1
+# When the current unbroken run of camera frames started, or -1 while there's none
+var _video_live_since_ms: int = -1
+# The camera counts as connected once frames have kept coming for CAMERA_CONNECT_MS,
+# and as gone after CAMERA_TIMEOUT_MS without one. The gap between them stops a
+# flaky stream from flipping AR on and off (each flip restarts the race)
+const CAMERA_CONNECT_MS: int = 1000
+const CAMERA_TIMEOUT_MS: int = 2000
 
 # ---- Robot state (legacy names) ----
 var xrp_x: float = 0.0
 var xrp_y: float = 0.0
 var xrp_angle: float = 0.0
 var xrp_connected: bool = false
-var xrp_trail: Array[Vector2] = []
-const TRAIL_MAX: int = 300
 
 # ---- AR mode ----
+# On while the Pi camera is connected; otherwise the race uses the regular kart camera
 var ar_enabled: bool = false
 var ar_backdrop_mesh: MeshInstance3D = null
-const AR_BACKDROP_W: float = 500.0
-const AR_BACKDROP_H: float = 350.0
-const AR_BACKDROP_Z: float = -90.0
+var ar_camera: Camera3D = null
+# The camera's place on the kart, set when AR attaches (used when the XRP isn't driving)
+var ar_camera_local: Transform3D = Transform3D.IDENTITY
+# Height of the floor under the kart, set when AR attaches. The AR camera is kept
+# CAM_HEIGHT_M above it and level (tilted only by CAM_TILT_UP_DEG), like the real
+# camera, so the game kart bobbing or tipping in the physics doesn't shake the view
+var ar_floor_y: float = 0.0
+# How much older the video on screen is than the kart's pose: the camera's delay
+# (~0.3 s measured with a stopwatch) minus the pose's own (~0.05 s). The AR camera
+# is placed where the kart was that long ago, so the track outline stays lined up
+# with the video instead of moving with the kart ahead of it.
+# Outline moves before the video does: raise it. After the video: lower it
+const AR_VIDEO_DELAY_S: float = 0.25
+# Recent [time, position, heading] of the kart, for placing the AR camera in the past
+var _ar_kart_history: Array = []
+const AR_HISTORY_S: float = 1.0
+# Size of the backdrop quad, set so it exactly covers the real camera's view
+var ar_backdrop_size: Vector2 = Vector2.ZERO
+# How far in front of the kart camera the backdrop sits. Anything virtual further
+# away than this is hidden behind the video, so keep it past the far side of the track
+const AR_BACKDROP_DIST: float = 1000.0
 # Map of tag_id -> Label3D overlay node.
 var ar_tag_labels: Dictionary = {}
 
-# ---- Gate event triggering (currently inert; flip ar_events_enabled to wire up) ----
-# Set to true once you want detected tags to fire game events.
-# Per-tag-ID -> action for _trigger_gate to dispatch.
-# Actions, with their States enum ordinal values from Car.cs:
-#     States.Inverted = 0, States.Slow = 1, States.Fast = 2, States.Regular = 3
-# Use ApplyItemEffect(state_int) to give the player an effect, or
-# StoreItem(state_int) to put one in their item slot.
-const AR_EVENTS_ENABLED: bool = false
-const TAG_EVENTS: Dictionary = {
-	# Example mappings — uncomment or edit when you turn AR_EVENTS_ENABLED on:
-	# 0: "checkpoint",   # finish line — increment lap
-	# 1: "speed_boost",  # ApplyItemEffect(Fast)
-	# 2: "store_item",   # StoreItem(random)
-	# 3: "hazard",       # ApplyItemEffect(Slow)
-}
-var _last_gate_fired_at: Dictionary = {}      # tag_id -> last trigger time
-const GATE_COOLDOWN_S: float = 2.0
-var _player_node: Node = null
+var _ar_attach_timer: float = 0.0
+
+# Real camera intrinsics in pixels, at the resolution they were calibrated at.
+# Must match Camera_params in laptop_fusion.py
+const CAM_FX: float = 558.546
+const CAM_FY: float = 561.275
+const CAM_CX: float = 368.271
+const CAM_CY: float = 264.430
+const CAM_CALIB_W: float = 640.0
+const CAM_CALIB_H: float = 480.0
+# The Pi camera's picture comes out upside down (the picture-in-picture preview
+# flips it both ways too), so the AR backdrop rotates the feed 180°
+const CAM_UPSIDE_DOWN: bool = true
+# How far the real camera is tilted up from level (negative = down)
+const CAM_TILT_UP_DEG: float = 2.0
+# Where the real camera's lens sits on the kart, in metres: height above the
+# floor, distance ahead of the kart's center, and sideways (positive = right).
+# Measure these on the robot; the defaults are where the camera sat on the kart model
+const CAM_HEIGHT_M: float = 0.073
+const CAM_FORWARD_M: float = 0.061
+const CAM_SIDEWAYS_M: float = 0.0
+
+
+# In AR mode the real floor and gates are in the video, so these virtual pieces
+# are moved to render layer 2, which no camera draws, off the kart camera (layer 1)
+const AR_HIDDEN_NODES: Array[String] = ["Ground", "TrackLoader", "Finishline"]
+const HIDDEN_LAYER: int = 2
+# ...except the track's edge lines, which stay on the kart camera too as an outline
+# of the track over the video
+const AR_KEPT_NODES: Array[String] = ["InnerEdge", "OuterEdge"]
 
 # ---- Debug ----
 var debug_timer: float = 0.0
@@ -116,12 +225,51 @@ func _get_base_dir() -> String:
 		return OS.get_executable_path().get_base_dir()
 
 
-func _get_fusion_path() -> String:
+# Ways to launch fusion, in the order to try them. Each is
+# {"name", "path", "args"}. In the editor, running laptop_fusion.py directly
+# comes first (no rebuild needed after editing fusion); an exported game uses
+# the folder build (fusion/laptop_fusion, PyInstaller --onedir) first
+func _fusion_launch_options() -> Array:
 	var base = _get_base_dir()
-	if OS.get_name() == "Windows":
-		return base.path_join("laptop_fusion.exe")
+	var options = []
+
+	var python = _find_fusion_python()
+	var script = base.path_join("Scripts").path_join("laptop_fusion.py")
+	var python_option = null
+	if python != "" and FileAccess.file_exists(script):
+		# -u: unbuffered, so its output reaches fusion.log right away
+		python_option = {"name": "Python script (%s)" % python, "path": python, "args": ["-u", script, PI_IP]}
+
+	var exe = "laptop_fusion.exe" if OS.get_name() == "Windows" else "laptop_fusion"
+	var folder_build = base.path_join("fusion").path_join(exe)
+	var folder_option = null
+	if FileAccess.file_exists(folder_build):
+		folder_option = {"name": "folder build", "path": folder_build, "args": [PI_IP]}
+
+	if OS.has_feature("editor"):
+		options = [python_option, folder_option]
 	else:
-		return base.path_join("laptop_fusion")
+		options = [folder_option, python_option]
+	return options.filter(func(o): return o != null)
+
+
+# A Python that can run laptop_fusion.py: FUSION_PYTHON, then $AR_KART_PYTHON,
+# then the ar-kart conda env in the usual install locations
+func _find_fusion_python() -> String:
+	var candidates = []
+	if FUSION_PYTHON != "":
+		candidates.append(FUSION_PYTHON)
+	if OS.get_environment("AR_KART_PYTHON") != "":
+		candidates.append(OS.get_environment("AR_KART_PYTHON"))
+	var windows = OS.get_name() == "Windows"
+	var home = OS.get_environment("USERPROFILE" if windows else "HOME")
+	for conda in ["anaconda3", "miniconda3", "miniforge3", "opt/anaconda3", "opt/miniconda3"]:
+		var env_dir = home.path_join(conda).path_join("envs").path_join("ar-kart")
+		candidates.append(env_dir.path_join("python.exe") if windows else env_dir.path_join("bin").path_join("python"))
+	for candidate in candidates:
+		if FileAccess.file_exists(candidate):
+			return candidate
+	return ""
 
 
 func _ready() -> void:
@@ -139,42 +287,61 @@ func _ready() -> void:
 	else:
 		print("[NetworkReceiver] Listening for AR tags on UDP %d" % AR_TAGS_PORT)
 
+	# Gamepad ACKs from the XRP (latency measurement)
+	var err_lat = udp_latency.bind(LATENCY_PORT, "0.0.0.0")
+	if err_lat != OK:
+		push_error("[NetworkReceiver] Failed to bind latency port %d (error %d)" % [LATENCY_PORT, err_lat])
+
 	# Gamepad output
 	udp_gamepad.set_dest_address(GAMEPAD_RELAY_HOST, GAMEPAD_RELAY_PORT)
-	print("[NetworkReceiver] Gamepad relayed via %s:%d at %d Hz" % [
-		GAMEPAD_RELAY_HOST, GAMEPAD_RELAY_PORT, int(GAMEPAD_SEND_HZ)])
+	print("[NetworkReceiver] Gamepad relayed via %s:%d every frame" % [
+		GAMEPAD_RELAY_HOST, GAMEPAD_RELAY_PORT])
 
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
 	var pads = Input.get_connected_joypads()
 	if not pads.is_empty():
 		print("[NetworkReceiver] Controller already connected: %s" % Input.get_joy_name(0))
 
-	_start_fusion()
-	await get_tree().create_timer(4.0).timeout
-	_connect_video_tcp()
+	# Steering wheel input from wheel_bridge.py
+	var err_wheel = udp_wheel.bind(WHEEL_PORT, "127.0.0.1")
+	if err_wheel != OK:
+		push_error("[NetworkReceiver] Failed to bind wheel port %d (error %d)" % [WHEEL_PORT, err_wheel])
+	_start_wheel_bridge()
 
-	# Show the AR popup after fusion + video are wired up
-	call_deferred("_show_ar_dialog")
+	# The video connection is made (and remade) by the retry in _process, once
+	# fusion's video server is up. AR mode follows the camera, see _update_ar_mode
+	_start_fusion()
 
 
 func _process(_delta: float) -> void:
+	_drain_fusion_output()
+	_process_latency()
 	_process_tcp_status()
 	_process_video()
 	_process_pose()
 	_process_ar_tags()
+	_process_wheel()
 	_process_gamepad_send(_delta)
+
+	_update_ar_mode()
+
+	# AR mode attaches to the kart camera of whichever race scene is loaded.
+	# Scene changes (title screen -> race, restart) free the old backdrop, so reattach
+	if ar_enabled:
+		if not is_instance_valid(ar_backdrop_mesh):
+			_ar_attach_timer += _delta
+			if _ar_attach_timer > 0.5:
+				_ar_attach_timer = 0.0
+				_try_attach_ar()
+		else:
+			_update_ar_camera_fov()
+			_place_ar_camera_in_past()
 
 	if not tcp_connected:
 		tcp_retry_timer += _delta
 		if tcp_retry_timer > 3.0:
 			tcp_retry_timer = 0.0
-			tcp_client.disconnect_from_host()
-			tcp_client = StreamPeerTCP.new()
-			var err = tcp_client.connect_to_host("127.0.0.1", VIDEO_PORT)
-			if err != OK:
-				print("[NetworkReceiver] TCP connect attempt failed (error %d)" % err)
-			else:
-				print("[NetworkReceiver] Retrying TCP connection to %d..." % VIDEO_PORT)
+			_connect_video_tcp()
 
 	debug_timer += _delta
 	if debug_timer > 5.0:
@@ -186,17 +353,26 @@ func _process(_delta: float) -> void:
 			StreamPeerTCP.STATUS_CONNECTING: tcp_status_name = "CONNECTING"
 			StreamPeerTCP.STATUS_CONNECTED: tcp_status_name = "CONNECTED"
 			StreamPeerTCP.STATUS_ERROR: tcp_status_name = "ERROR"
-		print("[NetworkReceiver] Status - TCP: %s | Pose: %s | Gamepad: %s | Video: %s | AR: %s | Frames: %d/%d" % [
+		var latency_text = "no ACKs"
+		if _rtt_count > 0:
+			latency_text = "avg %.0f ms, max %d ms" % [float(_rtt_sum_ms) / _rtt_count, _rtt_max_ms]
+		print("[NetworkReceiver] Status - TCP: %s | Pose: %s | Gamepad: %s | Video: %s | AR: %s | Frames: %d/%d | Gamepad round trip: %s, %d/%d lost" % [
 			tcp_status_name,
 			"active" if xrp_connected else "waiting",
-			"connected" if gamepad_connected else "none",
+			"wheel" if wheel_connected() else "connected" if gamepad_connected else "none",
 			"yes" if _video_confirmed else "no",
 			"on" if ar_enabled else "off",
 			_frames_shown_this_period,
 			_frames_dropped_this_period,
+			latency_text, _acks_lost, _packets_sent,
 		])
 		_frames_shown_this_period = 0
 		_frames_dropped_this_period = 0
+		_rtt_count = 0
+		_rtt_sum_ms = 0
+		_rtt_max_ms = 0
+		_acks_lost = 0
+		_packets_sent = 0
 
 
 # ============================================================
@@ -206,31 +382,80 @@ func _process(_delta: float) -> void:
 func _start_fusion() -> void:
 	_kill_old_fusion()
 	await get_tree().create_timer(1.0).timeout
-	var fusion_path = _get_fusion_path()
-	if not FileAccess.file_exists(fusion_path):
-		push_error("[NetworkReceiver] Fusion binary not found: %s" % fusion_path)
+
+	var log_path = _get_base_dir().path_join(FUSION_LOG_FILE)
+	_fusion_log = FileAccess.open(log_path, FileAccess.WRITE)
+
+	var options = _fusion_launch_options()
+	if options.is_empty():
+		push_error("[NetworkReceiver] No way to start fusion: no ar-kart Python found and no fusion/ folder build (see README)")
 		return
-	if OS.get_name() == "macOS":
-		OS.execute("xattr", ["-rd", "com.apple.quarantine", fusion_path])
-		OS.execute("chmod", ["+x", fusion_path])
-	fusion_pid = OS.create_process(fusion_path, [PI_IP])
-	if fusion_pid > 0:
-		print("[NetworkReceiver] Fusion started (PID: %d)" % fusion_pid)
-	else:
-		push_error("[NetworkReceiver] Failed to start fusion binary")
+
+	for option in options:
+		if option["name"] == "folder build" and OS.get_name() == "macOS":
+			# clear the download quarantine on the whole folder (its libraries are in _internal)
+			OS.execute("xattr", ["-rd", "com.apple.quarantine", option["path"].get_base_dir()])
+			OS.execute("chmod", ["+x", option["path"]])
+
+		_log_fusion_line("=== starting fusion: %s ===" % option["name"])
+		var info = OS.execute_with_pipe(option["path"], option["args"], false)
+		if info.is_empty():
+			_log_fusion_line("=== could not launch ===")
+			continue
+		fusion_pid = info["pid"]
+		_fusion_stdout = info["stdio"]
+		_fusion_stderr = info["stderr"]
+
+		await get_tree().create_timer(FUSION_STARTUP_CHECK_S).timeout
+		if OS.is_process_running(fusion_pid):
+			print("[NetworkReceiver] Fusion started: %s (PID: %d), output in %s" % [option["name"], fusion_pid, log_path])
+			return
+		_drain_fusion_output()
+		push_warning("[NetworkReceiver] Fusion (%s) exited right away, see %s; trying the next way" % [option["name"], log_path])
+		fusion_pid = -1
+
+	push_error("[NetworkReceiver] Fusion failed to start every way it was tried, see %s" % log_path)
+
+
+# Copies whatever fusion has printed into fusion.log. Called every frame: the
+# output pipes must be kept drained or fusion would block once they fill
+func _drain_fusion_output() -> void:
+	for pipe in [_fusion_stdout, _fusion_stderr]:
+		if pipe == null:
+			continue
+		var data = pipe.get_buffer(65536)
+		if data.size() > 0 and _fusion_log != null:
+			_fusion_log.store_buffer(data)
+			_fusion_log.flush()
+
+
+func _log_fusion_line(line: String) -> void:
+	if _fusion_log != null:
+		_fusion_log.store_line(line)
+		_fusion_log.flush()
 
 
 func _kill_old_fusion() -> void:
 	if OS.get_name() == "Windows":
 		OS.execute("taskkill", ["/F", "/IM", "laptop_fusion.exe"])
+		# the Python script runs as python.exe, so match it by its command line
+		OS.execute("powershell", ["-NoProfile", "-Command",
+			"Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*laptop_fusion.py*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"])
 	else:
+		# matches both the folder build and "python ... laptop_fusion.py"
 		OS.execute("pkill", ["-f", "laptop_fusion"])
 
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		_cleanup()
-		get_tree().quit()
+		quit_game()
+
+
+# Quits the game, stopping fusion first. get_tree().quit() on its own would
+# leave fusion running in the background
+func quit_game() -> void:
+	_cleanup()
+	get_tree().quit()
 
 
 func _cleanup() -> void:
@@ -239,66 +464,217 @@ func _cleanup() -> void:
 		print("[NetworkReceiver] Fusion stopped (PID: %d)" % fusion_pid)
 		fusion_pid = -1
 	_kill_old_fusion()
+	_drain_fusion_output()
+	if _fusion_log != null:
+		_fusion_log.close()
+		_fusion_log = null
 	tcp_client.disconnect_from_host()
 	tcp_connected = false
 	udp_pose_in.close()
 	udp_ar_tags.close()
+	udp_latency.close()
 	udp_gamepad.close()
+	_stop_wheel_bridge()
+	udp_wheel.close()
+
+
+# ============================================================
+# Steering wheel bridge
+# ============================================================
+
+# Runs Scripts/wheel_bridge.py with fusion's Python. It waits for the wheel by
+# itself, so it's started whether or not one is plugged in
+func _start_wheel_bridge() -> void:
+	_stop_wheel_bridge()
+	var python = _find_fusion_python()
+	var script = _get_base_dir().path_join("Scripts").path_join("wheel_bridge.py")
+	if python == "" or not FileAccess.file_exists(script):
+		print("[NetworkReceiver] Wheel bridge not started (needs the ar-kart Python and Scripts/wheel_bridge.py)")
+		return
+	wheel_pid = OS.create_process(python, ["-u", script])
+	if wheel_pid > 0:
+		print("[NetworkReceiver] Wheel bridge started (PID: %d)" % wheel_pid)
+
+
+func _stop_wheel_bridge() -> void:
+	if wheel_pid > 0:
+		OS.kill(wheel_pid)
+		wheel_pid = -1
+	# one left over from a run that didn't quit cleanly would keep the wheel claimed
+	if OS.get_name() != "Windows":
+		OS.execute("pkill", ["-f", "wheel_bridge.py"])
 
 
 # ============================================================
 # AR mode setup
 # ============================================================
 
-func _show_ar_dialog() -> void:
-	var dialog = ConfirmationDialog.new()
-	dialog.title = "AR Camera"
-	dialog.dialog_text = "Enable AR Camera?\n\nThis will use the kart's live camera as the game background\nwith floating labels over detected tags."
-	dialog.ok_button_text = "Yes, use camera"
-	dialog.cancel_button_text = "No, normal mode"
-	dialog.size = Vector2i(420, 170)
-	dialog.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN
-	dialog.confirmed.connect(_on_ar_yes)
-	dialog.canceled.connect(_on_ar_no)
-
-	var canvas = CanvasLayer.new()
-	canvas.layer = 100
-	canvas.name = "ARDialogLayer"
-	add_child(canvas)
-	canvas.add_child(dialog)
-	dialog.popup_centered()
+# Is the Pi camera's video coming in? (see CAMERA_CONNECT_MS)
+func camera_connected() -> bool:
+	if _video_live_since_ms < 0:
+		return false
+	var now = Time.get_ticks_msec()
+	if now - last_video_frame_ms > CAMERA_TIMEOUT_MS:
+		_video_live_since_ms = -1
+		return false
+	return now - _video_live_since_ms >= CAMERA_CONNECT_MS
 
 
-func _on_ar_yes() -> void:
-	ar_enabled = true
-	var dl = get_node_or_null("ARDialogLayer")
-	if dl: dl.queue_free()
-	_setup_camera_backdrop()
-	_hide_world()
-	print("[AR] AR mode active")
+# AR mode is on exactly while the camera is connected. AR rebuilds the race's
+# kart camera and hides the virtual world, which can't be undone in place, so a
+# race that's running when the camera connects or drops restarts in the new mode
+func _update_ar_mode() -> void:
+	var want_ar = camera_connected()
+	if want_ar == ar_enabled:
+		return
+	ar_enabled = want_ar
+	print("[AR] Camera %s, AR mode %s" % ["connected" if want_ar else "lost", "on" if want_ar else "off"])
+	var scene = get_tree().current_scene
+	if scene != null and scene.scene_file_path == RACE_SCENE:
+		print("[AR] Restarting the race in %s mode" % ("AR" if want_ar else "regular"))
+		SceneTransition.change_scene(RACE_SCENE)
+	elif want_ar:
+		_try_attach_ar()
 
 
-func _on_ar_no() -> void:
-	ar_enabled = false
-	var dl = get_node_or_null("ARDialogLayer")
-	if dl: dl.queue_free()
-	print("[AR] Normal mode")
-
-
-func _setup_camera_backdrop() -> void:
-	# The backdrop attaches to whatever Camera3D the scene already has.
-	# Adjust the find-by-name if your camera node has a different name.
+# Sets up AR on the current race scene if it has a kart camera. Returns false
+# if there isn't one yet (e.g. still on the title screen); _process retries
+func _try_attach_ar() -> bool:
 	var cam = _find_node_by_name(get_tree().root, "fpsCamera") as Camera3D
 	if cam == null:
-		# Fallback: any Camera3D
-		cam = _find_first_camera3d(get_tree().root)
-	if cam == null:
-		print("[AR] No Camera3D found; AR backdrop disabled")
-		ar_enabled = false
+		return false
+	ar_camera = cam
+	ar_tag_labels.clear()  # old labels were freed along with the old backdrop
+	_place_camera(cam)
+	ar_camera_local = cam.transform
+	_ar_kart_history.clear()
+	_hide_own_kart(cam)
+	_setup_camera_backdrop(cam)
+	_update_ar_camera_fov()
+	_hide_world()
+	print("[AR] AR mode active on %s" % cam.get_path())
+	return true
+
+
+# Where the real camera's optical center lands in the displayed image, 0..1 across and down
+func _principal_point() -> Vector2:
+	var pp = Vector2(CAM_CX / CAM_CALIB_W, CAM_CY / CAM_CALIB_H)
+	return Vector2.ONE - pp if CAM_UPSIDE_DOWN else pp
+
+
+# Puts the kart camera where the real one is (CAM_HEIGHT_M / CAM_FORWARD_M /
+# CAM_SIDEWAYS_M from the bottom-center of the kart) and tilts it like the real one.
+# It stays parented to the kart, so it follows it from then on
+func _place_camera(cam: Camera3D) -> void:
+	var body = _find_kart_body(cam)
+	if body == null:
+		var forward = -cam.global_transform.basis.z
+		forward.y = 0
+		cam.global_basis = _ar_camera_basis(forward.normalized())
+		return
+	ar_floor_y = body.global_position.y
+	var shape = body.get_node_or_null("CollisionShape3D") as CollisionShape3D
+	if shape != null and shape.shape is BoxShape3D:
+		ar_floor_y += shape.position.y - (shape.shape as BoxShape3D).size.y / 2
+	cam.global_transform = _ar_camera_transform(body.global_position, _kart_forward(body))
+
+
+# Where the real camera is when the kart's center is at kart_pos facing forward:
+# CAM_HEIGHT_M above the floor, CAM_FORWARD_M / CAM_SIDEWAYS_M from the center
+func _ar_camera_transform(kart_pos: Vector3, forward: Vector3) -> Transform3D:
+	var units = _units_per_metre()
+	var right = forward.cross(Vector3.UP)
+	var pos = Vector3(kart_pos.x, ar_floor_y, kart_pos.z) \
+		+ Vector3.UP * CAM_HEIGHT_M * units \
+		+ forward * CAM_FORWARD_M * units \
+		+ right * CAM_SIDEWAYS_M * units
+	return Transform3D(_ar_camera_basis(forward), pos)
+
+
+# Facing forward, tilted up CAM_TILT_UP_DEG, never rolled
+func _ar_camera_basis(forward: Vector3) -> Basis:
+	var tilt = deg_to_rad(CAM_TILT_UP_DEG)
+	return Basis.looking_at(forward * cos(tilt) + Vector3.UP * sin(tilt), Vector3.UP)
+
+
+# The way the kart faces, flat on the floor
+func _kart_forward(body: Node3D) -> Vector3:
+	var forward = -body.global_transform.basis.z
+	forward.y = 0
+	return forward.normalized()
+
+
+# Puts the AR camera where the kart was AR_VIDEO_DELAY_S ago, to match the video.
+# Only while the real XRP is driving the kart; otherwise it rides on the kart as usual
+func _place_ar_camera_in_past() -> void:
+	if not is_instance_valid(ar_camera):
+		return
+	var body = _find_kart_body(ar_camera)
+	if body == null or not xrp_connected:
+		_ar_kart_history.clear()
+		ar_camera.transform = ar_camera_local
 		return
 
+	var now = Time.get_ticks_msec() / 1000.0
+	var f = _kart_forward(body)
+	_ar_kart_history.append([now, body.global_position, atan2(f.z, f.x)])
+	while now - _ar_kart_history[0][0] > AR_HISTORY_S:
+		_ar_kart_history.pop_front()
+
+	# the samples just before and after that moment (the oldest one if the
+	# history doesn't go back that far yet), and the point between them
+	var then = now - AR_VIDEO_DELAY_S
+	var before = _ar_kart_history[0]
+	var after = before
+	for sample in _ar_kart_history:
+		after = sample
+		if sample[0] > then:
+			break
+		before = sample
+	var k = 0.0
+	if after[0] > before[0]:
+		k = clampf((then - before[0]) / (after[0] - before[0]), 0.0, 1.0)
+	var pos: Vector3 = before[1].lerp(after[1], k)
+	var heading = lerp_angle(before[2], after[2], k)
+	ar_camera.global_transform = _ar_camera_transform(pos, Vector3(cos(heading), 0, sin(heading)))
+
+
+# The kart's physics body the camera rides on
+func _find_kart_body(node: Node) -> CharacterBody3D:
+	var n = node.get_parent()
+	while n != null:
+		if n is CharacterBody3D:
+			return n
+		n = n.get_parent()
+	return null
+
+
+# World units per metre: tracks are built in metres and scaled up by the track loader
+func _units_per_metre() -> float:
+	var scene = get_tree().current_scene
+	var loader = scene.get_node_or_null("TrackLoader") if scene else null
+	if loader != null and loader.get("scale") != null:
+		return float(loader.get("scale"))
+	return 50.0
+
+
+# The camera rides on the player's own kart model, whose wheels and body would
+# block part of the view. In real life it's the robot itself, so hide it from
+# the kart camera (and from shadows)
+func _hide_own_kart(cam: Camera3D) -> void:
+	var model = cam.get_parent()
+	for node in model.find_children("*", "VisualInstance3D", true, false):
+		node.layers &= ~1
+
+
+func _setup_camera_backdrop(cam: Camera3D) -> void:
+	# Size the quad to the real camera's view at AR_BACKDROP_DIST, so a pixel
+	# in the video lines up with the same direction in the game
+	ar_backdrop_size = Vector2(
+		AR_BACKDROP_DIST * CAM_CALIB_W / CAM_FX,
+		AR_BACKDROP_DIST * CAM_CALIB_H / CAM_FY)
 	var mesh = QuadMesh.new()
-	mesh.size = Vector2(AR_BACKDROP_W, AR_BACKDROP_H)
+	mesh.size = ar_backdrop_size
 
 	# Use the existing live video texture if it's been created already,
 	# or a placeholder if not (will get updated on first frame).
@@ -311,26 +687,65 @@ func _setup_camera_backdrop() -> void:
 	mat.albedo_texture = video_texture
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	if CAM_UPSIDE_DOWN:
+		# uv -> 1 - uv rotates the picture 180°
+		mat.uv1_scale = Vector3(-1, -1, 1)
+		mat.uv1_offset = Vector3(1, 1, 0)
 
 	ar_backdrop_mesh = MeshInstance3D.new()
 	ar_backdrop_mesh.mesh = mesh
 	ar_backdrop_mesh.material_override = mat
 	ar_backdrop_mesh.name = "ARCameraBackdrop"
+	ar_backdrop_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	cam.add_child(ar_backdrop_mesh)
-	ar_backdrop_mesh.position = Vector3(0, 0, AR_BACKDROP_Z)
+	# Shift the quad so the camera's optical center sits straight ahead of the game camera
+	var pp = _principal_point()
+	ar_backdrop_mesh.position = Vector3(
+		(0.5 - pp.x) * ar_backdrop_size.x,
+		(pp.y - 0.5) * ar_backdrop_size.y,
+		-AR_BACKDROP_DIST)
+
+
+# Zooms the kart camera so the screen is filled by the video with no gaps,
+# using the same field of view as the real camera so virtual objects line up.
+# The real camera's optical center isn't in the middle of the picture, so an
+# ordinary (centered) view had to crop the wider side down to the narrower one.
+# An off-center frustum looks at the middle of the video instead, so the whole
+# width fits on screen (~60° across instead of ~52°)
+func _update_ar_camera_fov() -> void:
+	if not is_instance_valid(ar_camera):
+		return
+	var screen = get_viewport().get_visible_rect().size
+	# as much of the video as fits the screen's shape: the full width on a
+	# widescreen, the full height on a narrower window
+	var shown_w = min(ar_backdrop_size.x, ar_backdrop_size.y * screen.x / screen.y)
+	# frustum size and offset are measured at the near plane
+	var scale = ar_camera.near / AR_BACKDROP_DIST
+	ar_camera.projection = Camera3D.PROJECTION_FRUSTUM
+	ar_camera.keep_aspect = Camera3D.KEEP_WIDTH
+	ar_camera.size = shown_w * scale
+	ar_camera.frustum_offset = Vector2(
+		ar_backdrop_mesh.position.x, ar_backdrop_mesh.position.y) * scale
 
 
 func _hide_world() -> void:
-	var root = get_tree().root
-	var kp = _find_node_by_name(root, "killPlane")
-	if kp: _hide_visual_children(kp)
+	var scene = get_tree().current_scene
+	if scene == null:
+		return
+	for node_name in AR_HIDDEN_NODES:
+		var node = scene.get_node_or_null(node_name)
+		if node: _move_to_hidden_layer(node)
+	for node_name in AR_KEPT_NODES:
+		var node = scene.find_child(node_name, true, false)
+		if node is VisualInstance3D:
+			node.layers = 3
 
 
-func _hide_visual_children(node: Node) -> void:
+func _move_to_hidden_layer(node: Node) -> void:
+	if node is VisualInstance3D:
+		node.layers = HIDDEN_LAYER
 	for child in node.get_children():
-		if child is VisualInstance3D: child.visible = false
-		if child is Light3D: child.visible = false
-		_hide_visual_children(child)
+		_move_to_hidden_layer(child)
 
 
 # ============================================================
@@ -357,7 +772,7 @@ func _process_ar_tags() -> void:
 
 
 func _update_ar_labels(tags: Array) -> void:
-	if not ar_enabled or ar_backdrop_mesh == null:
+	if not ar_enabled or not is_instance_valid(ar_backdrop_mesh):
 		# Even if AR isn't active visually, still consume the packets
 		return
 
@@ -383,77 +798,15 @@ func _update_ar_labels(tags: Array) -> void:
 		label.text = name
 		label.visible = true
 
-		# Optional: dispatch a game event for this tag ID.
-		# Inert by default; flip AR_EVENTS_ENABLED when ready.
-		if AR_EVENTS_ENABLED:
-			_trigger_gate(id)
-
 	# Hide labels for tags we didn't see this frame
 	for existing_id in ar_tag_labels.keys():
 		if not seen_ids.has(existing_id):
 			(ar_tag_labels[existing_id] as Label3D).visible = false
 
 
-# ============================================================
-# Game event dispatch — called from _update_ar_labels when a tag is
-# seen. Currently inert (AR_EVENTS_ENABLED = false). When you turn it
-# on, fill out TAG_EVENTS with which IDs do what.
-#
-# Calls into Player.cs / Car.cs:
-#   - ApplyItemEffect was originally private. To call it from GDScript,
-#     change it to `public void ApplyItemEffect(States item)` in Car.cs.
-#   - StoreItem(States) is already public.
-#   - States enum: Inverted=0, Slow=1, Fast=2, Regular=3.
-# ============================================================
-func _trigger_gate(tag_id: int) -> void:
-	if not TAG_EVENTS.has(tag_id):
-		return
-
-	# Cooldown so a tag held in view doesn't fire every frame
-	var now = Time.get_ticks_msec() / 1000.0
-	var last = float(_last_gate_fired_at.get(tag_id, -999.0))
-	if now - last < GATE_COOLDOWN_S:
-		return
-	_last_gate_fired_at[tag_id] = now
-
-	if _player_node == null:
-		_find_player()
-	if _player_node == null:
-		print("[AR] gate fired but no player found")
-		return
-
-	var event = str(TAG_EVENTS[tag_id])
-	match event:
-		"checkpoint":
-			# Finish-line / lap behavior is normally handled by physical
-			# checkpoint trigger volumes in the game world. If you want a
-			# tag to also act as one, hook it up here. For now: just log.
-			print("[AR] tag %d: checkpoint" % tag_id)
-		"speed_boost":
-			# States.Fast = 2
-			_player_node.call("ApplyItemEffect", 2)
-			print("[AR] tag %d: SPEED BOOST" % tag_id)
-		"store_item":
-			# Random one of Inverted/Slow/Fast (0/1/2). Skip Regular.
-			_player_node.call("StoreItem", randi() % 3)
-			print("[AR] tag %d: ITEM stored" % tag_id)
-		"hazard":
-			# States.Slow = 1
-			_player_node.call("ApplyItemEffect", 1)
-			print("[AR] tag %d: HAZARD" % tag_id)
-		_:
-			print("[AR] tag %d: unknown event '%s'" % [tag_id, event])
-
-
-func _find_player() -> void:
-	# Try common locations first, then fall back to a tree search
-	_player_node = get_node_or_null("/root/CarManager/Player")
-	if _player_node == null:
-		_player_node = _find_node_by_name(get_tree().root, "Player")
-
-
 func _create_tag_label(text: String) -> Label3D:
 	var label = Label3D.new()
+	label.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	label.text = text
 	label.font_size = 64
 	label.modulate = Color(1, 0.9, 0.2)
@@ -470,8 +823,14 @@ func _create_tag_label(text: String) -> Label3D:
 func _pixel_to_backdrop(px: float, py: float) -> Vector3:
 	# Convert 2D pixel coordinates (0..frame_w, 0..frame_h) into
 	# 3D positions on the backdrop plane, in the backdrop's local frame.
-	var x = (px / float(ar_frame_w) - 0.5) * AR_BACKDROP_W
-	var y = (0.5 - py / float(ar_frame_h)) * AR_BACKDROP_H
+	var u = px / float(ar_frame_w)
+	var v = py / float(ar_frame_h)
+	if CAM_UPSIDE_DOWN:
+		# same 180° rotation as the backdrop's video
+		u = 1.0 - u
+		v = 1.0 - v
+	var x = (u - 0.5) * ar_backdrop_size.x
+	var y = (0.5 - v) * ar_backdrop_size.y
 	# Tiny z offset so the label sits in front of the backdrop, not behind
 	return Vector3(x, y, 0.5)
 
@@ -485,10 +844,9 @@ func _position_tag_label(label: Label3D, center: Array, corners: Array) -> void:
 	# doesn't cover the marker
 	var tag_h_px := 0.0
 	if corners.size() == 4:
-		var top_y = min(float(corners[0][1]), float(corners[1][1]))
-		var bot_y = max(float(corners[2][1]), float(corners[3][1]))
-		tag_h_px = bot_y - top_y
-	var lift = (tag_h_px / float(ar_frame_h)) * AR_BACKDROP_H * 0.6 + 8.0
+		var ys = corners.map(func(c): return float(c[1]))
+		tag_h_px = ys.max() - ys.min()
+	var lift = (tag_h_px / float(ar_frame_h)) * ar_backdrop_size.y * 0.6 + 8.0
 
 	label.position = Vector3(pos.x, pos.y + lift, pos.z)
 
@@ -592,6 +950,10 @@ func _process_video() -> void:
 	ar_frame_h = latest_h
 
 	_frames_shown_this_period += 1
+	var now_ms = Time.get_ticks_msec()
+	if _video_live_since_ms < 0 or now_ms - last_video_frame_ms > CAMERA_TIMEOUT_MS:
+		_video_live_since_ms = now_ms
+	last_video_frame_ms = now_ms
 
 	if not _video_confirmed:
 		_video_confirmed = true
@@ -608,35 +970,158 @@ func _encode_axis(value: float) -> int:
 func _apply_deadzone(value: float) -> float:
 	if absf(value) < DEADZONE:
 		return 0.0
-	return value
+	# rescaled so just past the deadzone is just above 0, not a jump to 0.15
+	return signf(value) * (absf(value) - DEADZONE) / (1.0 - DEADZONE)
 
-func _process_gamepad_send(delta: float) -> void:
-	if Input.get_connected_joypads().is_empty():
-		if gamepad_connected:
-			gamepad_connected = false
+func _process_gamepad_send(_delta: float) -> void:
+	var have_pad = not Input.get_connected_joypads().is_empty()
+	if have_pad != gamepad_connected:
+		gamepad_connected = have_pad
+		if have_pad:
+			print("[NetworkReceiver] Gamepad connected: %s" % Input.get_joy_name(0))
+		else:
 			print("[NetworkReceiver] Gamepad disconnected")
+
+	var ly: float
+	var rx: float
+	if wheel_connected():
+		# ly is a stick's up/down: negative = forward. The brake pedal reverses
+		ly = _apply_pedal_deadzone(wheel_brake) - _apply_pedal_deadzone(wheel_gas)
+		rx = wheel_steering()
+	elif gamepad_connected:
+		ly = _apply_deadzone(Input.get_joy_axis(0, JOY_AXIS_LEFT_Y))
+		rx = _apply_deadzone(Input.get_joy_axis(0, JOY_AXIS_RIGHT_X))
+	else:
 		return
+	# Hold the real kart still during the race countdown by sending a centered stick
+	if _in_race_countdown():
+		ly = 0.0
+		rx = 0.0
+	_send_gamepad(ly, rx)
 
-	if not gamepad_connected:
-		gamepad_connected = true
-		var pad_name = Input.get_joy_name(0)
-		print("[NetworkReceiver] Gamepad connected: %s" % pad_name)
 
-	gamepad_send_timer += delta
-	if gamepad_send_timer < 1.0 / GAMEPAD_SEND_HZ:
-		return
-	gamepad_send_timer = 0.0
+# True while wheel_bridge.py is sending (it only sends while the wheel is plugged in)
+func wheel_connected() -> bool:
+	return Time.get_ticks_msec() - _wheel_last_ms < WHEEL_TIMEOUT_MS
 
-	var ly = _apply_deadzone(Input.get_joy_axis(0, JOY_AXIS_LEFT_Y))
-	var rx = _apply_deadzone(Input.get_joy_axis(0, JOY_AXIS_RIGHT_X))
 
+# A gamepad or the wheel, for the loading screen and the status bar
+func controller_connected() -> bool:
+	return wheel_connected() or not Input.get_connected_joypads().is_empty()
+
+
+func _process_wheel() -> void:
+	while udp_wheel.get_available_packet_count() > 0:
+		var parts = udp_wheel.get_packet().get_string_from_utf8().split(",")
+		if parts.size() != 5 or parts[0] != "WHEEL":
+			continue
+		wheel_steer = float(parts[1])
+		wheel_gas = float(parts[2])
+		wheel_brake = float(parts[3])
+		var buttons = int(parts[4])
+		# right paddle = use item (pressed and released like the gamepad's bumper)
+		var item_now = buttons & WHEEL_ITEM_BUTTON != 0
+		if item_now != (wheel_buttons & WHEEL_ITEM_BUTTON != 0):
+			if item_now:
+				Input.action_press("use_item")
+			else:
+				Input.action_release("use_item")
+		wheel_buttons = buttons
+		_wheel_last_ms = Time.get_ticks_msec()
+
+	var connected = wheel_connected()
+	if connected != _wheel_was_connected:
+		_wheel_was_connected = connected
+		print("[NetworkReceiver] Steering wheel %s" % ("connected" if connected else "disconnected"))
+		if not connected:
+			wheel_gas = 0.0
+			wheel_brake = 0.0
+			wheel_steer = 0.0
+			if wheel_buttons & WHEEL_ITEM_BUTTON:
+				Input.action_release("use_item")
+			wheel_buttons = 0
+	_update_wheel_actions()
+
+
+# Without the XRP, Player.cs drives the virtual kart from the forward/back
+# actions (on or off), so the pedals hold those down too. Only changes are
+# applied, so the keyboard keeps working alongside it. (Steering doesn't go
+# through actions: Player.cs reads wheel_steering() directly)
+const WHEEL_ACTION_THRESHOLD: float = 0.3
+var _wheel_actions: Dictionary = {}   # action -> whether the wheel is holding it
+
+func _update_wheel_actions() -> void:
+	var want = {
+		"forward": _apply_pedal_deadzone(wheel_gas) > WHEEL_ACTION_THRESHOLD,
+		"back": _apply_pedal_deadzone(wheel_brake) > WHEEL_ACTION_THRESHOLD,
+	}
+	for action in want:
+		if want[action] != _wheel_actions.get(action, false):
+			_wheel_actions[action] = want[action]
+			if want[action]:
+				Input.action_press(action)
+			else:
+				Input.action_release(action)
+
+
+# Wheel angle -> steering -1..1, full steering at WHEEL_FULL_STEER_DEG. Sent to
+# the XRP's servo, and read by Player.cs to steer the kart without the XRP
+func wheel_steering() -> float:
+	var degrees = wheel_steer * WHEEL_ROTATION_DEG / 2.0
+	if absf(degrees) < WHEEL_STEER_DEADZONE_DEG:
+		return 0.0
+	var amount = minf(1.0, absf(degrees) / WHEEL_FULL_STEER_DEG)
+	return signf(degrees) * pow(amount, WHEEL_STEER_CURVE)
+
+
+func _apply_pedal_deadzone(value: float) -> float:
+	if value < PEDAL_DEADZONE:
+		return 0.0
+	return minf(1.0, (value - PEDAL_DEADZONE) / (1.0 - PEDAL_DEADZONE))
+
+
+func _send_gamepad(ly: float, rx: float) -> void:
+	var axes := PackedByteArray([_encode_axis(ly), _encode_axis(rx)])
+	_gamepad_seq = (_gamepad_seq + 1) % 256
 	var packet := PackedByteArray()
 	packet.append(GAMEPAD_HEADER)
-	packet.append(4)
-	packet.append(1); packet.append(_encode_axis(ly))
-	packet.append(2); packet.append(_encode_axis(rx))
-
+	packet.append(6)
+	packet.append(1); packet.append(axes[0])
+	packet.append(2); packet.append(axes[1])
+	packet.append(3); packet.append(_gamepad_seq)   # older XRP scripts ignore idx 3
+	_seq_sent_ms[_gamepad_seq] = Time.get_ticks_msec()
+	_packets_sent += 1
 	udp_gamepad.put_packet(packet)
+
+
+# Reads the XRP's ACKs and records each packet's round-trip time
+func _process_latency() -> void:
+	var now = Time.get_ticks_msec()
+	while udp_latency.get_available_packet_count() > 0:
+		var parts = udp_latency.get_packet().get_string_from_utf8().split(",")
+		if parts.size() != 2 or parts[0] != "ACK":
+			continue
+		var seq = int(parts[1])
+		if _seq_sent_ms.has(seq):
+			var rtt = now - int(_seq_sent_ms[seq])
+			_seq_sent_ms.erase(seq)
+			_rtt_count += 1
+			_rtt_sum_ms += rtt
+			_rtt_max_ms = max(_rtt_max_ms, rtt)
+	# no ACK for a while = lost (also clears entries before the sequence number wraps around)
+	for seq in _seq_sent_ms.keys():
+		if now - int(_seq_sent_ms[seq]) > ACK_LOST_AFTER_MS:
+			_seq_sent_ms.erase(seq)
+			_acks_lost += 1
+
+
+# True while a race is loaded and its countdown hasn't finished yet
+func _in_race_countdown() -> bool:
+	var scene = get_tree().current_scene
+	if scene == null:
+		return false
+	var player = scene.get_node_or_null("CarManager/Player")
+	return player != null and not player.HasRaceStarted
 
 
 # ============================================================
@@ -661,9 +1146,6 @@ func _process_pose() -> void:
 			xrp_x = float(data.get("x", 0.0))
 			xrp_y = float(data.get("y", 0.0))
 			xrp_angle = float(data.get("angle", 0.0))
-			xrp_trail.append(Vector2(xrp_x, xrp_y))
-			if xrp_trail.size() > TRAIL_MAX:
-				xrp_trail.remove_at(0)
 
 	if xrp_connected:
 		var now = Time.get_ticks_msec() / 1000.0
@@ -692,14 +1174,4 @@ func _find_node_by_name(node: Node, target: String) -> Node:
 		var r = _find_node_by_name(child, target)
 		if r:
 			return r
-	return null
-
-
-func _find_first_camera3d(node: Node) -> Camera3D:
-	if node is Camera3D:
-		return node
-	for child in node.get_children():
-		var c = _find_first_camera3d(child)
-		if c != null:
-			return c
 	return null

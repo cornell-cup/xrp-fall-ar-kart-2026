@@ -19,12 +19,12 @@ pestolink = PestoLinkAgent(robot_name)
 # -------- UDP / Network Configuration --------
 # WIFI_SSID = "XRP-Robot"
 # WIFI_PASSWORD = "xrpbot123"
-WIFI_SSID = "CornellCup-Web"
-WIFI_PASSWORD = "disneyworld!"
+WIFI_SSID = "AR-Kart"
+WIFI_PASSWORD = "cornellcup"
 
 # Laptop IP address (same network as Pico)
 # LAPTOP_IP = "10.42.0.99"
-LAPTOP_IP = "192.168.4.229"
+LAPTOP_IP = "192.168.0.160"
 
 # UDP ports (must match laptop pygame joystick script)
 PICO_UDP_PORT = 5006      # Pico listens here for JOY,x,y
@@ -34,15 +34,17 @@ YAW_CORRECTION_PORT = 5007 # XRP listens for yaw correction from Laptop
 # -------- Joystick -> Robot Mapping --------
 # Map joystick Y in [-1,1] to wheel speed in rpm (same for left & right)
 # MAX_DRIVE_RPM = 90.0
-MAX_DRIVE_RPM = 200
+MAX_DRIVE_RPM = 7
 JOYSTICK_DEADBAND = 0.05
 
 # Map joystick X in [-1,1] to steering servo angle in degrees
 # Servo supports roughly [0, 200]; treat 100 as center.
-STEER_CENTER_DEG = 100.0
-STEER_RANGE_DEG = 60.0   # +-60 degrees from center
+STEER_CENTER_DEG = 90.0
+STEER_RANGE_DEG = 45.0   # +-60 degrees from center
 
-ENCODER_PERCENT_OFFSET = 1.1 # based on empirical data gathered (the encoders seem to report about 15% less distance than acutally traveled)
+# ENCODER_PERCENT_OFFSET = 1/0.85 # based on empirical data gathered (the encoders seem to report about 15% less distance than acutally traveled)
+ENCODER_PERCENT_OFFSET = 1/0.95
+
 
 wlan = network.WLAN(network.STA_IF)
 
@@ -132,6 +134,7 @@ def process_absolute_yaw(sock):
     try:
         raw, addr = sock.recvfrom(128)
     except OSError:
+        print("yaw processing error")
         return
 
     try:
@@ -146,7 +149,10 @@ def process_absolute_yaw(sock):
 
         HEADING_OFFSET = HEADING_OFFSET + difference_in_heading
 
+        print("Updated heading offset")
+
     except (ValueError, UnicodeDecodeError):
+        print("Did not updated heading offset")
         pass
 
 # -------- Helpers --------
@@ -283,6 +289,7 @@ def main():
 
     while True:
         if pestolink.is_connected():  # Check if a BLE connection is established
+            # print("Connected to Pestolin")
             led.value(0)
             rotation = -1 * pestolink.get_axis(0)
             throttle = -1 * pestolink.get_axis(1)
@@ -329,8 +336,6 @@ def main():
                     gyro_bias = (1.0 - bias_beta) * gyro_bias + bias_beta * rate
             
                 # ---- PREDICTION STEP ----
-                # l = motor_three.get_position()*ENCODER_PERCENT_OFFSET + last_l
-                # r = motor_four.get_position()*ENCODER_PERCENT_OFFSET + last_r
                 l = motor_three.get_position()*ENCODER_PERCENT_OFFSET
                 r = motor_four.get_position()*ENCODER_PERCENT_OFFSET
                 motor_three.reset_encoder_position()
@@ -343,7 +348,7 @@ def main():
                     motor_three.set_speed(0.0)
                     motor_four.set_speed(0.0)
                 else:
-                    target_rpm = clamp(throttle, -1.0, 1.0) * MAX_DRIVE_RPM / 2
+                    target_rpm = clamp(throttle, -1.0, 1.0) * MAX_DRIVE_RPM
                     motor_three.set_speed(target_rpm)
                     motor_four.set_speed(target_rpm)
     
@@ -379,11 +384,17 @@ def main():
                 print("Error in sensor loop:", e)
         else:
             led.value(1)
-            print("Not connected to Pestolink")
+            # print("Not connected to Pestolink")
 
     sock.close()
     
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
 
 

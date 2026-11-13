@@ -11,7 +11,6 @@ public partial class SceneManager : Node
 	[Export] private Node track;
 	[Export] private Node track_loader;
 	[Export] private Node itemManager;
-	[Export] private Node killPlane;
 	[Export] private Node finishline;
 	[Export] private Node checkpointManager;
 
@@ -21,20 +20,18 @@ public partial class SceneManager : Node
 		CarManager carManagerCM = (CarManager)carManager;
 		//Track trackT = (Track)track;
 		ItemManager itemManagerIM = (ItemManager)itemManager;
-		KillPlane killPlaneKP = (KillPlane)killPlane;
 		Finishline finishlineFL = (Finishline)finishline;
 		CheckpointManager checkpointManagerCM = (CheckpointManager)checkpointManager;
 		
 		
 		//initialize everyone
-		killPlaneKP.Init(carManagerCM.Cars);
-		
 		//trackT.Init();
 		track_loader.Call("Init");
 		var cp = track_loader.Get("checkpoints").As<Godot.Collections.Array<Vector3>>();
 		//GD.Print(cp);
 		var sp = track_loader.Get("startingPoint").As<Vector3>();
 		var ip = track_loader.Get("innerPath").As<Path3D>();
+		Car.RoadHalfWidth = track_loader.Get("roadHalfWidth").As<float>();
 		
 		//checkpointManagerCM.SpawnCheckpoints(trackT.Checkpoints);
 		checkpointManagerCM.SpawnCheckpoints(cp);
@@ -51,17 +48,22 @@ public partial class SceneManager : Node
 		//itemManagerIM.Init(carManagerCM.Cars, trackT.Path3D);
 		itemManagerIM.Init(carManagerCM.Cars, ip);
 
-		//subscribe Player and Killplane Events
+		//subscribe Player Events
 		foreach (Car c in carManagerCM.Cars)
 		{
 			//GD.Print("Car: ", c, ", Type of c: ", c.GetType());
-			//killPlaneKP.IsCollidingKillPlane += c.ReturnToTrack;
-			killPlaneKP.IsCollidingKillPlane += c.ToPreviousCheckpoint;
-
 			finishlineFL.OnCrossingEvent += c.IncrementLap;
 			finishlineFL.OnCrossingEvent += c.ClearCheckpoints;
 		}
-		GetNode<Control>("CanvasLayer/HUD").Call("start_countdown");
+
+		//cars can't move until the HUD countdown ends.
+		//Deferred so the HUD has finished its own _ready first
+		Control hud = GetNode<Control>("../CanvasLayer/HUD");
+		foreach (Car c in carManagerCM.Cars)
+		{
+			hud.Connect("countdown_finished", Callable.From(c.RaceStarted));
+		}
+		hud.CallDeferred("start_countdown");
 	}
 
 }

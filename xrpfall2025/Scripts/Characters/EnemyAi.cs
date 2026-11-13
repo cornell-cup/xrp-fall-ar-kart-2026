@@ -38,18 +38,33 @@ public partial class EnemyAi : Car
 	private Player rubberbandingTo; 
 	private RacingState racingState = RacingState.NormalDriving;
 	private Difficulty difficulty;
-	//the last node the ai was tracking
-	private Vector3 prevPoint;
-	//the current node the ai is tracking
+	//the point in the middle of the road the ai is steering towards
 	private Vector3 seekPoint;
-	//number cooresponds with the index of the point on the track the ai is tracking
-	private int trackPointIndex = 1;
+	//how far ahead along the middle of the road (in world units) the ai aims.
+	//Following the road's curve instead of cutting between track points keeps it on the track
+	//Tuned on real_track.tscn so the real-size kart stays inside the 0.44 m lane, including
+	//the tighter inside lane of the turns (a longer look ahead cuts across the corner)
+	[Export] private float lookAhead = 12;
+	//fraction of the angle to the look ahead point the ai turns each physics frame
+	[Export] private float steeringGain = 0.2f;
+	//how far right (negative = left) of the middle of the road this car drives, in world units.
+	//Each AI keeps the side of the road it starts on in the grid, so AI karts never drive
+	//through each other (cars have no collision with each other)
+	private float laneOffset = 0;
+	//furthest a lane can be from the middle of the road, as a fraction of a kart's width.
+	//0.7 keeps two karts in opposite lanes apart while leaving room on the inside of turns
+	private const float MAXLANEOFFSET = 0.7f;
 
 	// is this car going to rubberband to the player? 
 	// currently assumes only one player in the scene, 
 	// cooresponding logic will need to be modified if 
 	// multiplayer ever gets implemented
 	private bool isRubberbanding = false;
+
+	//should this car use the items it picks up
+	[Export] private bool useItems = true;
+	//seconds left before this car uses its stored item. Negative when not holding one
+	private double itemHoldTime = -1;
 
 	/// <summary>
 	/// Get/Set if this enemy ai car is rubberbanding to the player
@@ -66,11 +81,12 @@ public partial class EnemyAi : Car
 	/// <param name="startingPosition">Where are we first spawning</param>
 	/// <param name="track">Reference to the track's path</param>
 	/// <param name="totalCheckpoints">How many checkpoints are on the track</param>
-	public void Init(Vector3 startingPosition, Path3D track, int totalCheckpoints, Difficulty difficulty = Difficulty.Medium)
+	/// <param name="facingDirection">Which way the car should face, along the track's direction of flow</param>
+	public void Init(Vector3 startingPosition, Path3D track, int totalCheckpoints, Vector3 facingDirection, Difficulty difficulty = Difficulty.Medium)
 	{
-		base.Init(startingPosition, track, totalCheckpoints);
-		prevPoint = startingPosition;
-		seekPoint = track.Curve.GetPointPosition(1);
+		base.Init(startingPosition, track, totalCheckpoints, facingDirection);
+		laneOffset = GetStartingLaneOffset();
+		seekPoint = GetLookAheadPoint();
 		racingState = RacingState.NormalDriving;
 		this.difficulty = difficulty;
 		SetSpeed(difficulty);
@@ -87,8 +103,15 @@ public partial class EnemyAi : Car
 	// Handle any in-game movement and effecting physics on this EnemyAI body
 	public override void _PhysicsProcess(double delta)
 	{
-		//car cannot move while the race has not started
-		if (!raceStarted) return;
+		//car cannot drive while the race has not started, but still lets gravity
+		//settle it onto the track (UpdateStateSpeed zeroes speed until then)
+		if (!raceStarted)
+		{
+			base._PhysicsProcess(delta);
+			return;
+		}
+
+		HandleStoredItem(delta);
 		// //get what the ray cast is looking at
 		// if(raycast3d.IsColliding()) 
 		// {
@@ -151,13 +174,24 @@ public partial class EnemyAi : Car
 	/// <param name="delta">Deltatime</param>
 	private void NormalDriving(double delta)
 	{
+		seekPoint = GetLookAheadPoint();
 		DebugDraw3D.DrawSphere(seekPoint, 2, color);
 		//need to get the correct angle for the car to turn
-		Vector3 targetVector = (seekPoint - GlobalPosition).Normalized();
-		float angle = -charbody3d.Transform.Basis.Z.SignedAngleTo(targetVector, Vector3.Up);
+		Vector3 targetVector = seekPoint - GlobalPosition;
+		targetVector.Y = 0;
+		//measured from the kart's forward (-Z) axis: 0 when facing the target, positive when it's to the left.
+		//(Measuring from Basis.Z, the backward axis, flipped between +180 and -180 degrees every frame and made the kart jitter)
+		Vector3 forward = -charbody3d.GlobalTransform.Basis.Z;
+		forward.Y = 0;
+		float angle = forward.SignedAngleTo(targetVector, Vector3.Up);
 		//GD.Print("EnemyAI angle: ", angle);
-		rotationIncrement = angle/45;
+		rotationIncrement = angle * steeringGain;
 		rotationIncrement = Mathf.Clamp(rotationIncrement, -1, 1);
+		//when hit by an Inverted item, swerve back and forth instead of driving backwards
+		if (current == States.Inverted)
+		{
+			rotationIncrement += Mathf.Sin(Time.GetTicksMsec() * 0.008f) * 0.04f;
+		}
 
 		//rotate to look at the next node 
 		charbody3d.RotateObjectLocal(
@@ -171,18 +205,43 @@ public partial class EnemyAi : Car
 		{
 			speed += acceleration * delta;
 		}
-		
-		//once at the node, update your node tracker to the next consecutuve node
-		if (Utils.CircleCollision(GlobalPosition, 5, seekPoint, 2))
-		{
-			trackPointIndex++;
-			//ensure our index for the track loop is valid
-			if (trackPointIndex >= track.Curve.PointCount) trackPointIndex = 1;
-			//update the point the enemy is tracking.
-			prevPoint = seekPoint;
-			seekPoint = track.Curve.GetPointPosition(trackPointIndex);
-		}
 		//apply to movement -> call in base.physicsprocess
+	}
+
+	/// <summary>
+	/// The point in this car's lane lookAhead units further along 
+	/// the track from wherever this car currently is
+	/// </summary>
+	private Vector3 GetLookAheadPoint()
+	{
+		//the curve is in the track's local units, which are scaled up in the world
+		float ahead = Utils.GetClosestOffset(track, GlobalPosition) + lookAhead / track.GlobalTransform.Basis.Scale.X;
+		return Utils.SamplePathGlobal(track, ahead) + GetTrackRight(ahead) * laneOffset;
+	}
+
+	/// <summary>
+	/// Direction pointing to the right of the road at the given offset along the track
+	/// </summary>
+	private Vector3 GetTrackRight(float offset)
+	{
+		Vector3 here = Utils.SamplePathGlobal(track, offset);
+		Vector3 further = Utils.SamplePathGlobal(track, offset + 1 / track.GlobalTransform.Basis.Scale.X);
+		Vector3 forward = further - here;
+		forward.Y = 0;
+		return forward.Normalized().Cross(Vector3.Up);
+	}
+
+	/// <summary>
+	/// How far right of the middle of the road this car spawned, limited so the whole kart stays on the road
+	/// </summary>
+	private float GetStartingLaneOffset()
+	{
+		float offset = Utils.GetClosestOffset(track, GlobalPosition);
+		Vector3 fromMiddle = GlobalPosition - Utils.SamplePathGlobal(track, offset);
+		//the kart's collision box is ready right away, unlike the CSG box behind AABB
+		float kartWidth = (charbody3d.GetNode<CollisionShape3D>("CollisionShape3D").Shape as BoxShape3D)?.Size.X ?? 0;
+		float maxOffset = Mathf.Min(kartWidth * MAXLANEOFFSET, Mathf.Max(0, RoadHalfWidth - kartWidth / 2 - 1));
+		return Mathf.Clamp(fromMiddle.Dot(GetTrackRight(offset)), -maxOffset, maxOffset);
 	}
 
 	/// <summary>
@@ -244,6 +303,39 @@ public partial class EnemyAi : Car
 			maxSpeed = 30;
 			break;
 		}
+	}
+
+	/// <summary>
+	/// Holds on to a picked up item for a few seconds, then uses it
+	/// </summary>
+	/// <param name="delta">Deltatime</param>
+	private void HandleStoredItem(double delta)
+	{
+		if (!useItems || finishedRace || storedItem == States.Regular)
+		{
+			itemHoldTime = -1;
+			return;
+		}
+
+		//just picked up an item, decide how long to hold it
+		if (itemHoldTime < 0) itemHoldTime = GD.RandRange(2.0, 6.0);
+
+		itemHoldTime -= delta;
+		if (itemHoldTime <= 0)
+		{
+			itemHoldTime = -1;
+			(GetParent() as CarManager)?.UseItem(this);
+		}
+	}
+
+	/// <summary>
+	/// AI cars don't have controls to flip, so Inverted 
+	/// makes them swerve (see NormalDriving) rather than reverse
+	/// </summary>
+	protected override double UpdateStateSpeed(States state, double speed)
+	{
+		if (state == States.Inverted) state = States.Regular;
+		return base.UpdateStateSpeed(state, speed);
 	}
 
 	/// <summary>

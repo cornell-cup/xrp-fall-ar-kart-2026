@@ -1,24 +1,75 @@
-# IMPORTANT: env vars must be set BEFORE `import cv2`. TCP transport
-# gives a clean image with retransmits.
-import os
+# IMPORTANT: env vars must be set BEFORE `import cv2`
+
+import os, sys, tempfile, traceback, threading
+
+def _open_log():
+    if getattr(sys, "frozen", False):
+        here = os.path.dirname(sys.executable)
+    else:
+        here = os.path.dirname(os.path.abspath(__file__))
+
+    for d in (here, os.path.expanduser("~"), tempfile.gettempdir()):
+        try:
+            p = os.path.join(d, "laptop_fusion.log")
+            return open(p, "w", buffering=1), p
+        except OSError:
+            continue
+    return None, None
+
+def _output_is_piped():
+    """True when launched by the game, which reads our output through a pipe."""
+    import stat
+    try:
+        return stat.S_ISFIFO(os.fstat(1).st_mode)
+    except OSError:
+        return False
+
+if _output_is_piped():
+    # Flush every printed line, so the game's fusion.log fills in as fusion runs
+    sys.stdout.reconfigure(line_buffering=True)
+    _log_f, _log_path = None, None
+else:
+    _log_f, _log_path = _open_log()
+if _log_f:
+    try:
+        os.dup2(_log_f.fileno(), 1)
+        os.dup2(_log_f.fileno(), 2)
+    except OSError:
+        pass
+    sys.stdout = _log_f
+    sys.stderr = _log_f
+    print(f"[BOOT] python={sys.executable} cwd={os.getcwd()} "
+          f"argv={sys.argv} log={_log_path}", flush=True)
+
+    def _thread_excepthook(args):
+        print(f"[THREAD CRASH] {args.thread.name}", file=_log_f)
+        traceback.print_exception(args.exc_type, args.exc_value,
+                                  args.exc_traceback, file=_log_f)
+        _log_f.flush()
+    threading.excepthook = _thread_excepthook
+
+# How the camera video comes from the Pi. "udp": a lost WiFi packet only smears
+# part of one frame. "tcp": nothing is lost, but everything behind a lost packet
+# waits for it to be resent, so the video freezes and lags. Use "tcp" if the
+# picture gets smeary or there's no video at all (e.g. a firewall blocking UDP)
+RTSP_TRANSPORT = "udp"
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = (
-    "rtsp_transport;tcp"
+    f"rtsp_transport;{RTSP_TRANSPORT}"
     "|fflags;nobuffer"
     "|flags;low_delay"
     "|reorder_queue_size;0"
     "|max_delay;0"
-    "|buffer_size;65536"
+    # UDP receive buffer: room for a whole keyframe, which arrives as a burst
+    "|buffer_size;1048576"
 )
 os.environ["OPENCV_LOG_LEVEL"] = "ERROR"
 os.environ["AV_LOG_FORCE_NOCOLOR"] = "1"
 
-import sys
 import time
 import math
 import json
 import socket
 import struct
-import threading
 from contextlib import contextmanager
 
 import numpy as np
@@ -34,20 +85,21 @@ Single laptop-side fusion + routing node. Combines:
 
     1. RTSP video grab from the Pi (background thread)
     2. AprilTag detection + camera->world transform (background thread)
-    3. EKF predict + correct + camera_correction from XRP raw sensors
+    3. EKF predict + IMU correct from the XRP's sensors, with tag poses worked
+       in gradually (sensor thread)
     4. Forwards fused state to Godot (UDP 6000, JSON {x, y, angle})
     5. Streams raw RGB video frames to Godot (TCP 6001)
     6. Forwards Godot gamepad packets to the XRP (UDP 4003 -> XRP:4002)
-    7. NEW: Forwards AprilTag detections to Godot (UDP 6002, JSON ar_tags)
-       for AR UI overlays — labels above each detected tag in-game.
+    7. Forwards AprilTag detections to Godot (UDP 6002, JSON ar_tags)
+       for the labels above each detected tag in AR mode
 
 Architecture:
-    XRP   --RAW,enc_l,enc_r,heading-UDP:5005--> us
-    Pi    --RTSP-----------------------------> us
-    us    --{x,y,angle} JSON--UDP:6000-------> Godot (kart pose)
-    us    --raw RGB frames---TCP:6001--------> Godot (video backdrop)
-    us    --ar_tags JSON-----UDP:6002--------> Godot (AR overlays)
-    Godot --gamepad bytes----UDP:4003--------> us --UDP:4002--> XRP
+    XRP   --RAW2,seq,enc totals,heading-UDP:5005--> us
+    Pi    --RTSP------------------------------> us
+    us    --{x,y,angle} JSON--UDP:6000--------> Godot (kart pose)
+    us    --raw RGB frames---TCP:6001---------> Godot (video backdrop)
+    us    --ar_tags JSON-----UDP:6002---------> Godot (AR overlays)
+    Godot --gamepad bytes----UDP:4003---------> us --UDP:4002--> XRP
 """
 
 # ============================================================
@@ -62,7 +114,10 @@ PI_CANDIDATES = [a for a in sys.argv[1:2] if a] + [
     "cornellcup2.local",   # works on any network (mDNS name)
     "10.42.0.1",           # Pi hotspot
     "192.168.4.95",        # last known CornellCup-Web address
+    "192.168.0.138",       # last known AR-Kart address
+    "192.168.0.193",       # another AR-Kart address the Pi has had
 ]
+
 RTSP_PORT = 8554
 
 SENSOR_PORT = 5005
@@ -70,12 +125,29 @@ SENSOR_PORT = 5005
 GODOT_HOST = "127.0.0.1"
 GODOT_POSE_PORT = 6000
 GODOT_VIDEO_PORT = 6001
-GODOT_AR_TAGS_PORT = 6002    # NEW: AR overlay events
+GODOT_AR_TAGS_PORT = 6002    # AR overlay events
 
 GAMEPAD_RELAY_PORT = 4003
 XRP_GAMEPAD_PORT = 4002
 
-TAG_FRESHNESS_S = 0.2
+# This laptop locks onto the first XRP it hears and ignores any other XRP on the
+# network until that one has been silent this long; then it picks up whichever
+# XRP is sending. Any laptop can still drive any free XRP. Gamepad packets go to
+# whichever XRP we're locked onto
+XRP_LEASE_S = 3.0
+
+# DSCP "expedited forwarding": WiFi access points send these packets ahead of
+# bulk traffic like the camera stream, so gamepad commands aren't held up
+CONTROL_PACKET_TOS = 0xB8
+
+# How often the fused pose is sent to the game
+POSE_SEND_HZ = 100
+
+# Apply camera correction to the EKF? Disable to compare encoder+IMU
+# only against the raw tag pose, which is useful for debugging.
+APPLY_CAMERA_CORRECTION = True
+
+TAG_FRESHNESS_S = 0.3
 
 # How often the status lines print (seconds).
 PRINT_EVERY_S = 2.0
@@ -85,14 +157,21 @@ PRINT_EVERY_S = 2.0
 # detector still gets every frame.
 VIDEO_MAX_FPS = 30
 
-# fx, fy, cx, cy - calibrated for the camera's 640x480 cropped mode. If tag
-# distances come out ~2.4x too far, the Pi is using the wide mode instead.
-Camera_params = [1.26828550e+03, 1.25414697e+03, 3.61108041e+02, 2.97975274e+02]
-TAG_SIZE = 0.06339   # meters
+# fx, fy, cx, cy - for the camera's wide mode 
+Camera_params = [558.546, 561.275, 368.271, 264.430]
+# Side length of the tags' black square in metres (all the tags are printed this size)
+TAG_SIZE = 0.08576
 
-# Per-tag display names for the AR overlay. IDs not in here still get
-# tracked for localization but show up generically. Add or rename as
-# you set up the physical tags.
+# Latest fused state and sensor values, for the status lines
+x = 0
+y = 0
+theta = np.pi/2
+enc_l = 0
+enc_r = 0
+heading = 0
+
+# Per-tag display names for the AR overlay (IDs not in here show up as "TAG n").
+# Only the tags in TAG_WORLD are used for localization
 TAG_LABELS = {
     0: "TAG 0",
     1: "TAG 1",
@@ -113,7 +192,7 @@ FRAME_H_DEFAULT = 480
 # Frame transforms (from pi_detect_aprilTag.py)
 # ============================================================
 
-_theta_mount = np.radians(25)
+_theta_mount = np.radians(2)
 s_theta = np.sin(_theta_mount); c_theta = np.cos(_theta_mount)
 h1, l1, d = 0.03047, 0.007625, 0.02792
 trans_R_C = np.array([
@@ -123,55 +202,202 @@ trans_R_C = np.array([
     [0,        0,         0,        1                          ],
 ])
 
-h3, l3 = 0.02483, 0.02155
-trans_H_A = np.array([
-    [1, 0, 0,   0  ], [0, 1, 0, -h3 ], [0, 0, 1, -l3 ], [0, 0, 0, 1],
+# robot frame from the camera frame, for where a seen tag is relative to the robot
+trans_C_R = np.linalg.inv(trans_R_C)
+
+h3_tag3, l3_tag3 = 0, 0.0099568
+trans_H_A_tag3 = np.array([
+    [1, 0, 0,   0  ], [0, 1, 0, -h3_tag3 ], [0, 0, 1, -l3_tag3 ], [0, 0, 0, 1],
 ])
 
-alpha = np.radians(10)
-c_alpha, s_alpha = np.cos(alpha), np.sin(alpha)
-l4 = 0.01895
-trans_g_H = np.array([
+h3_tag0, l3_tag0 = -0.0058039, 0.010414
+trans_H_A_tag0 = np.array([
+    [1, 0, 0,   0  ], [0, 1, 0, -h3_tag0 ], [0, 0, 1, -l3_tag0 ], [0, 0, 0, 1],
+])
+
+alpha_tag3 = np.radians(0)
+c_alpha_tag3, s_alpha_tag3 = np.cos(alpha_tag3), np.sin(alpha_tag3)
+l4_tag3 = 0.0
+trans_g_H_tag3 = np.array([
     [1, 0,        0,         0 ],
-    [0, c_alpha, -s_alpha,    0 ],
-    [0, s_alpha,  c_alpha,  -l4],
+    [0, c_alpha_tag3, -s_alpha_tag3,    0 ],
+    [0, s_alpha_tag3,  c_alpha_tag3,  -l4_tag3],
     [0, 0,        0,          1],
 ])
 
-x1, y1, x2, y2 = 0.6096, 1.524, 0.6096, 1.0668
-x3, y3 = (x1+x2)/2, (y1+y2)/2
-h4 = 0.352425
-if x1 == x2:
-    beta = np.radians(90) if y1 > y2 else np.radians(270)
+alpha_tag0 = np.radians(0)
+c_alpha_tag0, s_alpha_tag0 = np.cos(alpha_tag0), np.sin(alpha_tag0)
+l4_tag0 = 0.0
+trans_g_H_tag0 = np.array([
+    [1, 0,        0,         0 ],
+    [0, c_alpha_tag0, -s_alpha_tag0,    0 ],
+    [0, s_alpha_tag0,  c_alpha_tag0,  -l4_tag0],
+    [0, 0,        0,          1],
+])
+
+x1_tag3, y1_tag3, x2_tag3, y2_tag3 = -1, 0.41275, 1, 0.41275
+x3_tag3, y3_tag3 = (x1_tag3+x2_tag3)/2, (y1_tag3+y2_tag3)/2
+h4_tag3 = 0.352425
+if x1_tag3 == x2_tag3:
+    beta_tag3 = np.radians(90) if y1_tag3 > y2_tag3 else np.radians(270)
 else:
-    beta = np.arctan((y1-y2)/(x2-x1))
-    if x1 <= x2 and y1 >= y2: beta = beta
-    elif x1 > x2:             beta = beta + np.radians(180)
-    else:                     beta = beta + np.radians(270)
-c_beta, s_beta = np.cos(beta), np.sin(beta)
-trans_G_g = np.array([
-    [ c_beta, 0,  s_beta, x3],
-    [-s_beta, 0,  c_beta, y3],
-    [ 0,     -1,  0,      h4],
+    beta_tag3 = np.arctan((y1_tag3-y2_tag3)/(x2_tag3-x1_tag3))
+    if x1_tag3 <= x2_tag3 and y1_tag3 >= y2_tag3: beta_tag3 = beta_tag3
+    elif x1_tag3 > x2_tag3:             beta_tag3 = beta_tag3 + np.radians(180)
+    else:                     beta_tag3 = beta_tag3 + np.radians(270)
+c_beta_tag3, s_beta_tag3 = np.cos(beta_tag3), np.sin(beta_tag3)
+trans_G_g_tag3 = np.array([
+    [ c_beta_tag3, 0,  s_beta_tag3, x3_tag3],
+    [-s_beta_tag3, 0,  c_beta_tag3, y3_tag3],
+    [ 0,     -1,  0,      h4_tag3],
     [ 0,      0,  0,       1],
 ])
-trans_G_A = trans_G_g @ trans_g_H @ trans_H_A
-print(f"[Transforms] beta = {math.degrees(beta):.1f}°")
+trans_G_A_tag3= trans_G_g_tag3 @ trans_g_H_tag3 @ trans_H_A_tag3
+print(f"[Transforms] beta_tag3 = {math.degrees(beta_tag3):.1f}")
+
+x1_tag0, y1_tag0, x2_tag0, y2_tag0 = 1.4144, -0.4572, 0.5856, -0.4572
+x3_tag0, y3_tag0 = (x1_tag0+x2_tag0)/2, (y1_tag0+y2_tag0)/2
+h4_tag0 = 0.352425
+if x1_tag0 == x2_tag0:
+    beta_tag0 = np.radians(90) if y1_tag0 > y2_tag0 else np.radians(270)
+else:
+    beta_tag0 = np.arctan((y1_tag0-y2_tag0)/(x2_tag0-x1_tag0))
+    if x1_tag0 <= x2_tag0 and y1_tag0 >= y2_tag0: beta_tag0 = beta_tag0
+    elif x1_tag0 > x2_tag0:             beta_tag0 = beta_tag0 + np.radians(180)
+    else:                     beta_tag0 = beta_tag0 + np.radians(270)
+c_beta_tag0, s_beta_tag0 = np.cos(beta_tag0), np.sin(beta_tag0)
+trans_G_g_tag0 = np.array([
+    [ c_beta_tag0, 0,  s_beta_tag0, x3_tag0],
+    [-s_beta_tag0, 0,  c_beta_tag0, y3_tag0],
+    [ 0,     -1,  0,      h4_tag0],
+    [ 0,      0,  0,       1],
+])
+trans_G_A_tag0 = trans_G_g_tag0 @ trans_g_H_tag0 @ trans_H_A_tag0
+
+print(f"[Transforms] beta_tag0 = {math.degrees(beta_tag0):.1f}")
+
+
+h3_tag2, l3_tag2 = 0, 0.01013
+trans_H_A_tag2 = np.array([
+    [1, 0, 0,   0  ], [0, 1, 0, -h3_tag2 ], [0, 0, 1, -l3_tag2 ], [0, 0, 0, 1],
+])
+
+alpha_tag2 = np.radians(0)
+c_alpha_tag2, s_alpha_tag2 = np.cos(alpha_tag2), np.sin(alpha_tag2)
+l4_tag2 = 0.0
+trans_g_H_tag2 = np.array([
+    [1, 0,        0,         0 ],
+    [0, c_alpha_tag2, -s_alpha_tag2,    0 ],
+    [0, s_alpha_tag2,  c_alpha_tag2,  -l4_tag2],
+    [0, 0,        0,          1],
+])
+
+x1_tag2, y1_tag2, x2_tag2, y2_tag2 = 0.69758178, -1.78660678, -0.71663178, -0.37239322
+x3_tag2, y3_tag2 = (x1_tag2+x2_tag2)/2, (y1_tag2+y2_tag2)/2
+h4_tag2 = 0.11324
+if x1_tag2 == x2_tag2:
+    beta_tag2 = np.radians(90) if y1_tag2 > y2_tag2 else np.radians(270)
+else:
+    beta_tag2 = np.arctan((y1_tag2-y2_tag2)/(x2_tag2-x1_tag2))
+    if x1_tag2 <= x2_tag2 and y1_tag2 >= y2_tag2: beta_tag2 = beta_tag2
+    elif x1_tag2 > x2_tag2:             beta_tag2 = beta_tag2 + np.radians(180)
+    else:                     beta_tag2 = beta_tag2 + np.radians(270)
+c_beta_tag2, s_beta_tag2 = np.cos(beta_tag2), np.sin(beta_tag2)
+trans_G_g_tag2 = np.array([
+    [ c_beta_tag2, 0,  s_beta_tag2, x3_tag2],
+    [-s_beta_tag2, 0,  c_beta_tag2, y3_tag2],
+    [ 0,     -1,  0,      h4_tag2],
+    [ 0,      0,  0,       1],
+])
+trans_G_A_tag2= trans_G_g_tag2 @ trans_g_H_tag2 @ trans_H_A_tag2
+print(f"[Transforms] beta_tag2 = {math.degrees(beta_tag2):.1f}")
+
+
+
+h3_tag1, l3_tag1 = 0, 0.01102
+trans_H_A_tag1 = np.array([
+    [1, 0, 0,   0  ], [0, 1, 0, -h3_tag1 ], [0, 0, 1, -l3_tag1 ], [0, 0, 0, 1],
+])
+
+alpha_tag1 = np.radians(0)
+c_alpha_tag1, s_alpha_tag1 = np.cos(alpha_tag1), np.sin(alpha_tag1)
+l4_tag1 = 0.0
+trans_g_H_tag1 = np.array([
+    [1, 0,        0,         0 ],
+    [0, c_alpha_tag1, -s_alpha_tag1,    0 ],
+    [0, s_alpha_tag1,  c_alpha_tag1,  -l4_tag1],
+    [0, 0,        0,          1],
+])
+
+x1_tag1, y1_tag1, x2_tag1, y2_tag1 = 0.2708, 1.8247, 1.685, 0.4105
+x3_tag1, y3_tag1 = (x1_tag1+x2_tag1)/2, (y1_tag1+y2_tag1)/2
+h4_tag1 = 0.1169
+if x1_tag1 == x2_tag1:
+    beta_tag1 = np.radians(90) if y1_tag1 > y2_tag1 else np.radians(270)
+else:
+    beta_tag1 = np.arctan((y1_tag1-y2_tag1)/(x2_tag1-x1_tag1))
+    if x1_tag1 <= x2_tag1 and y1_tag1 >= y2_tag1: beta_tag1 = beta_tag1
+    elif x1_tag1 > x2_tag1:             beta_tag1 = beta_tag1 + np.radians(180)
+    else:                     beta_tag1 = beta_tag1 + np.radians(270)
+c_beta_tag1, s_beta_tag1 = np.cos(beta_tag1), np.sin(beta_tag1)
+trans_G_g_tag1 = np.array([
+    [ c_beta_tag1, 0,  s_beta_tag1, x3_tag1],
+    [-s_beta_tag1, 0,  c_beta_tag1, y3_tag1],
+    [ 0,     -1,  0,      h4_tag1],
+    [ 0,      0,  0,       1],
+])
+trans_G_A_tag1= trans_G_g_tag1 @ trans_g_H_tag1 @ trans_H_A_tag1
+print(f"[Transforms] beta_tag1 = {math.degrees(beta_tag1):.1f}")
+
+# Each tag's place on the track (tag frame -> world), by tag ID
+TAG_WORLD = {
+    0: trans_G_A_tag0,
+    1: trans_G_A_tag1,
+    2: trans_G_A_tag2,
+    3: trans_G_A_tag3,
+}
+
 
 # ============================================================
 # EKF
 # ============================================================
-# TODO measure: xrpgodot.py used radius 0.033. Wrong values make the kart's
-# in-game position drift out of scale.
-WHEEL_RADIUS = 0.026   # meters (wheel diameter / 2)
-TRACK_WIDTH  = 0.109   # meters between the two driven wheels
-r_xy = 5e-2
+WHEEL_RADIUS = 0.04176   # meters (wheel diameter / 2)
+CAR_WIDTH  = 0.11784   # meters between the two driven wheels
+r_xy = 0.4
 r_th = 5e-2
 q_th = math.radians(1.0) ** 2
 
 ekf = None
 ekf_lock = threading.Lock()
-theta_zero = None
+
+# Each new tag pose is compared with where the filter thought the kart was when
+# that camera frame was taken (not now, since the kart has moved on since). The
+# difference is then worked in a little on every sensor packet (~85/s), so the
+# estimate glides to the tag's instead of jumping. 0.055 per packet closes most
+# of a gap in ~0.5 s. Larger = follows the tags faster but jumpier
+TAG_GAIN = 0.055
+# How long after a frame is taken it reaches this script (Pi encode + network +
+# decode). Matching tag poses to the filter's past at the wrong time makes the
+# estimate lag or lead while driving
+CAMERA_LATENCY_S = 0.15
+# How much of the filter's recent past is kept for that comparison
+POSE_HISTORY_S = 1.0
+# A small or far tag's angle can flip between two answers ~12° apart. Tag headings
+# further than this from the gyro's are ignored, unless the tags have kept
+# disagreeing (and agreeing with each other) for TAG_HEADING_RESYNC_S: then the
+# gyro is the one that's off, so the tags are trusted
+TAG_HEADING_GATE_DEG = 6.0
+TAG_HEADING_RESYNC_S = 1.0
+# Added to the XRP's IMU heading; tags adjust it gradually to correct gyro drift
+imu_heading_offset = 0.0
+# The XRP's gyro heading creeps even while it stands still (~9°/s in one run),
+# which turned the game kart, and the AR track outline with it, in place. Once
+# the wheels haven't turned for STILL_AFTER_S, any heading change is drift, so
+# it's cancelled. (The drift rate itself is corrected on the XRP, which
+# recalibrates its gyro whenever it's parked. Learning it here from packet
+# timings went wrong when driving back and forth quickly: it learned the jolts
+# at each stop as drift, then turned the kart by itself while driving)
+STILL_AFTER_S = 0.3
 
 # ============================================================
 # Detector
@@ -196,20 +422,28 @@ def suppress_stderr():
 # ============================================================
 latest_frame = None
 latest_frame_id = 0
+latest_frame_time = 0.0   # when latest_frame arrived, so tag poses can be matched to the filter's past
 latest_frame_lock = threading.Lock()
 
 latest_robot_pose_world = None
 latest_robot_pose_lock = threading.Lock()
 
-# NEW: list of every visible tag this frame (for AR overlay).
+latest_fused = None  # {"x": ..., "y": ..., "theta": ...}
+latest_fused_lock = threading.Lock()
+
+# The newest tag pose, from the detector thread, as last read by the sensor thread
+pose_w = None
+
+# List of every visible tag this frame (for AR overlay).
 # Refreshed by the detector thread on each processed frame.
 # Each entry: {"id": int, "corners": [[x,y]*4], "center": [x,y], "name": str}
 latest_visible_tags = []
 latest_visible_tags_lock = threading.Lock()
 latest_visible_tags_time = 0.0
 
-xrp_ip = None
+xrp_ip = None              # the XRP we're locked onto (see XRP_LEASE_S)
 xrp_ip_lock = threading.Lock()
+xrp_last_seen = 0.0
 
 running = True
 
@@ -218,9 +452,13 @@ running = True
 # RTSP grabber thread
 # ============================================================
 def open_rtsp(url):
-    cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
-    cap.set(cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 10000)
-    cap.set(cv2.CAP_PROP_READ_TIMEOUT_MSEC, 10000)
+    cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG, [
+        cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 10000,
+        cv2.CAP_PROP_READ_TIMEOUT_MSEC, 10000,
+        # One decoding thread. With several, FFmpeg decodes a few frames at once
+        # and holds each back until the others catch up (~100-200 ms at 30 fps)
+        cv2.CAP_PROP_N_THREADS, 1,
+    ])
     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
     return cap
 
@@ -247,7 +485,9 @@ def find_pi():
 
 
 def grabber_thread():
-    global latest_frame, latest_frame_id, running
+    """On each (re)connect the first PI_CANDIDATES address that answers is
+    used, so the camera is found on any of the networks"""
+    global latest_frame, latest_frame_id, latest_frame_time
     while running:
         pi_ip = find_pi()
         if pi_ip is None:
@@ -273,6 +513,7 @@ def grabber_thread():
             with latest_frame_lock:
                 latest_frame = frame
                 latest_frame_id += 1
+                latest_frame_time = time.time()
         cap.release()
         if running: time.sleep(2)
 
@@ -283,9 +524,8 @@ def grabber_thread():
 #   (b) per-tag corners for AR overlay
 # ============================================================
 def detector_thread():
-    global latest_robot_pose_world, latest_visible_tags, latest_visible_tags_time, running
+    global latest_robot_pose_world, latest_visible_tags, latest_visible_tags_time
 
-    trans_C_A = np.identity(4)
     last_processed_id = -1
     fps_n = 0
     fps_t = time.time()
@@ -295,7 +535,8 @@ def detector_thread():
             if latest_frame is None or latest_frame_id == last_processed_id:
                 frame = None
             else:
-                frame = latest_frame
+                frame = latest_frame   # the grabber makes a new array per frame, so no copy needed
+                frame_time = latest_frame_time
                 last_processed_id = latest_frame_id
 
         if frame is None:
@@ -332,35 +573,39 @@ def detector_thread():
         # ---- Localization update from closest tag ----
         if valid:
             tag = min(valid, key=lambda t: abs(t.pose_t[2][0]))
-            trans_C_A[:3, :3] = tag.pose_R
-            trans_C_A[0, 3] = tag.pose_t[0][0]
-            trans_C_A[1, 3] = tag.pose_t[1][0]
-            trans_C_A[2, 3] = tag.pose_t[2][0]
-            try:
-                trans_A_C = np.linalg.inv(trans_C_A)
-                trans_R_G = trans_G_A @ trans_A_C @ trans_R_C
-                r_x = float(trans_R_G[0, 3])
-                r_y = float(trans_R_G[1, 3])
-                r_theta = math.atan2(trans_R_G[1, 0], trans_R_G[0, 0])
-                with latest_robot_pose_lock:
-                    latest_robot_pose_world = {
-                        "x": r_x, "y": r_y, "theta": r_theta,
-                        "tag_id": int(tag.tag_id), "time": time.time(),
-                    }
-            except np.linalg.LinAlgError:
-                pass
+            trans_G_A = TAG_WORLD.get(tag.tag_id)
+            if trans_G_A is not None:
+                trans_C_A = np.identity(4)
+                trans_C_A[:3, :3] = tag.pose_R
+                trans_C_A[:3, 3] = tag.pose_t[:, 0]
+                try:
+                    trans_A_C = np.linalg.inv(trans_C_A)
+                    trans_R_G = trans_G_A @ trans_A_C @ trans_R_C
+                    r_x = float(trans_R_G[0, 3])
+                    r_y = float(trans_R_G[1, 3])
+                    r_theta = math.atan2(trans_R_G[1, 0], trans_R_G[0, 0])
+                    # Where the tag is relative to the robot. Unlike the tag's angle (which
+                    # flips between two answers when the tag is small or far), this is reliable
+                    rel = trans_C_R @ trans_C_A[:, 3]
+                    with latest_robot_pose_lock:
+                        latest_robot_pose_world = {
+                            "x": r_x, "y": r_y, "theta": r_theta,
+                            "tag_id": tag.tag_id, "time": frame_time,
+                            "tag_x": float(trans_G_A[0, 3]), "tag_y": float(trans_G_A[1, 3]),
+                            "rel_x": float(rel[0]), "rel_y": float(rel[1]),
+                        }
+                except np.linalg.LinAlgError:
+                    pass
 
         fps_n += 1
         now = time.time()
         if now - fps_t >= PRINT_EVERY_S:
             fps_n = int(fps_n / (now - fps_t))   # report per second
             tag_str = "no tag"
-            with latest_robot_pose_lock:
-                pw = latest_robot_pose_world
-            if pw:
-                age = now - pw["time"]
-                tag_str = f"tag {pw['tag_id']} ({'fresh' if age < TAG_FRESHNESS_S else f'STALE {age:.1f}s'})"
-            print(f"[Detect] {fps_n} fps | {tag_str} | visible={len(overlay_tags)}")
+            if latest_robot_pose_world:
+                age = now - latest_robot_pose_world["time"]
+                tag_str = f"tag {latest_robot_pose_world['tag_id']} ({'fresh' if age < TAG_FRESHNESS_S else f'STALE {age:.1f}s'})"
+            print(f"[Detect] {fps_n} fps | {tag_str}")
             fps_n = 0; fps_t = now
 
 
@@ -372,7 +617,6 @@ def ar_tags_thread():
     Runs at ~30 Hz so labels track the tag smoothly even between detections.
     Sends an empty 'tags' array when nothing is visible so Godot can
     hide stale labels."""
-    global running
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     target = (GODOT_HOST, GODOT_AR_TAGS_PORT)
     interval = 1.0 / 30.0
@@ -403,13 +647,224 @@ def ar_tags_thread():
 
 
 # ============================================================
+# Sensor loop + EKF (own thread)
+# ============================================================
+def sensor_ekf_thread():
+    global ekf, latest_fused, imu_heading_offset
+    global x, y, theta, enc_l, enc_r, heading, xrp_ip, xrp_last_seen, pose_w
+    print("[DEBUG] Entered sensor_ekf_thread()", flush=True)
+
+    sensor_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sensor_sock.bind(("0.0.0.0", SENSOR_PORT))
+    sensor_sock.settimeout(0.5)
+    print(f"[Sensor] Listening for XRP raw sensors on UDP {SENSOR_PORT}")
+
+    pkt_count = 0
+    last_print = time.time()
+    last_ignored_print = 0.0
+    # Last RAW2 packet number and encoder totals, for working out each packet's change
+    last_seq = None
+    last_total_l = last_total_r = 0.0
+    last_seq_time = 0.0
+    lost_packets = 0
+    # [time, x, y, theta] after each packet, for matching tag poses to the past
+    pose_history = []
+    last_tag_time = 0.0
+    # the part of the last tag's difference (x, y, theta) not worked in yet
+    tag_residual = [0.0, 0.0, 0.0]
+    # Tag headings that disagree with the gyro (see TAG_HEADING_RESYNC_S): since
+    # when they have, the last one, and when it was seen
+    tag_disagree_since = None
+    tag_disagree_heading = 0.0
+    tag_disagree_last = 0.0
+    # Gyro drift (see STILL_AFTER_S): when the wheels last turned, and the last IMU heading
+    moved_time = time.time()
+    last_raw_heading = None
+
+    while running:
+        try:
+            data, addr = sensor_sock.recvfrom(256)
+        except socket.timeout:
+            continue
+
+        try:
+            text = data.decode("utf-8").strip()
+        except UnicodeDecodeError:
+            continue
+
+        # RAW2,seq,total_l,total_r,heading: encoder running totals (current XRP code)
+        # RAW,dl,dr,heading: encoder changes since the last packet (older XRP code)
+        parts = text.split(",")
+        try:
+            if len(parts) == 5 and parts[0] == "RAW2":
+                seq = int(parts[1])
+                total_l = float(parts[2]); total_r = float(parts[3]); new_heading = float(parts[4])
+            elif len(parts) == 4 and parts[0] == "RAW":
+                seq = None
+                new_enc_l = float(parts[1]); new_enc_r = float(parts[2]); new_heading = float(parts[3])
+            else:
+                continue
+        except ValueError:
+            continue
+
+        # ---- Which XRP this laptop follows (first come, first served) ----
+        now = time.time()
+        with xrp_ip_lock:
+            if xrp_ip is not None and addr[0] != xrp_ip and now - xrp_last_seen < XRP_LEASE_S:
+                if now - last_ignored_print > 5.0:
+                    print(f"[XRP] ignoring {addr[0]} (locked onto {xrp_ip})")
+                    last_ignored_print = now
+                continue
+            if addr[0] != xrp_ip:
+                if xrp_ip is not None:
+                    print(f"[XRP] {xrp_ip} went quiet, switching to {addr[0]}")
+                    # a different robot's encoders and heading: start the filter over
+                    with ekf_lock:
+                        ekf = None
+                xrp_ip = addr[0]
+                last_seq = None
+                print(f"[XRP] locked onto {xrp_ip}")
+            xrp_last_seen = now
+
+        if seq is not None:
+            if last_seq is None:
+                new_enc_l = new_enc_r = 0.0
+            elif seq <= last_seq:
+                if now - last_seq_time < 1.0:
+                    continue   # arrived late or twice; its totals are already counted
+                # the count started over after a gap: the XRP restarted (which takes
+                # several seconds), and its encoders started over too
+                new_enc_l = new_enc_r = 0.0
+            else:
+                # (after a gap without a restart, e.g. briefly out of Wi-Fi range,
+                # the totals still include what was driven meanwhile)
+                new_enc_l = total_l - last_total_l
+                new_enc_r = total_r - last_total_r
+                lost_packets += seq - last_seq - 1
+            last_seq, last_total_l, last_total_r = seq, total_l, total_r
+            last_seq_time = now
+        enc_l, enc_r, heading = new_enc_l, new_enc_r, new_heading
+
+        # ---- Gyro drift ----
+        if last_raw_heading is not None:
+            if enc_l != 0.0 or enc_r != 0.0:
+                moved_time = now
+            if now - moved_time >= STILL_AFTER_S:
+                # standing still: hold the heading
+                d_heading = (heading - last_raw_heading + math.pi) % (2 * math.pi) - math.pi
+                imu_heading_offset = (imu_heading_offset - d_heading + math.pi) % (2 * math.pi) - math.pi
+        last_raw_heading = heading
+
+        if ekf is None:
+            with ekf_lock:
+                if ekf is None:
+                    ekf = ackermann_simple_ekf(
+                        wheel_radius=WHEEL_RADIUS,
+                        distance_between_wheels=CAR_WIDTH,
+                        initial_position_uncertainty=r_xy,
+                        initial_heading_uncertainty=r_th,
+                        sensor_uncertainty=q_th,
+                        initial_left_encoder_value=enc_l,
+                        initial_right_encoder_value=enc_r,
+                        initial_x=0.0, initial_y=0.0, initial_theta=np.pi/2,
+                    )
+                    # start facing 90° like the position starts at 0,0, even if the
+                    # XRP's heading drifted before fusion started
+                    imu_heading_offset = ekf.wrap_pi(np.pi/2 - heading)
+                    pose_history = []
+                    tag_residual = [0.0, 0.0, 0.0]
+                    print(f"[EKF] Initialized at heading={heading:.3f} rad from {addr[0]}")
+            continue
+
+        with ekf_lock:
+            x, y, theta = ekf.predict(enc_l, enc_r)
+            x, y, theta = ekf.correct(ekf.wrap_pi(heading + imu_heading_offset))
+
+            with latest_robot_pose_lock:
+                pose_w = latest_robot_pose_world
+            tag_is_fresh = (
+                pose_w is not None
+                and (time.time() - pose_w["time"]) < TAG_FRESHNESS_S
+            )
+
+            now = time.time()
+            pose_history.append([now, x, y, theta])
+            while pose_history and now - pose_history[0][0] > POSE_HISTORY_S:
+                pose_history.pop(0)
+
+            # A new tag pose: how far off the estimate was when its frame was taken
+            if tag_is_fresh and APPLY_CAMERA_CORRECTION and pose_w["time"] != last_tag_time:
+                last_tag_time = pose_w["time"]
+                taken = pose_w["time"] - CAMERA_LATENCY_S
+                then = min(pose_history, key=lambda h: abs(h[0] - taken))
+                # Position from where the tag was relative to the robot, turned by the
+                # estimate's heading, so it doesn't move when the tag's angle flips
+                c, s = math.cos(then[3]), math.sin(then[3])
+                tag_pos_x = pose_w["tag_x"] - (c * pose_w["rel_x"] - s * pose_w["rel_y"])
+                tag_pos_y = pose_w["tag_y"] - (s * pose_w["rel_x"] + c * pose_w["rel_y"])
+                heading_diff = ekf.wrap_pi(pose_w["theta"] - then[3])
+                gate = math.radians(TAG_HEADING_GATE_DEG)
+                if abs(heading_diff) <= gate:
+                    tag_disagree_since = None
+                else:
+                    # Only a run of tags that keep disagreeing, and agree with each
+                    # other, for TAG_HEADING_RESYNC_S is trusted over the gyro. A gap
+                    # without tags starts the run over, so a single flipped reading
+                    # after a gap isn't taken as the truth
+                    if (tag_disagree_since is None
+                            or now - tag_disagree_last > TAG_HEADING_RESYNC_S
+                            or abs(ekf.wrap_pi(pose_w["theta"] - tag_disagree_heading)) > gate):
+                        tag_disagree_since = now
+                    tag_disagree_heading = pose_w["theta"]
+                    tag_disagree_last = now
+                    if now - tag_disagree_since < TAG_HEADING_RESYNC_S:
+                        heading_diff = 0.0   # probably the flipped answer
+                tag_residual = [tag_pos_x - then[1], tag_pos_y - then[2], heading_diff]
+
+            # Work a little of it in on every packet
+            if APPLY_CAMERA_CORRECTION and any(tag_residual):
+                try:
+                    step = [TAG_GAIN * r for r in tag_residual]
+                    tag_residual = [r - st for r, st in zip(tag_residual, step)]
+                    x, y, theta = ekf.shift(step[0], step[1])
+                    # heading follows the IMU, so the IMU's offset is what gets corrected
+                    imu_heading_offset = ekf.wrap_pi(imu_heading_offset + step[2])
+                    # the past moves too, so the next tag isn't compared with stale history
+                    for h in pose_history:
+                        h[1] += step[0]; h[2] += step[1]; h[3] += step[2]
+                except Exception as e:
+                    print(f"[EKF] camera_correction error: {e}")
+
+        with latest_fused_lock:
+            latest_fused = {"x": x, "y": y, "theta": theta}
+
+        pkt_count += 1
+        now = time.time()
+        if now - last_print >= 1.0:
+            if pose_w is None:
+                tag_info = "no tag yet"
+            else:
+                age = time.time() - pose_w["time"]
+                if age < TAG_FRESHNESS_S:
+                    tag_info = (f"tag x={pose_w['x']:+.2f} y={pose_w['y']:+.2f} "
+                                f"th={math.degrees(pose_w['theta']):+.0f} ({age*1000:.0f}ms)")
+                else:
+                    tag_info = f"tag stale {age:.1f}s"
+            print(f"[EKF] {pkt_count} pkts/s ({lost_packets} lost) | "
+                  f"FUSED x={x:+.2f} y={y:+.2f} th={math.degrees(theta):+.0f} | {tag_info}")
+            pkt_count = 0; lost_packets = 0; last_print = now
+
+    sensor_sock.close()
+
+
+# ============================================================
 # Video forwarder to Godot (raw RGB over TCP)
 # ============================================================
 godot_video_conn = None
 
 
 def godot_video_server_thread():
-    global godot_video_conn, running
+    global godot_video_conn
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind(("0.0.0.0", GODOT_VIDEO_PORT))
@@ -464,12 +919,16 @@ def godot_video_server_thread():
 # Gamepad relay
 # ============================================================
 def gamepad_relay_thread():
-    global running
     relay_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     relay_sock.bind(("127.0.0.1", GAMEPAD_RELAY_PORT))
     relay_sock.settimeout(0.5)
 
     forward_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        forward_sock.setsockopt(socket.IPPROTO_IP, socket.IP_TOS, CONTROL_PACKET_TOS)
+        print("[Gamepad] Control packets marked high priority")
+    except (OSError, AttributeError) as e:
+        print(f"[Gamepad] Could not mark control packets high priority ({e}), sending normally")
     print(f"[Gamepad] Relay listening on 127.0.0.1:{GAMEPAD_RELAY_PORT}, "
           f"forwarding to XRP:{XRP_GAMEPAD_PORT}")
 
@@ -507,15 +966,10 @@ def gamepad_relay_thread():
 
 
 # ============================================================
-# Main: sensor packet loop + EKF + Godot pose output
+# Main: starts the threads, then sends the fused pose to Godot
 # ============================================================
 def main():
-    global ekf, theta_zero, xrp_ip, running
-
-    sensor_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sensor_sock.bind(("0.0.0.0", SENSOR_PORT))
-    sensor_sock.settimeout(0.5)
-    print(f"[Sensor] Listening for XRP raw sensors on UDP {SENSOR_PORT}")
+    global running
 
     pose_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     print(f"[Pose] Will send fused state to {GODOT_HOST}:{GODOT_POSE_PORT}")
@@ -526,114 +980,62 @@ def main():
     threading.Thread(target=gamepad_relay_thread, daemon=True).start()
     threading.Thread(target=ar_tags_thread, daemon=True).start()
 
-    pkt_count = 0
+    sensor_thread = threading.Thread(target=sensor_ekf_thread, daemon=True, name="SensorEKF")
+    print("[DEBUG] Starting sensor thread", flush=True)
+    sensor_thread.start()
+    print("[DEBUG] Sensor thread started:", sensor_thread.is_alive(), flush=True)
+
+    sent_count = 0
     last_print = time.time()
 
     try:
         while running:
             try:
-                data, addr = sensor_sock.recvfrom(256)
-            except socket.timeout:
-                continue
-
-            with xrp_ip_lock:
-                if xrp_ip != addr[0]:
-                    xrp_ip = addr[0]
-                    print(f"[XRP] IP captured: {xrp_ip}")
-
-            try:
-                text = data.decode("utf-8").strip()
-            except UnicodeDecodeError:
-                continue
-
-            parts = text.split(",")
-            if len(parts) != 4 or parts[0] != "RAW":
-                continue
-
-            try:
-                enc_l = float(parts[1])
-                enc_r = float(parts[2])
-                heading = float(parts[3])
-            except ValueError:
-                continue
-
-            if ekf is None:
-                with ekf_lock:
-                    if ekf is None:
-                        ekf = ackermann_simple_ekf(
-                            wheel_radius=WHEEL_RADIUS,
-                            distance_between_wheels=TRACK_WIDTH,
-                            initial_position_uncertainty=r_xy,
-                            initial_heading_uncertainty=r_th,
-                            sensor_uncertainty=q_th,
-                            initial_left_encoder_value=enc_l,
-                            initial_right_encoder_value=enc_r,
-                            initial_x=0.0,
-                            initial_y=0.0,
-                            initial_theta=0.0,
-                        )
-                        theta_zero = heading
-                        print(f"[EKF] Initialized at heading={heading:.3f} rad")
-                continue
-
-            with ekf_lock:
-                x_pred, y_pred, th_pred = ekf.predict(enc_l, enc_r)
-                z_theta = heading - theta_zero
-                x, y, theta = ekf.correct(x_pred, y_pred, th_pred, z_theta)
-
-                with latest_robot_pose_lock:
-                    pose_w = latest_robot_pose_world
-
-                tag_is_fresh = (
-                    pose_w is not None
-                    and (time.time() - pose_w["time"]) < TAG_FRESHNESS_S
-                )
-
-                if tag_is_fresh:
-                    try:
-                        x, y, theta = ekf.camera_correction(
-                            x_pred, y_pred, th_pred,
-                            pose_w["x"], pose_w["y"], pose_w["theta"],
-                        )
-                    except Exception as e:
-                        print(f"[EKF] camera_correction error: {e}")
-
-            try:
-                payload = json.dumps({
-                    "x": -(x * 100),
-                    "y": y * 100,
-                    "angle": math.degrees(theta) % 360.0,
-                })
-                pose_sock.sendto(payload.encode(), (GODOT_HOST, GODOT_POSE_PORT))
+                # Only once an XRP has been heard recently and the filter has a state;
+                # otherwise the game would treat the default pose as a live robot
+                with xrp_ip_lock:
+                    xrp_heard = xrp_ip is not None and time.time() - xrp_last_seen < 1.0
+                with latest_fused_lock:
+                    fused = latest_fused
+                if xrp_heard and fused is not None:
+                    payload = json.dumps({
+                        "x": fused["y"] * 100,
+                        "y": -(fused["x"] * 100),
+                        "angle": math.degrees(fused["theta"]),
+                    })
+                    pose_sock.sendto(payload.encode(), (GODOT_HOST, GODOT_POSE_PORT))
+                    sent_count += 1
             except Exception as e:
                 print("[Pose] send error:", e)
 
-            pkt_count += 1
             now = time.time()
             if now - last_print >= PRINT_EVERY_S:
-                if pose_w is None:
+                pw = pose_w
+                if pw is None:
                     tag_info = "no tag yet"
                 else:
-                    age = time.time() - pose_w["time"]
+                    age = now - pw["time"]
                     if age < TAG_FRESHNESS_S:
                         tag_info = f"tag fresh ({age*1000:.0f}ms old)"
                     else:
                         tag_info = f"tag STALE ({age:.1f}s old)"
-                rate = pkt_count / (now - last_print)
+                rate = sent_count / (now - last_print)
                 print(f"[Sensor] enc_l={enc_l:+.3f} enc_r={enc_r:+.3f} rev | "
-                      f"heading={math.degrees(heading):+.1f}° ({rate:.0f} pkts/s)")
+                      f"heading={math.degrees(heading):+.1f}° | {rate:.0f} poses/s to game")
                 print(f"[EKF]    fused x={x:.2f} y={y:.2f} m "
                       f"th={math.degrees(theta):+.0f}° | {tag_info}")
-                pkt_count = 0
+                sent_count = 0
                 last_print = now
+
+            time.sleep(1.0 / POSE_SEND_HZ)
 
     except KeyboardInterrupt:
         print("\n[Main] Interrupted, shutting down...")
+    except Exception:
+        traceback.print_exc()
     finally:
         running = False
         time.sleep(0.3)
-        sensor_sock.close()
-        pose_sock.close()
 
 
 if __name__ == "__main__":

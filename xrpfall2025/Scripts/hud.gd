@@ -4,18 +4,6 @@ extends Control
 # There are possibly better solutions for this connection but it does work for now
 @onready var player_node = get_node("../../CarManager/Player")
 
-# Speed bar variables
-var thresholds = [25.0, 20.0, 15.0, 10.0, 5.0, 0.1]
-
-@onready var bars = [
-	$SpeedBar/SpeedOne,
-	$SpeedBar/SpeedTwo,
-	$SpeedBar/SpeedThree,
-	$SpeedBar/SpeedFour,
-	$SpeedBar/SpeedFive,
-	$SpeedBar/SpeedSix,
-]
-
 # Countdown variables
 @onready var countdown_label: Label = $CountdownLabel  
 var counter: int = 3
@@ -29,13 +17,27 @@ var use_tween := false # Toggle tween if wanted
 @onready var stored_item_icon: TextureRect = $StoredItem
 
 var item_textures = {
-	"Fast": preload("res://Assets/Images/FastIcon.png"),
-	"Slow": preload("res://Assets/Images/SlowIcon.png"),
-	"Inverted": preload("res://Assets/Images/InvertedIcon.png")
+	"Fast": preload("res://Assets/ar_kart_ui/items/item_fast@2x.png"),
+	"Slow": preload("res://Assets/ar_kart_ui/items/item_slow@2x.png"),
+	"Inverted": preload("res://Assets/ar_kart_ui/items/item_inverted@2x.png")
 
 }
 
 var last_item_type: String = ""
+
+# Item effect timer and popups
+@onready var effect_timer_label: Label = $EffectTimerLabel
+@onready var item_popup_label: Label = $ItemPopupLabel
+@onready var off_track_banner: Control = $OffTrackBanner
+@onready var off_track_label: Label = $OffTrackBanner/Row/OffTrackLabel
+# Whether the warning banner was up last frame, so its sound plays once as it appears
+var warning_was_shown := false
+
+# Place badge and lap counter
+@onready var place_number: Label = $PlaceBadge/Badge/Number
+@onready var place_suffix: Label = $PlaceBadge/Badge/Suffix
+@onready var lap_number: Label = $LapPanel/Row/LapNumber
+var item_popup_tween: Tween = null
 
 # Pause menu
 @onready var pause_menu: Control = $PauseMenu
@@ -51,10 +53,9 @@ var stopwatch_running: bool = false
 
 # On game start
 func _ready():
-	# When I want it to start at the beginning of the race instead I would add
-	# $HUD.start_countdown() to scene manager script instead
-	#start_countdown() 
-	connect("countdown_finished", Callable(self, "_on_countdown_finished"))
+	# The race music starts when the countdown ends; the countdown itself is quiet
+	SoundManager.stop_music()
+	# The countdown is started by SceneManager once the race is set up
 
 	
 	#create a default texture for item
@@ -67,6 +68,9 @@ func _ready():
 	
 	bounce_icon()
 	
+	# Popups for when the player uses an item or gets hit by one
+	get_node("../../CarManager").connect("ItemUsed", Callable(self, "_on_item_used"))
+	
 
 # Constantly updating
 func _process(delta: float) -> void:
@@ -78,16 +82,10 @@ func _process(delta: float) -> void:
 		$TelemetryWindow/State.text = " State: " + str(state_name(player_node.Current))
 		$TelemetryWindow/Position.text = " Position: (%.2f, %.2f)" % [player_node.CurrentPosition.x, player_node.CurrentPosition.z]
 		$TelemetryWindow/Speed.text = " Speed: %.2f" % current_speed
-		$PlaceText.text = get_place_suffix(player_node.Place) + " Place"
-		$LapText.text = "Lap \n     " + str(player_node.Lap) + "/3"
+		place_number.text = str(player_node.Place)
+		place_suffix.text = get_place_suffix(player_node.Place).trim_prefix(str(player_node.Place))
+		lap_number.text = str(player_node.Lap)
 		
-		# Speed bar. Toggles transparency of each bar
-		for i in bars.size():
-			if current_speed > thresholds[i]:
-				bars[i].modulate.a = 1.0
-			else:
-				bars[i].modulate.a = 0.0
-				
 		# Item Bar. Constantly checks if the state has changed
 		var current_state_name = state_name(player_node.Current) 
 		if current_state_name != last_item_type:
@@ -95,15 +93,39 @@ func _process(delta: float) -> void:
 			last_item_type = current_state_name
 			
 			# Update stored item icon
-		var stored_state_name = state_name(player_node.storedItem)  
+		var stored_state_name = state_name(player_node.StoredItem)  
 		update_stored_item_icon(stored_state_name)
+		
+		# Warnings: driving the wrong way, or off the road
+		off_track_banner.visible = (player_node.IsWrongWay or player_node.IsOffTrack) and not player_node.FinishedRace
+		if off_track_banner.visible and not warning_was_shown:
+			SoundManager.play_off_track()
+		warning_was_shown = off_track_banner.visible
+		if off_track_banner.visible:
+			if player_node.IsWrongWay:
+				off_track_label.text = "Wrong way! Turn around"
+			else:
+				off_track_label.text = "Off track! Drive back to the road"
+		
+		# Time left on the active item effect
+		if current_state_name != "Regular":
+			effect_timer_label.text = "%.1fs" % player_node.EffectTimeRemaining
+			effect_timer_label.visible = true
+		else:
+			effect_timer_label.visible = false
 		
 		# Stopwatch
 		if stopwatch_running and not get_tree().paused:
 			race_time += delta
 			stopwatch_label.text = format_time(race_time)
+			
+			# TEST: End the game if the timer hits 10 seconds
+			#if race_time >= 10.0:
+				#finished_race()
+				#return
 		
-			if player_node and player_node.Lap != current_lap:
+			# FinishedRace is checked too because the final crossing doesn't change Lap
+			if player_node.Lap != current_lap or player_node.FinishedRace:
 				record_lap_time()
 
 # Helper functions:
@@ -142,9 +164,8 @@ func start_countdown():
 	countdown_active = true
 	
 	# I need to condense this better if I like it like that
-	$LapText.visible = false
-	$PlaceText.visible = false
-	$SpeedBar.visible = false
+	$LapPanel.visible = false
+	$PlaceBadge.visible = false
 	$TelemetryWindow.visible = false
 	$Stopwatch.visible = false
 	$Images.visible = false
@@ -160,6 +181,7 @@ func start_countdown():
 func _show_number():
 	if counter > 0:
 		countdown_label.text = str(counter)
+		SoundManager.play_countdown_beep()
 		countdown_label.scale = Vector2(0.5, 0.5)
 		_animate_label()
 	else:
@@ -191,6 +213,7 @@ func _next_step():
 # Actually displays "Go" and calls to end the countdown
 func _show_go():
 	countdown_label.text = "Go!"
+	SoundManager.play_countdown_go()
 	if use_tween:
 		countdown_label.scale = Vector2(0.5, 0.5)
 		var tween := create_tween()
@@ -208,9 +231,8 @@ func _end_countdown():
 	countdown_active = false
 	
 	# Again could be done better if I want to keep this
-	$LapText.visible = true
-	$PlaceText.visible = true
-	$SpeedBar.visible = true
+	$LapPanel.visible = true
+	$PlaceBadge.visible = true
 	$Stopwatch.visible = true
 	$Images.visible = true
 	
@@ -219,6 +241,7 @@ func _end_countdown():
 	lap_start_time = 0.0
 	current_lap = player_node.Lap
 	stopwatch_running = true
+	SoundManager.play_race_music()
 	
 	emit_signal("countdown_finished")
 
@@ -243,11 +266,15 @@ func _input(event):
 func _pause_game():
 	get_tree().paused = true
 	pause_menu.visible = true
+	SoundManager.play_click()
+	SoundManager.pause_race_music()
 
 # Resume the game
 func _resume_game():
 	get_tree().paused = false
 	pause_menu.visible = false
+	SoundManager.play_back()
+	SoundManager.resume_race_music()
 	
 
 func _on_resume_button_pressed() -> void:
@@ -256,8 +283,8 @@ func _on_resume_button_pressed() -> void:
 
 
 func _on_home_pressed() -> void:
-	get_tree().paused = false
-	get_tree().change_scene_to_file("res://Scenes/GameplayScenes/title_screen.tscn")
+	# the transition unpauses once the screen is covered
+	SceneTransition.change_scene("res://Scenes/GameplayScenes/title_screen.tscn")
 	pass # Replace with function body.
 	
 	# STOPWATCH
@@ -299,6 +326,10 @@ func record_lap_time():
 	# Uses player end condition
 	if player_node.FinishedRace:
 		finished_race()
+	elif current_lap == 3:
+		SoundManager.play_final_lap()
+	else:
+		SoundManager.play_lap_complete()
 	
 # Simple helper function to format the time properly
 func format_time(time_sec: float) -> String:
@@ -310,8 +341,7 @@ func format_time(time_sec: float) -> String:
 # Lap button for testing purposes that calls players "IncrementLap"
 func _on_lap_button_pressed() -> void:
 	if player_node:
-		player_node.call("IncrementLap")
-		record_lap_time()
+		player_node.call("IncrementLap", player_node)
 		
 # Simple helper (possibly unnecessary) to hide and reset label
 func _hide_lap_popup():
@@ -324,9 +354,38 @@ func finished_race():
 	
 	var end_screen = preload("res://Scenes/GameplayScenes/end_screen.tscn").instantiate()
 	end_screen.set_lap_times(lap_times, race_time)
-	get_tree().root.add_child(end_screen)
+	end_screen.set_place(player_node.Place)
+	SceneTransition.change_to_node(end_screen)
+	
+# Called by CarManager's ItemUsed signal whenever any car uses an item
+func _on_item_used(user, item: int, target) -> void:
+	var item_name = state_name(item)
+	# every item the player uses, on top of the item's own sound below
+	if user == player_node:
+		SoundManager.play_item_use()
+	if user == player_node and target == player_node:
+		show_item_popup("%s boost!" % item_name)
+		SoundManager.play_item_boost()
+	elif user == player_node:
+		show_item_popup("Hit %s place with %s!" % [get_place_suffix(target.Place), item_name])
+	elif target == player_node:
+		show_item_popup("Hit by %s!" % item_name)
+		if item_name == "Slow":
+			SoundManager.play_item_slow()
+		elif item_name == "Inverted":
+			SoundManager.play_item_inverted()
 
-	get_tree().current_scene.queue_free()
+func show_item_popup(text: String) -> void:
+	if item_popup_tween:
+		item_popup_tween.kill()
+	item_popup_label.text = text
+	item_popup_label.visible = true
+	item_popup_label.modulate.a = 1.0
+	
+	item_popup_tween = create_tween()
+	item_popup_tween.tween_interval(1.2)
+	item_popup_tween.tween_property(item_popup_label, "modulate:a", 0.0, 0.5)
+	item_popup_tween.tween_callback(Callable(item_popup_label, "hide"))
 	
 func update_stored_item_icon(item_type: String) -> void:
 	if item_type != "Regular" and item_type in item_textures:

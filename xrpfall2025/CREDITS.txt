@@ -1,0 +1,28 @@
+AR Kart Racing - Asset Credits
+========================
+
+Music
+-----
+"SomeWhatGood: Karts" by flowerhead
+https://flowerheadmusic.itch.io/somewhat-good-karts
+
+Tracks used:
+  KARTS!              title screen
+  Choose Your Racer   kart select
+  Flowey Speedway     race
+  Highway Hustle      race
+  Stadium 64          race
+  Rainbow Way         race
+  Bouncing Pyramids   race
+  Retro Roundabout    race
+  Ghost Trials        pause menu
+  Race Results        results screen
+
+
+Sound effects
+-------------
+Some sound effects from "Free Menu Sound Pack (UI Sounds) V2!" by Noah Kuehne
+https://noahkuehne.itch.io/free-menu-sound-pack-ui-sounds-v2
+
+Used for:
+  Menu button hover sound

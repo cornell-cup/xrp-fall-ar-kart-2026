@@ -10,8 +10,8 @@ config_version=5
 
 [application]
 
-config/name="xrpFall2025"
-run/main_scene="uid://bmeufvqsj8ocv"
+config/name="AR Kart Racing"
+run/main_scene="res://Scenes/GameplayScenes/loading_screen.tscn"
 config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 config/icon="res://Assets/Images/icon.svg"
 
@@ -19,6 +19,8 @@ config/icon="res://Assets/Images/icon.svg"
 
 NetworkReceiver="*res://Scripts/NetworkReceiver.gd"
 LevelData="*res://Scripts/level_data.gd"
+SoundManager="*res://Scripts/sound_manager.gd"
+SceneTransition="*res://Scripts/scene_transition.gd"
 
 [debug_draw_3d]
 
@@ -73,6 +75,7 @@ jump={
 use_item={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":69,"key_label":0,"unicode":69,"location":0,"echo":false,"script":null)
+, Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"button_index":10,"pressure":0.0,"pressed":false,"script":null)
 ]
 }
 

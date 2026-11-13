@@ -53,7 +53,7 @@ from new_ackermann_simple_ekf import ackermann_simple_ekf
 
 
 
-BALL_DIAMETER_MM = 67.89
+BALL_DIAMETER_MM = 112
 
 # camera_matrix = np.array([
 #     [1.41722835e+03, 0.00000000e+00, 9.48431225e+02],  # [fx,  0, cx]  (Example values for a 640x480 frame)
@@ -135,7 +135,7 @@ ball_y = 0
 # Config
 # ============================================================
 # PI_IP = sys.argv[1] if len(sys.argv) > 1 else "10.42.0.1"
-PI_IP = sys.argv[1] if len(sys.argv) > 1 else "192.168.4.95"
+PI_IP = sys.argv[1] if len(sys.argv) > 1 else "192.168.0.138"
 
 # PI_IP = sys.argv[1] if len(sys.argv) > 1 else "192.168.0.193"
 
@@ -143,23 +143,24 @@ RTSP_URL = f"rtsp://{PI_IP}:8554/cam"
 
 SENSOR_PORT = 5005
 
-XRP_IP = "192.168.4.8"
+XRP_IP = "192.168.0.191" # for not all-terain car
+# XRP_IP = "192.168.0.141" # for all-terain car
 YAW_CORRECTION_PORT = 5007
 
 yaw_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # Set to None to disable CSV logging. Otherwise: file path.
-CSV_LOG_PATH = "SUPER_NICE_CODE/fusion_log.csv"
+CSV_LOG_PATH = "fusion_log.csv"
 
 # Apply camera correction to the EKF? Disable to compare encoder+IMU
 # only against the raw tag pose, which is useful for debugging.
-APPLY_CAMERA_CORRECTION = True
+APPLY_CAMERA_CORRECTION = False
 
-TAG_FRESHNESS_S = 0.2
+TAG_FRESHNESS_S = 0.3
 
 # ----- Camera intrinsics -----
 Camera_params = [1.26828550e+03, 1.25414697e+03, 3.61108041e+02, 2.97975274e+02]
-TAG_SIZE_TAG3 = 0.06339
+TAG_SIZE_TAG3 = 0.06503
 TAG_SIZE_TAG0 = 0.08584
 
 POSITIVE_Y = 1
@@ -169,7 +170,7 @@ FAR_FROM_ORIGIN = 0
 # ============================================================
 # Frame transforms (from pi_detect_aprilTag.py)
 # ============================================================
-_theta_mount = np.radians(0)
+_theta_mount = np.radians(5)
 s_theta = np.sin(_theta_mount); c_theta = np.cos(_theta_mount)
 h1, l1, d = 0.03047, 0.007625, 0.02792
 trans_R_C = np.array([
@@ -189,7 +190,7 @@ trans_H_A_tag0 = np.array([
     [1, 0, 0,   0  ], [0, 1, 0, -h3_tag3 ], [0, 0, 1, -l3_tag3 ], [0, 0, 0, 1],
 ])
 
-alpha_tag3 = np.radians(7)
+alpha_tag3 = np.radians(0)
 c_alpha_tag3, s_alpha_tag3 = np.cos(alpha_tag3), np.sin(alpha_tag3)
 l4_tag3 = 0.01895
 trans_g_H_tag3 = np.array([
@@ -209,7 +210,7 @@ trans_g_H_tag0 = np.array([
     [0, 0,        0,          1],
 ])
 
-x1_tag3, y1_tag3, x2_tag3, y2_tag3 = -1, 1.524, 1, 1.524
+x1_tag3, y1_tag3, x2_tag3, y2_tag3 = -1, 0.6096, 1, 0.6096
 x3_tag3, y3_tag3 = (x1_tag3+x2_tag3)/2, (y1_tag3+y2_tag3)/2
 h4_tag3 = 0.352425
 if x1_tag3 == x2_tag3:
@@ -229,7 +230,7 @@ trans_G_g_tag3 = np.array([
 trans_G_A_tag3= trans_G_g_tag3 @ trans_g_H_tag3 @ trans_H_A_tag3
 print(f"[Transforms] beta_tag3 = {math.degrees(beta_tag3):.1f}")
 
-x1_tag0, y1_tag0, x2_tag0, y2_tag0 = 1.4144, -0.5, 0.5856, -0.5
+x1_tag0, y1_tag0, x2_tag0, y2_tag0 = 1.4144, -0.4572, 0.5856, -0.4572
 x3_tag0, y3_tag0 = (x1_tag0+x2_tag0)/2, (y1_tag0+y2_tag0)/2
 h4_tag0 = 0.352425
 if x1_tag0 == x2_tag0:
@@ -322,6 +323,7 @@ def grabber_thread(rtsp_url):
         fail = 0
         while running:
             ret, frame = cap.read()
+
             if not ret:
                 fail += 1
                 if fail > 10:
@@ -329,6 +331,9 @@ def grabber_thread(rtsp_url):
                     break
                 time.sleep(0.05); continue
             fail = 0
+
+            # frame = cv2.flip(frame, cv2.ROTATE_180)  # Horizontal mirror
+
             with latest_frame_lock:
                 latest_frame = frame
                 latest_frame_id += 1
@@ -444,12 +449,22 @@ def detector_thread():
                     trans_R_G_tag3 = trans_G_A_tag3 @ trans_A_C_tag3 @ trans_R_C
                     r_x = float(trans_R_G_tag3[0, 3])
                     r_y = float(trans_R_G_tag3[1, 3])
-                    r_theta = -(math.atan2(trans_R_G_tag3[1, 0], trans_R_G_tag3[0, 0]) - np.pi/2)
+                    #r_theta = -(math.atan2(trans_R_G_tag3[1, 0], trans_R_G_tag3[0, 0]) - np.pi/2)
+                    r_theta = (math.atan2(trans_R_G_tag3[1, 0], trans_R_G_tag3[0, 0]))
                     with latest_robot_pose_lock:
                         latest_robot_pose_world = {
                             "x": r_x, "y": r_y, "theta": r_theta,
                             "tag_id": tag.tag_id, "time": time.time(),
                         }
+
+                    msg = "TAG_YAW,{:.6f}".format(r_theta)
+
+
+                    try:
+                        yaw_sock.sendto(msg.encode("utf-8"),(XRP_IP, YAW_CORRECTION_PORT))
+                    except OSError as e:
+                        print("[YAW] UDP send error:", e)
+                        
                 except np.linalg.LinAlgError:
                     pass
             if tag.tag_id == 0:
@@ -473,10 +488,10 @@ def detector_thread():
                     msg = "TAG_YAW,{:.6f}".format(r_theta)
 
 
-                    # try:
-                    #     yaw_sock.sendto(msg.encode("utf-8"),(XRP_IP, YAW_CORRECTION_PORT))
-                    # except OSError as e:
-                    #     print("[YAW] UDP send error:", e)
+                    try:
+                        yaw_sock.sendto(msg.encode("utf-8"),(XRP_IP, YAW_CORRECTION_PORT))
+                    except OSError as e:
+                        print("[YAW] UDP send error:", e)
 
 
                 except np.linalg.LinAlgError:
@@ -540,6 +555,7 @@ def sensor_ekf_thread(csv_writer):
             continue
         try:
             enc_l = float(parts[1]); enc_r = float(parts[2]); heading = float(parts[3])
+            # print("Received sensor data, enc_l: " + str(enc_l) + ", enc_r: " + str(enc_r) + ", heading: " + str(heading))
         except ValueError:
             continue
 
@@ -561,7 +577,20 @@ def sensor_ekf_thread(csv_writer):
             continue
 
         with ekf_lock:
-            x_pred, y_pred, th_pred = ekf.predict(enc_l, enc_r)
+            # print("enc_l: " + str(enc_l))
+            # print("enc_r: " + str(enc_r))
+            x, y, theta = ekf.predict(enc_l, enc_r)
+
+            # msg = "TAG_YAW,{:.6f}".format(theta)
+            
+            
+            # try:
+            #     yaw_sock.sendto(msg.encode("utf-8"),(XRP_IP, YAW_CORRECTION_PORT))
+            # except OSError as e:
+            #     print("[YAW] UDP send error:", e)
+            # print("x_pred: " + str(x_pred))
+            # print("y_pred: " + str(y_pred))
+            # print("th_pred: " + str(th_pred))
             # z_theta = heading - theta_zero
             # x, y, theta = ekf.correct(z_theta)
 
@@ -649,7 +678,7 @@ def main():
     csv_file = None
     csv_writer = None
     if CSV_LOG_PATH:
-        csv_file = open(CSV_LOG_PATH, "w", newline="")
+        csv_file = open(CSV_LOG_PATH, "w", newline="", buffering=1)
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow([
             "time", "x_fused", "y_fused", "theta_fused",
@@ -764,7 +793,7 @@ def main():
                     #     BALL_DIAMETER_MM * fx
                     # ) / pixel_diameter
         
-                    Z_c = -2451.1 - 116.56
+                    Z_c = -2451.1 - 58 # camera height minus height from floor to center of "ball"
         
                     # Z_c = BALL_DIAMETER_MM/2
         
