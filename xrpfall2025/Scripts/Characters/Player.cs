@@ -145,7 +145,18 @@ public partial class Player : Car
 				return;
 			}
 
-			if (((Input.IsActionPressed("right") && current != States.Inverted)
+			// A steering wheel turns the kart in proportion to how far it's turned,
+			// with the same ratio as the real kart (full wheel lock = full turning rate)
+			if ((bool)receiver.Call("wheel_connected"))
+			{
+				float steering = (float)receiver.Call("wheel_steering");
+				if (current == States.Inverted) steering = -steering;
+				if (steering != 0 && charbody3d.IsOnFloor())
+				{
+					charbody3d.RotateObjectLocal(new Vector3(0, 1, 0), -steering * (float)rotationIncrement);
+				}
+			}
+			else if (((Input.IsActionPressed("right") && current != States.Inverted)
 				|| (Input.IsActionPressed("left") && current == States.Inverted)) && charbody3d.IsOnFloor())
 			{
 				charbody3d.RotateObjectLocal(new Vector3(0, 1, 0), -(float)rotationIncrement);

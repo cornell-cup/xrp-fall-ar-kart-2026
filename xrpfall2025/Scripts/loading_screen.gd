@@ -15,7 +15,7 @@ const HEADING_GREEN := Color("#3DDC84")
 const CONNECTING_HEADING := "CONNECTING DEVICES..."
 const CONNECTING_SUBTITLE := "Make sure the robot is on and the gamepad is paired"
 
-@export var timeout_duration: float = 15.0
+@export var timeout_duration: float = 30.0
 
 var time_elapsed: float = 0.0
 var has_timed_out: bool = false
@@ -56,7 +56,7 @@ func _poll_live_hardware() -> void:
 		_set_connected(robot_card)
 	if NetworkReceiver.camera_connected() and camera_card.state == camera_card.State.SEARCHING:
 		_set_connected(camera_card)
-	if not Input.get_connected_joypads().is_empty() and gamepad_card.state == gamepad_card.State.SEARCHING:
+	if NetworkReceiver.controller_connected() and gamepad_card.state == gamepad_card.State.SEARCHING:
 		_set_connected(gamepad_card)
 
 

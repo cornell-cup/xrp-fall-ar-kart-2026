@@ -51,6 +51,41 @@ const GAMEPAD_HEADER: int = 0x55
 # center (0.08-0.15), which used to get through and keep the kart creeping
 const DEADZONE: float = 0.15
 
+# ---- Steering wheel (Thrustmaster TMX) ----
+# macOS has no driver for the TMX, so Scripts/wheel_bridge.py reads it over USB
+# and sends "WHEEL,<steer>,<gas>,<brake>,<buttons>" here. While it's sending,
+# the wheel drives the kart instead of the gamepad
+const WHEEL_PORT: int = 6004
+# No wheel packet for this long = wheel unplugged (the bridge sends every 50 ms)
+const WHEEL_TIMEOUT_MS: int = 500
+# How far the wheel turns lock to lock, and how far it has to be turned from
+# centre (either way) for full steering. Turning further stays at full steering.
+# 90 uses the middle fifth of the wheel's travel (180° of the 900°): 90° of
+# wheel for the servo's 60° (STEER_RANGE_DEG in xrp_raw_sensors.py), a 1.5:1
+# steering ratio. 450 = the wheel's full turn (7.5:1, like a road car, slower);
+# 60 = 1:1 (wheel angle = servo angle, quickest)
+const WHEEL_ROTATION_DEG: float = 900.0
+const WHEEL_FULL_STEER_DEG: float = 90.0
+# Steering curve: small turns of the wheel steer gently and it builds up faster
+# towards full lock (steering = fraction of full turn ^ this). 1 = linear,
+# 2 = half way round gives a quarter of full steering, 3 = gentler still near
+# centre. Full lock is full steering whatever the value
+const WHEEL_STEER_CURVE: float = 1.0
+# The wheel rests a degree or two off centre. Not rescaled, so past it the
+# angle still matches 1:1
+const WHEEL_STEER_DEADZONE_DEG: float = 2.0
+const PEDAL_DEADZONE: float = 0.03
+# Right paddle uses an item, like the gamepad's right bumper
+const WHEEL_ITEM_BUTTON: int = 0x1000
+var udp_wheel: PacketPeerUDP = PacketPeerUDP.new()
+var wheel_pid: int = -1
+var wheel_steer: float = 0.0
+var wheel_gas: float = 0.0
+var wheel_brake: float = 0.0
+var wheel_buttons: int = 0
+var _wheel_last_ms: int = -100000
+var _wheel_was_connected: bool = false
+
 # ---- Gamepad latency measurement ----
 # Every gamepad packet carries a sequence number (0-255); the XRP sends
 # "ACK,<seq>" straight back on this port when it applies the packet. The time
@@ -267,6 +302,12 @@ func _ready() -> void:
 	if not pads.is_empty():
 		print("[NetworkReceiver] Controller already connected: %s" % Input.get_joy_name(0))
 
+	# Steering wheel input from wheel_bridge.py
+	var err_wheel = udp_wheel.bind(WHEEL_PORT, "127.0.0.1")
+	if err_wheel != OK:
+		push_error("[NetworkReceiver] Failed to bind wheel port %d (error %d)" % [WHEEL_PORT, err_wheel])
+	_start_wheel_bridge()
+
 	# The video connection is made (and remade) by the retry in _process, once
 	# fusion's video server is up. AR mode follows the camera, see _update_ar_mode
 	_start_fusion()
@@ -279,6 +320,7 @@ func _process(_delta: float) -> void:
 	_process_video()
 	_process_pose()
 	_process_ar_tags()
+	_process_wheel()
 	_process_gamepad_send(_delta)
 
 	_update_ar_mode()
@@ -317,7 +359,7 @@ func _process(_delta: float) -> void:
 		print("[NetworkReceiver] Status - TCP: %s | Pose: %s | Gamepad: %s | Video: %s | AR: %s | Frames: %d/%d | Gamepad round trip: %s, %d/%d lost" % [
 			tcp_status_name,
 			"active" if xrp_connected else "waiting",
-			"connected" if gamepad_connected else "none",
+			"wheel" if wheel_connected() else "connected" if gamepad_connected else "none",
 			"yes" if _video_confirmed else "no",
 			"on" if ar_enabled else "off",
 			_frames_shown_this_period,
@@ -432,6 +474,35 @@ func _cleanup() -> void:
 	udp_ar_tags.close()
 	udp_latency.close()
 	udp_gamepad.close()
+	_stop_wheel_bridge()
+	udp_wheel.close()
+
+
+# ============================================================
+# Steering wheel bridge
+# ============================================================
+
+# Runs Scripts/wheel_bridge.py with fusion's Python. It waits for the wheel by
+# itself, so it's started whether or not one is plugged in
+func _start_wheel_bridge() -> void:
+	_stop_wheel_bridge()
+	var python = _find_fusion_python()
+	var script = _get_base_dir().path_join("Scripts").path_join("wheel_bridge.py")
+	if python == "" or not FileAccess.file_exists(script):
+		print("[NetworkReceiver] Wheel bridge not started (needs the ar-kart Python and Scripts/wheel_bridge.py)")
+		return
+	wheel_pid = OS.create_process(python, ["-u", script])
+	if wheel_pid > 0:
+		print("[NetworkReceiver] Wheel bridge started (PID: %d)" % wheel_pid)
+
+
+func _stop_wheel_bridge() -> void:
+	if wheel_pid > 0:
+		OS.kill(wheel_pid)
+		wheel_pid = -1
+	# one left over from a run that didn't quit cleanly would keep the wheel claimed
+	if OS.get_name() != "Windows":
+		OS.execute("pkill", ["-f", "wheel_bridge.py"])
 
 
 # ============================================================
@@ -903,24 +974,110 @@ func _apply_deadzone(value: float) -> float:
 	return signf(value) * (absf(value) - DEADZONE) / (1.0 - DEADZONE)
 
 func _process_gamepad_send(_delta: float) -> void:
-	if Input.get_connected_joypads().is_empty():
-		if gamepad_connected:
-			gamepad_connected = false
+	var have_pad = not Input.get_connected_joypads().is_empty()
+	if have_pad != gamepad_connected:
+		gamepad_connected = have_pad
+		if have_pad:
+			print("[NetworkReceiver] Gamepad connected: %s" % Input.get_joy_name(0))
+		else:
 			print("[NetworkReceiver] Gamepad disconnected")
+
+	var ly: float
+	var rx: float
+	if wheel_connected():
+		# ly is a stick's up/down: negative = forward. The brake pedal reverses
+		ly = _apply_pedal_deadzone(wheel_brake) - _apply_pedal_deadzone(wheel_gas)
+		rx = wheel_steering()
+	elif gamepad_connected:
+		ly = _apply_deadzone(Input.get_joy_axis(0, JOY_AXIS_LEFT_Y))
+		rx = _apply_deadzone(Input.get_joy_axis(0, JOY_AXIS_RIGHT_X))
+	else:
 		return
-
-	if not gamepad_connected:
-		gamepad_connected = true
-		var pad_name = Input.get_joy_name(0)
-		print("[NetworkReceiver] Gamepad connected: %s" % pad_name)
-
-	var ly = _apply_deadzone(Input.get_joy_axis(0, JOY_AXIS_LEFT_Y))
-	var rx = _apply_deadzone(Input.get_joy_axis(0, JOY_AXIS_RIGHT_X))
 	# Hold the real kart still during the race countdown by sending a centered stick
 	if _in_race_countdown():
 		ly = 0.0
 		rx = 0.0
 	_send_gamepad(ly, rx)
+
+
+# True while wheel_bridge.py is sending (it only sends while the wheel is plugged in)
+func wheel_connected() -> bool:
+	return Time.get_ticks_msec() - _wheel_last_ms < WHEEL_TIMEOUT_MS
+
+
+# A gamepad or the wheel, for the loading screen and the status bar
+func controller_connected() -> bool:
+	return wheel_connected() or not Input.get_connected_joypads().is_empty()
+
+
+func _process_wheel() -> void:
+	while udp_wheel.get_available_packet_count() > 0:
+		var parts = udp_wheel.get_packet().get_string_from_utf8().split(",")
+		if parts.size() != 5 or parts[0] != "WHEEL":
+			continue
+		wheel_steer = float(parts[1])
+		wheel_gas = float(parts[2])
+		wheel_brake = float(parts[3])
+		var buttons = int(parts[4])
+		# right paddle = use item (pressed and released like the gamepad's bumper)
+		var item_now = buttons & WHEEL_ITEM_BUTTON != 0
+		if item_now != (wheel_buttons & WHEEL_ITEM_BUTTON != 0):
+			if item_now:
+				Input.action_press("use_item")
+			else:
+				Input.action_release("use_item")
+		wheel_buttons = buttons
+		_wheel_last_ms = Time.get_ticks_msec()
+
+	var connected = wheel_connected()
+	if connected != _wheel_was_connected:
+		_wheel_was_connected = connected
+		print("[NetworkReceiver] Steering wheel %s" % ("connected" if connected else "disconnected"))
+		if not connected:
+			wheel_gas = 0.0
+			wheel_brake = 0.0
+			wheel_steer = 0.0
+			if wheel_buttons & WHEEL_ITEM_BUTTON:
+				Input.action_release("use_item")
+			wheel_buttons = 0
+	_update_wheel_actions()
+
+
+# Without the XRP, Player.cs drives the virtual kart from the forward/back
+# actions (on or off), so the pedals hold those down too. Only changes are
+# applied, so the keyboard keeps working alongside it. (Steering doesn't go
+# through actions: Player.cs reads wheel_steering() directly)
+const WHEEL_ACTION_THRESHOLD: float = 0.3
+var _wheel_actions: Dictionary = {}   # action -> whether the wheel is holding it
+
+func _update_wheel_actions() -> void:
+	var want = {
+		"forward": _apply_pedal_deadzone(wheel_gas) > WHEEL_ACTION_THRESHOLD,
+		"back": _apply_pedal_deadzone(wheel_brake) > WHEEL_ACTION_THRESHOLD,
+	}
+	for action in want:
+		if want[action] != _wheel_actions.get(action, false):
+			_wheel_actions[action] = want[action]
+			if want[action]:
+				Input.action_press(action)
+			else:
+				Input.action_release(action)
+
+
+# Wheel angle -> steering -1..1, full steering at WHEEL_FULL_STEER_DEG. Sent to
+# the XRP's servo, and read by Player.cs to steer the kart without the XRP
+func wheel_steering() -> float:
+	var degrees = wheel_steer * WHEEL_ROTATION_DEG / 2.0
+	if absf(degrees) < WHEEL_STEER_DEADZONE_DEG:
+		return 0.0
+	var amount = minf(1.0, absf(degrees) / WHEEL_FULL_STEER_DEG)
+	return signf(degrees) * pow(amount, WHEEL_STEER_CURVE)
+
+
+func _apply_pedal_deadzone(value: float) -> float:
+	if value < PEDAL_DEADZONE:
+		return 0.0
+	return minf(1.0, (value - PEDAL_DEADZONE) / (1.0 - PEDAL_DEADZONE))
 
 
 func _send_gamepad(ly: float, rx: float) -> void:

@@ -29,9 +29,10 @@ conda activate ar-kart
 
 # Install Packages
 ```bash
-pip install numpy opencv-python-headless pupil-apriltags pyinstaller pygame
-python -c "import cv2, numpy, pupil_apriltags, PyInstaller; print('OK')"
+pip install numpy opencv-python-headless pupil-apriltags pyinstaller pygame pyusb libusb-package
+python -c "import cv2, numpy, pupil_apriltags, PyInstaller, usb, libusb_package; print('OK')"
 ```
+`pyusb` and `libusb-package` are for the Thrustmaster TMX wheel: macOS has no driver for it, so the game runs `Scripts/wheel_bridge.py` to read it over USB.
 
 # generate and move script
 

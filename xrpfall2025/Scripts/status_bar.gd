@@ -27,7 +27,7 @@ func _xrp_connected() -> bool:
 
 
 func _controller_connected() -> bool:
-	return not Input.get_connected_joypads().is_empty()
+	return NetworkReceiver.controller_connected()
 
 
 # The same check that switches AR mode on, so the dot and the mode always agree
