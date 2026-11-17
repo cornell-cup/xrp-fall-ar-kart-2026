@@ -17,3 +17,4 @@ xrpfall2025/fusion.log
 # Ignore Godot cache and exports
 xrpfall2025/.godot/**
 xrpfall2025/export/**
+xrpfall2025/*meshlibrary.tres
