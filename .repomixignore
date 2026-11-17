@@ -1,0 +1,15 @@
+﻿# Ignore 3rd party addons and examples
+xrpfall2025/addons/debug_draw_3d/**
+xrpfall2025/examples_dd3d/**
+
+# Ignore raw 3D mesh data arrays saved as text
+xrpfall2025/Assets/3dmodels/**/*.tres
+
+# Ignore Godot metadata and logs
+**/*.import
+**/*.uid
+xrpfall2025/fusion.log
+
+# Ignore Godot cache and exports
+xrpfall2025/.godot/**
+xrpfall2025/export/**
