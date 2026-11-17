@@ -1,19 +1,38 @@
-# Ignore 3rd party addons and examples
-xrpfall2025/addons/debug_draw_3d/**
-xrpfall2025/examples_dd3d/**
+# Godot 4+ specific ignores
+.godot/
+.nomedia
 
-# Ignore raw 3D mesh data arrays saved as text
-xrpfall2025/Assets/3dmodels/**/*.tres
+# Godot-specific ignores
+.import/
+export.cfg
+export_credentials.cfg
 
-# Ignore Godot metadata, logs, and backups
-**/*.import
-**/*.uid
-**/*.old*
+# Imported translations (automatically generated from CSV files)
+*.translation
+
+# Mono-specific ignores
+.mono/
+data_*/
+mono_crash.*.json
+
+# virtual environment ignores
+.direnv
+.envrc
+venv/
+.DS_Store
+
+road_models.blend
+xrpfall2025/export/
+xrpfall2025/Scripts/build/
+xrpfall2025/Scripts/dist/
+
+__pycache__/
+*.pyc
+xrpfall2025/apriltag_detector
+xrpfall2025/laptop_fusion
+xrpfall2025/fusion/
 xrpfall2025/fusion.log
 
-# Ignore text-based vector graphics
-**/*.svg
-
-# Ignore Godot cache and exports
-xrpfall2025/.godot/**
-xrpfall2025/export/**
+# repomix
+.repomixignore
+repomix-output.xml
