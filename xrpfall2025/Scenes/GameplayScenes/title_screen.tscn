@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://vw4r1fcult8q" path="res://Assets/ar_kart_ui/logos/xrp-logo.png" id="6_xrp"]
 [ext_resource type="FontVariation" uid="uid://d37faedn21306" path="res://UI/rubik_black.tres" id="8_black"]
 [ext_resource type="PackedScene" path="res://Scenes/Prefabs/status_bar.tscn" id="9_statusbar"]
-[ext_resource type="Script" uid="uid://op70qnfkwf5d" path="res://Scripts/hover_button.gd" id="hover_button"]
+[ext_resource type="Script" path="res://Scripts/hover_button.gd" id="hover_button"]
 [ext_resource type="Texture2D" uid="uid://dy8mj8rslmhbp" path="res://Assets/ar_kart_ui/icons/quit_button_hover@2x.png" id="quit_hover"]
 [ext_resource type="Texture2D" uid="uid://ds1nf50tkg00o" path="res://Assets/ar_kart_ui/icons/quit_button_normal@2x.png" id="quit_normal"]
 [ext_resource type="Texture2D" uid="uid://d11w2hgan44ll" path="res://Assets/ar_kart_ui/icons/quit_button_pressed@2x.png" id="quit_pressed"]

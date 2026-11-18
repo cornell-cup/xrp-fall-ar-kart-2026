@@ -1,0 +1,492 @@
+[BOOT] python=/Users/hilarioesparza/Desktop/Cornell/CUP/xrp-fall-ar-kart-2026/xrpfall2025/laptop_fusion cwd=/Users/hilarioesparza/Desktop/Cornell/CUP/xrp-fall-ar-kart-2026/xrpfall2025 argv=['/Users/hilarioesparza/Desktop/Cornell/CUP/xrp-fall-ar-kart-2026/xrpfall2025/laptop_fusion', '192.168.0.138'] log=/Users/hilarioesparza/Desktop/Cornell/CUP/xrp-fall-ar-kart-2026/xrpfall2025/laptop_fusion.log
+[Transforms] beta_tag3 = 0.0
+[Transforms] beta_tag0 = 180.0
+[Pose] Will send fused state to 127.0.0.1:6000
+[Camera] Connecting to rtsp://192.168.0.138:8554/cam
+[THREAD CRASH] Thread-3 (godot_video_server_thread)
+[THREAD CRASH] Thread-4 (gamepad_relay_thread)
+[AR] Broadcasting tag overlays to ('127.0.0.1', 6002)
+[DEBUG] Starting sensor thread
+[DEBUG] Entered sensor_ekf_thread()
+[DEBUG] Sensor thread started: True
+[THREAD CRASH] SensorEKF
+Traceback (most recent call last):
+  File "threading.py", line 1016, in _bootstrap_inner
+  File "threading.py", line 953, in run
+  File "laptop_fusion.py", line 796, in gamepad_relay_thread
+Traceback (most recent call last):
+Traceback (most recent call last):
+OSError: [Errno 48] Address already in use
+  File "threading.py", line 1016, in _bootstrap_inner
+  File "threading.py", line 953, in run
+  File "threading.py", line 1016, in _bootstrap_inner
+  File "threading.py", line 953, in run
+  File "laptop_fusion.py", line 602, in sensor_ekf_thread
+  File "laptop_fusion.py", line 742, in godot_video_server_thread
+OSError: [Errno 48] Address already in use
+OSError: [Errno 48] Address already in use
+[Camera] RTSP connected
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (24659 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 4 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10248 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9783 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9332 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (4741 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 23 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8861 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9671 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9318 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9267 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9246 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9855 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9479 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9475 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9190 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9319 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9083 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9100 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8692 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8273 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8586 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8431 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8955 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8807 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8781 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8496 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8404 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8190 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9011 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9196 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8611 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8462 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7826 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7801 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8413 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (3776 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (5100 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7038 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8626 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8940 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8439 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8857 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8774 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8441 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7476 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7583 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (6285 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7207 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8195 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7191 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7886 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (6951 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (6615 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7766 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7839 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8001 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (6642 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7207 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (4109 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 9 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (2864 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9871 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9336 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10364 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10472 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9884 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (3044 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (3536 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7305 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7298 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8395 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9098 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8740 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8700 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8145 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8503 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8482 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7305 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8138 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8322 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (6944 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (6474 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (6872 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7667 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (6221 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7000 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (6049 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (6552 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8039 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (6836 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (6763 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8372 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (6092 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 22 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (3911 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7177 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9314 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 16 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (3484 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8019 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9547 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10651 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10022 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10788 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10554 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11062 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10102 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7043 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10167 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10478 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11232 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8466 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10506 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10507 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11034 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10304 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 23 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10125 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 27 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9441 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10823 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8909 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10516 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10235 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10582 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 22 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11281 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 23 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10854 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11502 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 22 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10598 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11345 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 18 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (5480 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9954 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11134 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11097 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 24 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10821 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7828 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8000 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 20 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8974 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10781 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9256 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11055 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8543 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11193 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10977 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11071 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10826 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11361 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11287 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9183 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10611 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9487 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10712 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 26 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11202 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11049 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (10859 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (11269 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (7432 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 29 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (6405 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (8514 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 28 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (9474 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 25 fps | no tag
+[Sensor] enc_l=+0.000 enc_r=+0.000 rev | heading=+0.0° (4011 pkts/s)
+[EKF]    fused x=0.00 y=0.00 m th=+90° | no tag yet
+[Detect] 30 fps | no tag

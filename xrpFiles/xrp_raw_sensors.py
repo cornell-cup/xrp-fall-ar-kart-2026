@@ -5,6 +5,16 @@ Gamepad protocol from laptop:
     [0x55][0x06][1][throttle_byte][2][steer_byte][3][seq]   = 8 bytes
     (seq is echoed back as "ACK,<seq>" for the game's latency measurement)
 
+Sensor packets to the laptop (UDP 5005). The encoders and the IMU each go in
+their own packet, sent as soon as that sensor has a new reading:
+    ENC,<seq>,<t_ms>,<total_l>,<total_r>,<throttle>,<servo_deg>
+        encoder running totals (revolutions), plus the throttle (-1..1) and
+        servo angle (deg) being applied, which are the EKF's inputs
+    IMU,<seq>,<t_ms>,<heading>
+        heading in radians (counter-clockwise, 90° = the start heading)
+    seq counts each kind separately; t_ms is time.ticks_ms() when it was read
+    (wraps every 2**30 ms)
+
 After a crash/disconnect, plug XRP into USB, open Thonny, and run:
     print(open('/xrp_log.txt').read())
 """
@@ -38,7 +48,18 @@ SENSOR_PORT = 5005
 # back to the laptop's game on this port so it can measure the round-trip time
 LATENCY_PORT = 6003
 GAMEPAD_PORT = 4002
-SEND_RATE_HZ = 100
+# How often the encoders and the IMU are read. Each reading that changed is sent
+# straight away in its own packet (ENC / IMU, see the top of the file). Together
+# they're kept to the 100 packets/s the old combined packet used: every packet
+# the XRP sends takes radio time from receiving the gamepad's, and at twice that
+# rate gamepad packets were delayed long enough to trip the failsafe
+ENC_RATE_HZ = 50
+IMU_RATE_HZ = 50
+# Each is also sent at least this often when unchanged, so the laptop keeps
+# hearing that the kart is standing still
+SENSOR_HEARTBEAT_MS = 100
+# A heading change smaller than this (radians) isn't a new IMU reading
+IMU_MIN_CHANGE_RAD = 0.0005
 
 # ============================================================
 # Robot config
@@ -46,7 +67,7 @@ SEND_RATE_HZ = 100
 JOYSTICK_DEADBAND = 0.05
 
 # Kept low to limit the motors' current draw (brownout protection)
-MAX_DRIVE_RPM = 80
+MAX_DRIVE_RPM = 150
 
 # Throttle ramping (brownout protection) — limits how fast the motor command
 # can change. 10.0 per second means 0->full takes ~100 ms; lower it if the
@@ -658,8 +679,8 @@ def create_sockets():
 # ============================================================
 _log_init()
 _init_battery_sense()
-log_info("BOOT", "starting xrp_raw_sensors.py (MAX_RPM={}, ramp={}/s up {}/s down, steer {} deg/s, sensors {} Hz)".format(
-    MAX_DRIVE_RPM, THROTTLE_RAMP_PER_SEC, THROTTLE_RAMP_DOWN_PER_SEC, STEER_RAMP_DEG_PER_SEC, SEND_RATE_HZ))
+log_info("BOOT", "starting xrp_raw_sensors.py (MAX_RPM={}, ramp={}/s up {}/s down, steer {} deg/s, encoders {} Hz, IMU {} Hz)".format(
+    MAX_DRIVE_RPM, THROTTLE_RAMP_PER_SEC, THROTTLE_RAMP_DOWN_PER_SEC, STEER_RAMP_DEG_PER_SEC, ENC_RATE_HZ, IMU_RATE_HZ))
 log_info("BOOT", "reset cause={} battery={} previous run {}".format(
     reset_cause_name(), battery_str() + " (" + battery_source + ")",
     "unknown (no log)" if _previous_clean is None else
@@ -717,8 +738,15 @@ def main():
     sock_send, sock_recv = create_sockets()
     dest = (broadcast_ip(), SENSOR_PORT)
 
-    send_interval_ms = 1000 // SEND_RATE_HZ
-    last_send = time.ticks_ms()
+    enc_interval_ms = 1000 // ENC_RATE_HZ
+    imu_interval_ms = 1000 // IMU_RATE_HZ
+    last_enc_read = time.ticks_ms()
+    # the IMU starts half an interval later, so the two take turns
+    last_imu_read = time.ticks_add(last_enc_read, imu_interval_ms // 2 - imu_interval_ms)
+    # what was last sent, and when (for SENSOR_HEARTBEAT_MS)
+    last_enc_sent = None
+    last_imu_sent = None
+    last_enc_send = last_imu_send = time.ticks_ms()
     last_wifi_check = time.ticks_ms()
     last_heartbeat = time.ticks_ms()
 
@@ -739,16 +767,17 @@ def main():
     gp_stops = 0
     last_gp_rx = None
 
-    # Each sensor packet carries the encoders' running totals and a packet number,
-    # and the laptop works out the change itself. A packet Wi-Fi drops then loses
-    # no distance (the next one's totals include it), and late or repeated packets
+    # ENC packets carry the encoders' running totals and a packet number, and the
+    # laptop works out the change itself. A packet Wi-Fi drops then loses no
+    # distance (the next one's totals include it), and late or repeated packets
     # can be spotted. (The encoders are never reset while running: XRPLib's speed
     # controller measures speed from the count every 20 ms, and resetting it
     # underneath that made the motors ignore the commanded speed)
-    sensor_seq = 0
+    enc_seq = 0
+    imu_seq = 0
     last_load_log = time.ticks_ms()
 
-    log_info("LOOP", "streaming at {} Hz to {}".format(SEND_RATE_HZ, dest))
+    log_info("LOOP", "streaming encoders ({} Hz) and IMU ({} Hz) to {}".format(ENC_RATE_HZ, IMU_RATE_HZ, dest))
 
     while True:
         now = time.ticks_ms()
@@ -1001,32 +1030,60 @@ def main():
             # stop_motors() re-centers the servo whenever control is lost
             applied_steer = STEER_CENTER_DEG
 
-        # ---- Send sensor packet ----
-        if time.ticks_diff(now, last_send) >= send_interval_ms:
-            last_send = now
-            try:
+        # ---- Sensor packets ----
+        # The encoders and the IMU are read on their own schedules, and each new
+        # reading goes out straight away in its own packet (format at the top of
+        # the file), so the laptop can apply each correction as it arrives
+        # At most one sensor packet per pass, so the two never go out back to
+        # back: if the encoders send this pass, the IMU waits for the next one
+        outgoing = []
+        try:
+            if time.ticks_diff(now, last_enc_read) >= enc_interval_ms:
+                last_enc_read = now
                 total_l = motor_three.get_position() * ENCODER_PERCENT_OFFSET
                 total_r = motor_four.get_position() * ENCODER_PERCENT_OFFSET
-                heading = imu_heading_rad()
                 recalibrate_gyro_if_still(total_l, total_r, abs(applied_throttle) >= JOYSTICK_DEADBAND)
-                sensor_seq += 1
-                msg = "RAW2,{},{:.6f},{:.6f},{:.6f}".format(sensor_seq, total_l, total_r, heading)
-                # Straight to the laptop while it's driving us, otherwise broadcast
-                target = (controller_ip, SENSOR_PORT) if gamepad_active and controller_ip else dest
-                sock_send.sendto(msg.encode(), target)
-                send_count += 1
-                consecutive_send_errors = 0
-            except OSError as e:
-                error_count += 1
-                consecutive_send_errors += 1
-                if consecutive_send_errors <= 3:
-                    log_error("SEND", "OSError #{}: {} (errno={}) wlan.isconnected={}".format(
-                        error_count, e, getattr(e, 'errno', '?'), wlan.isconnected()))
-                elif consecutive_send_errors == 4:
-                    log_error("SEND", "(suppressing further errors)")
-            except Exception as e:
-                error_count += 1
-                log_error("SEND", "{}: {}".format(type(e).__name__, e))
+                if (total_l, total_r) != last_enc_sent or \
+                        time.ticks_diff(now, last_enc_send) >= SENSOR_HEARTBEAT_MS:
+                    enc_seq += 1
+                    outgoing.append("ENC,{},{},{:.6f},{:.6f},{:.3f},{:.2f}".format(
+                        enc_seq, now, total_l, total_r, applied_throttle, applied_steer))
+                    last_enc_sent = (total_l, total_r)
+                    last_enc_send = now
+
+            if not outgoing and time.ticks_diff(now, last_imu_read) >= imu_interval_ms:
+                last_imu_read = now
+                heading = imu_heading_rad()
+                if last_imu_sent is None or \
+                        abs(wrap_pi(heading - last_imu_sent)) >= IMU_MIN_CHANGE_RAD or \
+                        time.ticks_diff(now, last_imu_send) >= SENSOR_HEARTBEAT_MS:
+                    imu_seq += 1
+                    outgoing.append("IMU,{},{},{:.6f}".format(imu_seq, now, heading))
+                    last_imu_sent = heading
+                    last_imu_send = now
+        except Exception as e:
+            # a sensor read failing (e.g. an I2C error) isn't a WiFi problem
+            log_error("SENSOR", "{}: {}".format(type(e).__name__, e))
+
+        if outgoing:
+            # Straight to the laptop while it's driving us, otherwise broadcast
+            target = (controller_ip, SENSOR_PORT) if gamepad_active and controller_ip else dest
+            for msg in outgoing:
+                try:
+                    sock_send.sendto(msg.encode(), target)
+                    send_count += 1
+                    consecutive_send_errors = 0
+                except OSError as e:
+                    error_count += 1
+                    consecutive_send_errors += 1
+                    if consecutive_send_errors <= 3:
+                        log_error("SEND", "OSError #{}: {} (errno={}) wlan.isconnected={}".format(
+                            error_count, e, getattr(e, 'errno', '?'), wlan.isconnected()))
+                    elif consecutive_send_errors == 4:
+                        log_error("SEND", "(suppressing further errors)")
+                except Exception as e:
+                    error_count += 1
+                    log_error("SEND", "{}: {}".format(type(e).__name__, e))
 
         flush_log_if_due()
         feed_watchdog()
@@ -1060,4 +1117,3 @@ finally:
             _log_file.close()
     except Exception:
         pass
-

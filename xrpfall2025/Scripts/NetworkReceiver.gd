@@ -4,7 +4,8 @@ extends Node
 # Combined network receiver — fusion + AR UI.
 #
 # Launches laptop_fusion on startup (the Python script in the editor, the
-# folder build in an exported game). From it:
+# folder build in an exported game). On macOS it's started through Terminal
+# (see MAC_LAUNCHER_FILE) so it gets Terminal's local network permission. From it:
 #   - UDP 6000: fused robot pose JSON {x, y, angle}
 #   - TCP 6001: raw RGB video frames
 #   - UDP 6002: ar_tags JSON, for the labels over AprilTags in AR mode
@@ -26,7 +27,7 @@ extends Node
 # Passed to laptop_fusion, which tries it first and then falls back to the
 # other addresses in its PI_CANDIDATES on its own, so the kart works on any of
 # the networks without changing this.
-const PI_IP: String = "cornellcup2.local"
+const PI_IP: String = "192.168.0.138"
 
 const POSE_PORT: int = 6000
 const VIDEO_PORT: int = 6001
@@ -37,6 +38,9 @@ const GAMEPAD_RELAY_HOST: String = "127.0.0.1"
 # ---- Fused pose ----
 var udp_pose_in: PacketPeerUDP = PacketPeerUDP.new()
 var pose_last_received: float = 0.0
+# Pose packets since the last status line, and bad ones, for the status line
+var _pose_packets: int = 0
+var _pose_bad_packets: int = 0
 const POSE_TIMEOUT: float = 8.0
 # The race scene, which AR mode attaches to and restarts when the camera comes or goes
 const RACE_SCENE: String = "res://Scenes/GameplayScenes/main.tscn"
@@ -129,6 +133,15 @@ const FUSION_LOG_FILE: String = "fusion.log"
 var _fusion_stdout: FileAccess = null
 var _fusion_stderr: FileAccess = null
 var _fusion_log: FileAccess = null
+# macOS: fusion is started through Terminal, not by Godot directly. macOS gives a
+# child process the permissions of the app that launched it, and Godot isn't
+# allowed on the local network, so fusion couldn't reach the Pi/XRP. Terminal is.
+# The script below is rewritten on every launch with the command to run; its
+# output goes to the Terminal window and to fusion.log
+# (own name, so it doesn't overwrite a launch_fusion.command you wrote yourself)
+const MAC_LAUNCHER_FILE: String = "fusion_terminal_launch.command"
+# Terminal takes a moment to open, so give fusion this much longer before checking it
+const MAC_TERMINAL_EXTRA_WAIT_S: float = 2.0
 
 # ---- Latest video frame ----
 var video_texture: ImageTexture = null
@@ -191,7 +204,7 @@ const CAM_CALIB_H: float = 480.0
 # flips it both ways too), so the AR backdrop rotates the feed 180°
 const CAM_UPSIDE_DOWN: bool = true
 # How far the real camera is tilted up from level (negative = down)
-const CAM_TILT_UP_DEG: float = 2.0
+const CAM_TILT_UP_DEG: float = 4.0
 # Where the real camera's lens sits on the kart, in metres: height above the
 # floor, distance ahead of the kart's center, and sideways (positive = right).
 # Measure these on the robot; the defaults are where the camera sat on the kart model
@@ -246,11 +259,24 @@ func _fusion_launch_options() -> Array:
 	if FileAccess.file_exists(folder_build):
 		folder_option = {"name": "folder build", "path": folder_build, "args": [PI_IP]}
 
+	# The older single-file build, sitting right next to the project / game
+	var single_build = base.path_join(exe)
+	var single_option = null
+	if FileAccess.file_exists(single_build):
+		single_option = {"name": "single-file build", "path": single_build, "args": [PI_IP]}
+
 	if OS.has_feature("editor"):
-		options = [python_option, folder_option]
+		options = [python_option, folder_option, single_option]
 	else:
-		options = [folder_option, python_option]
-	return options.filter(func(o): return o != null)
+		options = [folder_option, single_option, python_option]
+	options = options.filter(func(o): return o != null)
+
+	if options.is_empty():
+		push_error("[NetworkReceiver] Fusion not found. Looked for:\n  Python: %s (conda env 'ar-kart', $AR_KART_PYTHON or FUSION_PYTHON)\n  script: %s\n  %s\n  %s" % [
+			python if python != "" else "none found", script, folder_build, single_build])
+	else:
+		print("[NetworkReceiver] Fusion launch options: %s" % ", ".join(PackedStringArray(options.map(func(o): return o["name"]))))
+	return options
 
 
 # A Python that can run laptop_fusion.py: FUSION_PYTHON, then $AR_KART_PYTHON,
@@ -310,7 +336,7 @@ func _ready() -> void:
 
 	# The video connection is made (and remade) by the retry in _process, once
 	# fusion's video server is up. AR mode follows the camera, see _update_ar_mode
-	_start_fusion()
+	# _start_fusion()
 
 
 func _process(_delta: float) -> void:
@@ -356,9 +382,10 @@ func _process(_delta: float) -> void:
 		var latency_text = "no ACKs"
 		if _rtt_count > 0:
 			latency_text = "avg %.0f ms, max %d ms" % [float(_rtt_sum_ms) / _rtt_count, _rtt_max_ms]
-		print("[NetworkReceiver] Status - TCP: %s | Pose: %s | Gamepad: %s | Video: %s | AR: %s | Frames: %d/%d | Gamepad round trip: %s, %d/%d lost" % [
+		print("[NetworkReceiver] Status - TCP: %s | Pose: %s, %d packets (%d bad), x=%.1f y=%.1f angle=%.1f | Gamepad: %s | Video: %s | AR: %s | Frames: %d/%d | Gamepad round trip: %s, %d/%d lost" % [
 			tcp_status_name,
 			"active" if xrp_connected else "waiting",
+			_pose_packets, _pose_bad_packets, xrp_x, xrp_y, xrp_angle,
 			"wheel" if wheel_connected() else "connected" if gamepad_connected else "none",
 			"yes" if _video_confirmed else "no",
 			"on" if ar_enabled else "off",
@@ -368,6 +395,8 @@ func _process(_delta: float) -> void:
 		])
 		_frames_shown_this_period = 0
 		_frames_dropped_this_period = 0
+		_pose_packets = 0
+		_pose_bad_packets = 0
 		_rtt_count = 0
 		_rtt_sum_ms = 0
 		_rtt_max_ms = 0
@@ -384,18 +413,39 @@ func _start_fusion() -> void:
 	await get_tree().create_timer(1.0).timeout
 
 	var log_path = _get_base_dir().path_join(FUSION_LOG_FILE)
-	_fusion_log = FileAccess.open(log_path, FileAccess.WRITE)
+	var mac = OS.get_name() == "macOS"
+	print("[NetworkReceiver] Starting fusion (%s, looking in %s)" % ["via Terminal" if mac else "directly", _get_base_dir()])
+	if mac:
+		# just empty the log; the Terminal script appends to it
+		var f = FileAccess.open(log_path, FileAccess.WRITE)
+		if f != null:
+			f.close()
+	else:
+		_fusion_log = FileAccess.open(log_path, FileAccess.WRITE)
 
 	var options = _fusion_launch_options()
 	if options.is_empty():
-		push_error("[NetworkReceiver] No way to start fusion: no ar-kart Python found and no fusion/ folder build (see README)")
 		return
 
 	for option in options:
-		if option["name"] == "folder build" and OS.get_name() == "macOS":
+		if mac and option["name"] == "folder build":
 			# clear the download quarantine on the whole folder (its libraries are in _internal)
 			OS.execute("xattr", ["-rd", "com.apple.quarantine", option["path"].get_base_dir()])
 			OS.execute("chmod", ["+x", option["path"]])
+		elif mac and option["name"] == "single-file build":
+			OS.execute("xattr", ["-d", "com.apple.quarantine", option["path"]])
+			OS.execute("chmod", ["+x", option["path"]])
+
+		if mac:
+			if not _launch_fusion_in_terminal(option, log_path):
+				push_warning("[NetworkReceiver] Could not open Terminal for fusion (%s)" % option["name"])
+				continue
+			await get_tree().create_timer(FUSION_STARTUP_CHECK_S + MAC_TERMINAL_EXTRA_WAIT_S).timeout
+			if _fusion_running_by_name():
+				print("[NetworkReceiver] Fusion started in Terminal: %s, output in %s" % [option["name"], log_path])
+				return
+			push_warning("[NetworkReceiver] Fusion (%s) exited right away, see the Terminal window or %s; trying the next way" % [option["name"], log_path])
+			continue
 
 		_log_fusion_line("=== starting fusion: %s ===" % option["name"])
 		var info = OS.execute_with_pipe(option["path"], option["args"], false)
@@ -415,6 +465,53 @@ func _start_fusion() -> void:
 		fusion_pid = -1
 
 	push_error("[NetworkReceiver] Fusion failed to start every way it was tried, see %s" % log_path)
+
+
+# macOS: writes MAC_LAUNCHER_FILE to run this launch option and opens it in
+# Terminal, so Terminal (which has local network access) is what starts fusion.
+# No PID comes back; fusion is found and stopped by name (pgrep / pkill)
+func _launch_fusion_in_terminal(option: Dictionary, log_path: String) -> bool:
+	var base = _get_base_dir()
+	var script_path = base.path_join(MAC_LAUNCHER_FILE)
+	var command = PackedStringArray([_sh_quote(option["path"])])
+	for arg in option["args"]:
+		command.append(_sh_quote(str(arg)))
+	var lines = PackedStringArray([
+		"#!/bin/bash",
+		"# Written by NetworkReceiver.gd on every launch; edits here are overwritten",
+		"export PYTHONUNBUFFERED=1",
+		"cd %s" % _sh_quote(base),
+		"echo %s | tee -a %s" % [_sh_quote("=== starting fusion: %s ===" % option["name"]), _sh_quote(log_path)],
+		"%s 2>&1 | tee -a %s" % [" ".join(command), _sh_quote(log_path)],
+		"echo %s | tee -a %s" % [_sh_quote("=== fusion exited ==="), _sh_quote(log_path)],
+	])
+	var f = FileAccess.open(script_path, FileAccess.WRITE)
+	if f == null:
+		push_error("[NetworkReceiver] Can't write %s" % script_path)
+		return false
+	f.store_string("\n".join(lines) + "\n")
+	f.close()
+	OS.execute("chmod", ["+x", script_path])
+	OS.execute("xattr", ["-d", "com.apple.quarantine", script_path])
+	# "open" returns as soon as Terminal has the script, so waiting for it is quick
+	# and its exit code / message say whether Terminal could be opened
+	var output = []
+	var code = OS.execute("open", ["-a", "Terminal", script_path], output, true)
+	if code != 0:
+		push_error("[NetworkReceiver] 'open -a Terminal %s' failed (exit %d): %s" % [script_path, code, "".join(PackedStringArray(output))])
+		return false
+	print("[NetworkReceiver] Opened Terminal to run fusion (%s): %s" % [option["name"], script_path])
+	return true
+
+
+# True if a laptop_fusion process (folder build or laptop_fusion.py) is running
+func _fusion_running_by_name() -> bool:
+	return OS.execute("pgrep", ["-f", "laptop_fusion"]) == 0
+
+
+# Wraps a string in single quotes for bash
+func _sh_quote(s: String) -> String:
+	return "'" + s.replace("'", "'\\''") + "'"
 
 
 # Copies whatever fusion has printed into fusion.log. Called every frame: the
@@ -463,7 +560,7 @@ func _cleanup() -> void:
 		OS.kill(fusion_pid)
 		print("[NetworkReceiver] Fusion stopped (PID: %d)" % fusion_pid)
 		fusion_pid = -1
-	_kill_old_fusion()
+	#_kill_old_fusion()
 	_drain_fusion_output()
 	if _fusion_log != null:
 		_fusion_log.close()
@@ -1135,9 +1232,14 @@ func _process_pose() -> void:
 		var json = JSON.new()
 		var err = json.parse(msg)
 		if err != OK:
+			_pose_bad_packets += 1
 			print("[NetworkReceiver] Pose parse error: ", msg)
 			continue
 		var data = json.data
+		if not (data is Dictionary):
+			_pose_bad_packets += 1
+			continue
+		_pose_packets += 1
 		if data is Dictionary:
 			if not xrp_connected:
 				xrp_connected = true

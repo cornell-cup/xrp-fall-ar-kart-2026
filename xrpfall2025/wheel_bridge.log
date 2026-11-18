@@ -1,0 +1,6 @@
+=== starting wheel bridge ===
+Traceback (most recent call last):
+  File "/Users/hilarioesparza/Desktop/Cornell/CUP/xrp-fall-ar-kart-2026/xrpfall2025/Scripts/wheel_bridge.py", line 29, in <module>
+    import usb.core
+ModuleNotFoundError: No module named 'usb'
+=== wheel bridge exited ===

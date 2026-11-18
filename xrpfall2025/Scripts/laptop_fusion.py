@@ -70,6 +70,7 @@ import math
 import json
 import socket
 import struct
+import statistics
 from contextlib import contextmanager
 
 import numpy as np
@@ -85,8 +86,9 @@ Single laptop-side fusion + routing node. Combines:
 
     1. RTSP video grab from the Pi (background thread)
     2. AprilTag detection + camera->world transform (background thread)
-    3. EKF predict + IMU correct from the XRP's sensors, with tag poses worked
-       in gradually (sensor thread)
+    3. Ackermann EKF from the XRP's sensors (sensor thread): each encoder
+       packet runs predict + encoder correction, each IMU packet predict + IMU
+       correction; tag poses are worked in gradually
     4. Forwards fused state to Godot (UDP 6000, JSON {x, y, angle})
     5. Streams raw RGB video frames to Godot (TCP 6001)
     6. Forwards Godot gamepad packets to the XRP (UDP 4003 -> XRP:4002)
@@ -94,11 +96,12 @@ Single laptop-side fusion + routing node. Combines:
        for the labels above each detected tag in AR mode
 
 Architecture:
-    XRP   --RAW2,seq,enc totals,heading-UDP:5005--> us
+    XRP   --ENC / IMU packets--UDP:5005---------> us  (see xrp_raw_sensors.py)
     Pi    --RTSP------------------------------> us
     us    --{x,y,angle} JSON--UDP:6000--------> Godot (kart pose)
     us    --raw RGB frames---TCP:6001---------> Godot (video backdrop)
     us    --ar_tags JSON-----UDP:6002---------> Godot (AR overlays)
+    us    --pose + covariance-UDP:6005--------> pose_overlay.py (optional)
     Godot --gamepad bytes----UDP:4003---------> us --UDP:4002--> XRP
 """
 
@@ -110,12 +113,8 @@ Architecture:
 # the RTSP port wins, so the same build works whether the Pi is running
 # its own hotspot or is on CornellCup-Web. An address passed on the
 # command line (Godot's PI_IP) is tried first.
-PI_CANDIDATES = [a for a in sys.argv[1:2] if a] + [
-    "cornellcup2.local",   # works on any network (mDNS name)
-    "10.42.0.1",           # Pi hotspot
-    "192.168.4.95",        # last known CornellCup-Web address
-    "192.168.0.138",       # last known AR-Kart address
-    "192.168.0.193",       # another AR-Kart address the Pi has had
+PI_CANDIDATES = [a for a in sys.argv[1:2] if a] or [
+    "192.168.0.138"       
 ]
 
 RTSP_PORT = 8554
@@ -126,6 +125,11 @@ GODOT_HOST = "127.0.0.1"
 GODOT_POSE_PORT = 6000
 GODOT_VIDEO_PORT = 6001
 GODOT_AR_TAGS_PORT = 6002    # AR overlay events
+# The estimate with its uncertainty, and the latest tag-only pose, as JSON, for
+# Scripts/pose_overlay.py (drawing the estimate over an overhead camera view).
+# Sent along with every pose to the game; nothing needs to be listening
+DEBUG_POSE_HOST = "127.0.0.1"
+DEBUG_POSE_PORT = 6005
 
 GAMEPAD_RELAY_PORT = 4003
 XRP_GAMEPAD_PORT = 4002
@@ -169,6 +173,13 @@ theta = np.pi/2
 enc_l = 0
 enc_r = 0
 heading = 0
+speed = 0.0
+# Raw IMU turning since fusion started, in radians (for measuring GYRO_SCALE),
+# and the distance the encoders say the kart has driven, in metres (average of
+# the two rear wheels; forward +). Turning at full lock, their ratio is the
+# turning radius the encoders imply, to compare with the measured one
+total_turned_raw = 0.0
+total_driven_m = 0.0
 
 # Per-tag display names for the AR overlay (IDs not in here show up as "TAG n").
 # Only the tags in TAG_WORLD are used for localization
@@ -205,6 +216,15 @@ trans_R_C = np.array([
 # robot frame from the camera frame, for where a seen tag is relative to the robot
 trans_C_R = np.linalg.inv(trans_R_C)
 
+def gate_beta(x1, y1, x2, y2):
+    """A tag's facing angle from its gate's two ends: (cos b, -sin b) is the
+    direction from end 1 to end 2 (the tag frame's x axis on the floor), so the
+    tag is seen square-on by a kart heading 90° - b. (This replaced an
+    if/elif/else that came out 90° off when end 2 is both right of and above
+    end 1; tags 0-3 and 5 give the same angles either way.)"""
+    return np.arctan2(y1 - y2, x2 - x1)
+
+
 h3_tag3, l3_tag3 = 0, 0.0099568
 trans_H_A_tag3 = np.array([
     [1, 0, 0,   0  ], [0, 1, 0, -h3_tag3 ], [0, 0, 1, -l3_tag3 ], [0, 0, 0, 1],
@@ -238,13 +258,7 @@ trans_g_H_tag0 = np.array([
 x1_tag3, y1_tag3, x2_tag3, y2_tag3 = -1, 0.41275, 1, 0.41275
 x3_tag3, y3_tag3 = (x1_tag3+x2_tag3)/2, (y1_tag3+y2_tag3)/2
 h4_tag3 = 0.352425
-if x1_tag3 == x2_tag3:
-    beta_tag3 = np.radians(90) if y1_tag3 > y2_tag3 else np.radians(270)
-else:
-    beta_tag3 = np.arctan((y1_tag3-y2_tag3)/(x2_tag3-x1_tag3))
-    if x1_tag3 <= x2_tag3 and y1_tag3 >= y2_tag3: beta_tag3 = beta_tag3
-    elif x1_tag3 > x2_tag3:             beta_tag3 = beta_tag3 + np.radians(180)
-    else:                     beta_tag3 = beta_tag3 + np.radians(270)
+beta_tag3 = gate_beta(x1_tag3, y1_tag3, x2_tag3, y2_tag3)
 c_beta_tag3, s_beta_tag3 = np.cos(beta_tag3), np.sin(beta_tag3)
 trans_G_g_tag3 = np.array([
     [ c_beta_tag3, 0,  s_beta_tag3, x3_tag3],
@@ -258,13 +272,7 @@ print(f"[Transforms] beta_tag3 = {math.degrees(beta_tag3):.1f}")
 x1_tag0, y1_tag0, x2_tag0, y2_tag0 = 1.4144, -0.4572, 0.5856, -0.4572
 x3_tag0, y3_tag0 = (x1_tag0+x2_tag0)/2, (y1_tag0+y2_tag0)/2
 h4_tag0 = 0.352425
-if x1_tag0 == x2_tag0:
-    beta_tag0 = np.radians(90) if y1_tag0 > y2_tag0 else np.radians(270)
-else:
-    beta_tag0 = np.arctan((y1_tag0-y2_tag0)/(x2_tag0-x1_tag0))
-    if x1_tag0 <= x2_tag0 and y1_tag0 >= y2_tag0: beta_tag0 = beta_tag0
-    elif x1_tag0 > x2_tag0:             beta_tag0 = beta_tag0 + np.radians(180)
-    else:                     beta_tag0 = beta_tag0 + np.radians(270)
+beta_tag0 = gate_beta(x1_tag0, y1_tag0, x2_tag0, y2_tag0)
 c_beta_tag0, s_beta_tag0 = np.cos(beta_tag0), np.sin(beta_tag0)
 trans_G_g_tag0 = np.array([
     [ c_beta_tag0, 0,  s_beta_tag0, x3_tag0],
@@ -295,13 +303,7 @@ trans_g_H_tag2 = np.array([
 x1_tag2, y1_tag2, x2_tag2, y2_tag2 = 0.69758178, -1.78660678, -0.71663178, -0.37239322
 x3_tag2, y3_tag2 = (x1_tag2+x2_tag2)/2, (y1_tag2+y2_tag2)/2
 h4_tag2 = 0.11324
-if x1_tag2 == x2_tag2:
-    beta_tag2 = np.radians(90) if y1_tag2 > y2_tag2 else np.radians(270)
-else:
-    beta_tag2 = np.arctan((y1_tag2-y2_tag2)/(x2_tag2-x1_tag2))
-    if x1_tag2 <= x2_tag2 and y1_tag2 >= y2_tag2: beta_tag2 = beta_tag2
-    elif x1_tag2 > x2_tag2:             beta_tag2 = beta_tag2 + np.radians(180)
-    else:                     beta_tag2 = beta_tag2 + np.radians(270)
+beta_tag2 = gate_beta(x1_tag2, y1_tag2, x2_tag2, y2_tag2)
 c_beta_tag2, s_beta_tag2 = np.cos(beta_tag2), np.sin(beta_tag2)
 trans_G_g_tag2 = np.array([
     [ c_beta_tag2, 0,  s_beta_tag2, x3_tag2],
@@ -332,13 +334,7 @@ trans_g_H_tag1 = np.array([
 x1_tag1, y1_tag1, x2_tag1, y2_tag1 = 0.2708, 1.8247, 1.685, 0.4105
 x3_tag1, y3_tag1 = (x1_tag1+x2_tag1)/2, (y1_tag1+y2_tag1)/2
 h4_tag1 = 0.1169
-if x1_tag1 == x2_tag1:
-    beta_tag1 = np.radians(90) if y1_tag1 > y2_tag1 else np.radians(270)
-else:
-    beta_tag1 = np.arctan((y1_tag1-y2_tag1)/(x2_tag1-x1_tag1))
-    if x1_tag1 <= x2_tag1 and y1_tag1 >= y2_tag1: beta_tag1 = beta_tag1
-    elif x1_tag1 > x2_tag1:             beta_tag1 = beta_tag1 + np.radians(180)
-    else:                     beta_tag1 = beta_tag1 + np.radians(270)
+beta_tag1 = gate_beta(x1_tag1, y1_tag1, x2_tag1, y2_tag1)
 c_beta_tag1, s_beta_tag1 = np.cos(beta_tag1), np.sin(beta_tag1)
 trans_G_g_tag1 = np.array([
     [ c_beta_tag1, 0,  s_beta_tag1, x3_tag1],
@@ -349,12 +345,80 @@ trans_G_g_tag1 = np.array([
 trans_G_A_tag1= trans_G_g_tag1 @ trans_g_H_tag1 @ trans_H_A_tag1
 print(f"[Transforms] beta_tag1 = {math.degrees(beta_tag1):.1f}")
 
+
+
+
+h3_tag5, l3_tag5 = 0, 0
+trans_H_A_tag5 = np.array([
+    [1, 0, 0,   0  ], [0, 1, 0, -h3_tag5 ], [0, 0, 1, -l3_tag5 ], [0, 0, 0, 1],
+])
+
+alpha_tag5 = np.radians(0)
+c_alpha_tag5, s_alpha_tag5 = np.cos(alpha_tag5), np.sin(alpha_tag5)
+l4_tag5 = 0.0
+trans_g_H_tag5 = np.array([
+    [1, 0,        0,         0 ],
+    [0, c_alpha_tag5, -s_alpha_tag5,    0 ],
+    [0, s_alpha_tag5,  c_alpha_tag5,  -l4_tag5],
+    [0, 0,        0,          1],
+])
+
+x1_tag5, y1_tag5, x2_tag5, y2_tag5 = 0.8763, -1.1684, 0.5588, -1.2573
+x3_tag5, y3_tag5 = (x1_tag5+x2_tag5)/2, (y1_tag5+y2_tag5)/2
+h4_tag5 = 0.10973
+beta_tag5 = gate_beta(x1_tag5, y1_tag5, x2_tag5, y2_tag5)
+c_beta_tag5, s_beta_tag5 = np.cos(beta_tag5), np.sin(beta_tag5)
+trans_G_g_tag5 = np.array([
+    [ c_beta_tag5, 0,  s_beta_tag5, x3_tag5],
+    [-s_beta_tag5, 0,  c_beta_tag5, y3_tag5],
+    [ 0,     -1,  0,      h4_tag5],
+    [ 0,      0,  0,       1],
+])
+trans_G_A_tag5 = trans_G_g_tag5 @ trans_g_H_tag5 @ trans_H_A_tag5
+print(f"[Transforms] beta_tag5 = {math.degrees(beta_tag5):.1f}")
+
+
+
+
+h3_tag4, l3_tag4 = 0, 0
+trans_H_A_tag4 = np.array([
+    [1, 0, 0,   0  ], [0, 1, 0, -h3_tag4 ], [0, 0, 1, -l3_tag4 ], [0, 0, 0, 1],
+])
+
+alpha_tag4 = np.radians(0)
+c_alpha_tag4, s_alpha_tag4 = np.cos(alpha_tag4), np.sin(alpha_tag4)
+l4_tag4 = 0.0
+trans_g_H_tag4 = np.array([
+    [1, 0,        0,         0 ],
+    [0, c_alpha_tag4, -s_alpha_tag4,    0 ],
+    [0, s_alpha_tag4,  c_alpha_tag4,  -l4_tag4],
+    [0, 0,        0,          1],
+])
+
+x1_tag4, y1_tag4, x2_tag4, y2_tag4 = 0.15875, 1.13665, 0.43815, 1.22555
+x3_tag4, y3_tag4 = (x1_tag4+x2_tag4)/2, (y1_tag4+y2_tag4)/2
+h4_tag4 = 0.10951
+beta_tag4 = gate_beta(x1_tag4, y1_tag4, x2_tag4, y2_tag4)
+c_beta_tag4, s_beta_tag4 = np.cos(beta_tag4), np.sin(beta_tag4)
+trans_G_g_tag4 = np.array([
+    [ c_beta_tag4, 0,  s_beta_tag4, x3_tag4],
+    [-s_beta_tag4, 0,  c_beta_tag4, y3_tag4],
+    [ 0,     -1,  0,      h4_tag4],
+    [ 0,      0,  0,       1],
+])
+trans_G_A_tag4 = trans_G_g_tag4 @ trans_g_H_tag4 @ trans_H_A_tag4
+print(f"[Transforms] beta_tag4 = {math.degrees(beta_tag4):.1f}")
+
+
+
 # Each tag's place on the track (tag frame -> world), by tag ID
 TAG_WORLD = {
     0: trans_G_A_tag0,
     1: trans_G_A_tag1,
     2: trans_G_A_tag2,
     3: trans_G_A_tag3,
+    4: trans_G_A_tag4,
+    5: trans_G_A_tag5,
 }
 
 
@@ -362,34 +426,157 @@ TAG_WORLD = {
 # EKF
 # ============================================================
 WHEEL_RADIUS = 0.04176   # meters (wheel diameter / 2)
-CAR_WIDTH  = 0.11784   # meters between the two driven wheels
-r_xy = 0.4
-r_th = 5e-2
-q_th = math.radians(1.0) ** 2
+CAR_WIDTH  = 0.11928   # meters between the two driven wheels (measured)
+# Distance between the front and rear axles, in metres (the EKF's L, measured)
+WHEELBASE = 0.13643
+# Which point on the kart the filter tracks: the middle of the rear axle, the only
+# point that moves straight along the heading (the motion model and encoders are
+# exact for it). The tag transforms (trans_R_C) locate a different point, this far
+# ahead of the rear axle, so each tag reading is moved back to the rear axle first.
+# Without that, the gap swung round in every turn: the estimate ended a turn up to
+# 2x this outside / towards the end of the track, then jumped at the next tag
+TAG_POINT_AHEAD_OF_REAR_AXLE_M = 0.03513
+# The point sent to the game and to pose_overlay.py, this far ahead of the rear
+# axle. Default: the same point the tags locate (what was sent before). For the
+# middle of the kart between the axles, use WHEELBASE / 2
+OUTPUT_POINT_AHEAD_OF_REAR_AXLE_M = TAG_POINT_AHEAD_OF_REAR_AXLE_M
+# Steering ratio, from the turning circle measured at full lock (servo
+# FULL_LOCK_SERVO_DEG from 90°, STEER_RANGE_DEG in xrp_raw_sensors.py): the
+# diameter of the circle the middle of the rear axle drove. The front wheels'
+# effective angle at full lock is atan(WHEELBASE / radius), and the ratio is
+# that over the servo's angle (0.5461 m -> 26.6° of wheel for 60° of servo)
+FULL_LOCK_TURN_DIAMETER_M = 0.5461
+FULL_LOCK_SERVO_DEG = 60.0
+STEER_RATIO = math.degrees(math.atan(WHEELBASE / (FULL_LOCK_TURN_DIAMETER_M / 2))) / FULL_LOCK_SERVO_DEG
+# Which way the kart turns when the servo is below 90°: +1 = clockwise (right),
+# -1 = counter-clockwise (left). Steering right sets the servo below 90° (see
+# xrp_raw_sensors.py) and turns the kart right, so +1. If the fused heading
+# turns the opposite way to the real kart, flip it
+STEER_SIGN = 1.0
+# Throttle 1.0 = this many wheel RPM (MAX_DRIVE_RPM in xrp_raw_sensors.py; must match)
+XRP_MAX_RPM = 150
+XRP_MAX_SPEED = XRP_MAX_RPM / 60.0 * 2 * math.pi * WHEEL_RADIUS   # m/s
+# How quickly the speed follows the throttle, 1/s (10 = ~0.1 s, like the XRP's ramp)
+SPEED_RESPONSE = 10.0
+# EKF noise. Process noise is variance per second; measurement noise is variance.
+# The position and heading process noise are per second at full speed
+# (XRP_MAX_SPEED), scaled down with speed and zero when stopped (see
+# ackermann_simple_ekf). When the top speed went from 80 to 150 RPM, these were
+# scaled by 150/80 from the tuned 0.004, so the noise per metre driven stays the same
+#
+# Tuned to track like the old EKF (ackermann_simple_ekf_old), which worked best
+# on the track. That one, in effect, drove on the encoders' distance and the
+# IMU's heading and let each tag move it only 2.5% of the way. These values do
+# the same, but with a covariance (and so an ellipse and NIS) that means something:
+#   - encoders and IMU trusted strongly (the speed follows the encoders, not the
+#     throttle model; the heading follows the IMU)
+#   - each tag trusted at what a tag reading is really worth on the kart: ~4 cm
+#     and ~6 deg (CAMERA_POS_VAR / CAMERA_HEADING_VAR), not 1 cm and 3 deg. At
+#     1 cm the filter jumped to every tag, including their errors, and the camera
+#     NIS ran far above 3
+# Previous values: MODEL_POS_VAR 0.0075, ENCODER_SPEED_VAR 0.02, IMU_HEADING_VAR
+# 6.5e-5, camera 1e-4 / 3e-3 (the old defaults in ackermann_simple_ekf)
+MODEL_POS_VAR = 1e-3            # m^2/s at full speed
+MODEL_HEADING_VAR = 0.0075      # rad^2/s at full speed
+MODEL_SPEED_VAR = 0.25          # (m/s)^2/s
+ENCODER_SPEED_VAR = 1e-4        # (m/s)^2   (~1 cm/s)
+ENCODER_YAW_RATE_VAR = 3.0      # (rad/s)^2
+IMU_HEADING_VAR = 1e-6          # rad^2     (~0.06 deg)
+# Tag pose noise at TAG_NOISE_REF_M or nearer (scaled up farther away). If the
+# camera NIS in pose_overlay.py's table still averages well above 3, raise
+# these; if far below, lower them
+CAMERA_POS_VAR = 0.04 ** 2      # m^2       (4 cm)
+CAMERA_HEADING_VAR = math.radians(6) ** 2   # rad^2   (6 deg)
+# Also correct from the difference between the two rear wheels' speeds? The XRP
+# drives both rear motors at the same commanded speed, so they barely differ even
+# in a turn, which would read as "not turning" and pull the speed down in every
+# turn. Turn it on only if the rear wheels can turn at different speeds
+ENCODER_YAW_RATE = False
+# The XRP's ticks_ms() wraps around at this
+XRP_TICKS_PERIOD_MS = 1 << 30
+
+
+def new_ekf():
+    return ackermann_simple_ekf(
+        wheel_radius=WHEEL_RADIUS,
+        distance_between_wheels=CAR_WIDTH,
+        L=WHEELBASE,
+        model_position_uncertainty=MODEL_POS_VAR,
+        model_heading_uncertainty=MODEL_HEADING_VAR,
+        model_velocity_uncertainty=MODEL_SPEED_VAR,
+        sensor_uncertainty=IMU_HEADING_VAR,
+        encoder_speed_uncertainty=ENCODER_SPEED_VAR,
+        encoder_yaw_rate_uncertainty=ENCODER_YAW_RATE_VAR,
+        use_encoder_yaw_rate=ENCODER_YAW_RATE,
+        camera_position_uncertainty=CAMERA_POS_VAR,
+        camera_heading_uncertainty=CAMERA_HEADING_VAR,
+        initial_x=0.0, initial_y=0.0, initial_theta=np.pi/2, initial_v=0.0,
+        initial_pwm=0.0, initial_servo_angle=np.pi/2,   # servo at 90° = straight
+        beta=SPEED_RESPONSE, alpha=SPEED_RESPONSE * XRP_MAX_SPEED,
+        steer_sign=STEER_SIGN,
+        steer_ratio=STEER_RATIO,
+    )
 
 ekf = None
 ekf_lock = threading.Lock()
 
-# Each new tag pose is compared with where the filter thought the kart was when
-# that camera frame was taken (not now, since the kart has moved on since). The
-# difference is then worked in a little on every sensor packet (~85/s), so the
-# estimate glides to the tag's instead of jumping. 0.055 per packet closes most
-# of a gap in ~0.5 s. Larger = follows the tags faster but jumpier
-TAG_GAIN = 0.055
+# Each new tag pose goes into the EKF's camera_correction(). The tag shows where
+# the kart was when the camera frame was taken, not now, so the filter's own
+# movement since then is added to it first (see CAMERA_LATENCY_S)
 # How long after a frame is taken it reaches this script (Pi encode + network +
 # decode). Matching tag poses to the filter's past at the wrong time makes the
 # estimate lag or lead while driving
-CAMERA_LATENCY_S = 0.15
+CAMERA_LATENCY_S = 0.27
 # How much of the filter's recent past is kept for that comparison
 POSE_HISTORY_S = 1.0
-# A small or far tag's angle can flip between two answers ~12° apart. Tag headings
-# further than this from the gyro's are ignored, unless the tags have kept
-# disagreeing (and agreeing with each other) for TAG_HEADING_RESYNC_S: then the
-# gyro is the one that's off, so the tags are trusted
+# A small or far tag's angle can flip between two answers ~12° apart. A tag
+# heading further than this from the estimate's is ignored as probably flipped...
 TAG_HEADING_GATE_DEG = 6.0
-TAG_HEADING_RESYNC_S = 1.0
+# ...unless the tag readings of the last TAG_HEADING_WINDOW_S agree with each
+# other: at least TAG_HEADING_MIN_READINGS of them, spread by no more than
+# TAG_HEADING_MAX_SPREAD_DEG (median distance from their median). Then the
+# estimate's heading is the one that's off (the gyro under-counting turns built
+# up 10-17° over a few laps) and their median is used as the heading correction
+TAG_HEADING_WINDOW_S = 2.0
+TAG_HEADING_MIN_READINGS = 8
+TAG_HEADING_MAX_SPREAD_DEG = 4.0
+# The IMU's heading is trusted far more than a tag's (IMU_HEADING_VAR vs the
+# camera's CAMERA_HEADING_VAR), so camera_correction() barely moves the heading, and
+# the next IMU packet undoes even that. But the IMU's error is an offset that
+# grows (gyro drift and under-counted turns), so each tag heading also moves the
+# IMU's offset this fraction of the remaining difference (0.05 per reading: ~80%
+# over a 1 s tag pass of ~30 readings)
+TAG_HEADING_GAIN = 0.05
+# ...but a consistent difference bigger than this isn't gyro drift (that builds
+# up a few degrees per lap): it's more likely a tag whose facing in TAG_WORLD is
+# wrong, which would drag the heading round with it. Those are ignored, and
+# fusion prints a warning naming the tag
+TAG_HEADING_MAX_CONSISTENT_DEG = 25.0
+# A tag pose whose NIS would be above this is ignored: the filter is sure enough
+# of where the kart is that a reading this far off is more likely a bad tag
+# reading than a real correction. 16.27 = chi-square 99.9% for 3 values, so a
+# correct reading is rejected 1 time in 1000. But if every tag for
+# CAMERA_RESYNC_S has been rejected, the filter is probably the one that's off,
+# so the tags are trusted again
+CAMERA_NIS_GATE = 16.27
+CAMERA_RESYNC_S = 1.0
+# Tags farther than this from the kart are ignored: their position readings were
+# several cm off at 1.2 m and ~15 cm at 1.8 m, while within 1 m they agreed with
+# the estimate to ~1 cm
+MAX_TAG_DISTANCE_M = 1.0
+# Closer than that, the farther a tag the less it's trusted: the camera noise
+# (Qc in ackermann_simple_ekf) is multiplied by (distance / TAG_NOISE_REF_M)^2,
+# since a camera's position error grows roughly with distance squared. Tags
+# nearer than TAG_NOISE_REF_M use Qc as it is (at 1 m: about 2x the noise)
+TAG_NOISE_REF_M = 0.7
 # Added to the XRP's IMU heading; tags adjust it gradually to correct gyro drift
 imu_heading_offset = 0.0
+# The XRP's IMU heading changes are multiplied by this. If its gyro under-counts
+# turns (the estimate turns less than the kart and drifts to the outside of the
+# turns between tags), measure it: drive N full circles the same way, ending
+# facing exactly as at the start, and read "turned" in the [Sensor] line: then
+# GYRO_SCALE = N*360 / |turned|. E.g. 3 circles that read -1062° -> 1080/1062 = 1.017
+GYRO_SCALE = 1.0
 # The XRP's gyro heading creeps even while it stands still (~9°/s in one run),
 # which turned the game kart, and the AR track outline with it, in place. Once
 # the wheels haven't turned for STILL_AFTER_S, any heading change is drift, so
@@ -428,8 +615,24 @@ latest_frame_lock = threading.Lock()
 latest_robot_pose_world = None
 latest_robot_pose_lock = threading.Lock()
 
-latest_fused = None  # {"x": ..., "y": ..., "theta": ...}
+latest_fused = None  # {"x", "y", "theta", "v", "cov"} (cov: 3x3 of x, y, theta)
 latest_fused_lock = threading.Lock()
+# NIS of each correction since the last debug packet, by sensor: kind -> [dof, [values]]
+# (guarded by latest_fused_lock)
+nis_pending = {}
+
+
+def record_nis(kind, nis=None, dof=None):
+    """Keeps the NIS of the EKF correction just made (or the given one), for
+    pose_overlay.py."""
+    if nis is None:
+        nis, dof = ekf.get_last_nis()
+    if nis is None:
+        return
+    with latest_fused_lock:
+        entry = nis_pending.setdefault(kind, [dof, []])
+        entry[0] = dof
+        entry[1].append(round(nis, 4))
 
 # The newest tag pose, from the detector thread, as last read by the sensor thread
 pose_w = None
@@ -651,35 +854,47 @@ def ar_tags_thread():
 # ============================================================
 def sensor_ekf_thread():
     global ekf, latest_fused, imu_heading_offset
-    global x, y, theta, enc_l, enc_r, heading, xrp_ip, xrp_last_seen, pose_w
+    global x, y, theta, speed, enc_l, enc_r, heading, xrp_ip, xrp_last_seen, pose_w, total_turned_raw, total_driven_m
     print("[DEBUG] Entered sensor_ekf_thread()", flush=True)
 
     sensor_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sensor_sock.bind(("0.0.0.0", SENSOR_PORT))
     sensor_sock.settimeout(0.5)
-    print(f"[Sensor] Listening for XRP raw sensors on UDP {SENSOR_PORT}")
+    print(f"[Sensor] Listening for XRP encoder and IMU packets on UDP {SENSOR_PORT}")
 
-    pkt_count = 0
+    enc_count = imu_count = 0
     last_print = time.time()
     last_ignored_print = 0.0
-    # Last RAW2 packet number and encoder totals, for working out each packet's change
-    last_seq = None
+    warned_old_xrp = False
+    # Each stream's last packet number and when it arrived; for the encoders also
+    # the last totals and the XRP's clock, for working out each packet's change
+    last_enc_seq = None
+    last_enc_seq_time = 0.0
     last_total_l = last_total_r = 0.0
-    last_seq_time = 0.0
-    lost_packets = 0
+    last_enc_ms = 0
+    last_imu_seq = None
+    last_imu_seq_time = 0.0
+    lost_enc = lost_imu = 0
     # [time, x, y, theta] after each packet, for matching tag poses to the past
     pose_history = []
     last_tag_time = 0.0
-    # the part of the last tag's difference (x, y, theta) not worked in yet
-    tag_residual = [0.0, 0.0, 0.0]
-    # Tag headings that disagree with the gyro (see TAG_HEADING_RESYNC_S): since
-    # when they have, the last one, and when it was seen
-    tag_disagree_since = None
-    tag_disagree_heading = 0.0
-    tag_disagree_last = 0.0
+    # Recent tag heading differences, (time, tag heading - estimate's), for
+    # TAG_HEADING_WINDOW_S
+    recent_heading_diffs = []
+    # GYRO_SCALE: the last raw IMU heading, and the scaled heading built from it
+    last_scale_src = None
+    scaled_heading = 0.0
+    # Tags rejected by CAMERA_NIS_GATE since when (None = the last one was used)
+    cam_rejected_since = None
+    # When the last "check this tag's facing" warning was printed
+    last_facing_warning = 0.0
+    # Per-tag summary for the status line: tag id -> running sums (see the print)
+    tag_stats = {}
     # Gyro drift (see STILL_AFTER_S): when the wheels last turned, and the last IMU heading
     moved_time = time.time()
     last_raw_heading = None
+    # imu_heading_offset is set from the first IMU packet after the filter starts
+    heading_offset_set = False
 
     while running:
         try:
@@ -692,16 +907,24 @@ def sensor_ekf_thread():
         except UnicodeDecodeError:
             continue
 
-        # RAW2,seq,total_l,total_r,heading: encoder running totals (current XRP code)
-        # RAW,dl,dr,heading: encoder changes since the last packet (older XRP code)
+        # ENC,seq,t_ms,total_l,total_r,throttle,servo_deg   encoder running totals + the inputs
+        # IMU,seq,t_ms,heading                              IMU heading
         parts = text.split(",")
+        kind = parts[0]
         try:
-            if len(parts) == 5 and parts[0] == "RAW2":
-                seq = int(parts[1])
-                total_l = float(parts[2]); total_r = float(parts[3]); new_heading = float(parts[4])
-            elif len(parts) == 4 and parts[0] == "RAW":
-                seq = None
-                new_enc_l = float(parts[1]); new_enc_r = float(parts[2]); new_heading = float(parts[3])
+            if kind == "ENC" and len(parts) == 7:
+                seq = int(parts[1]); t_ms = int(parts[2])
+                total_l = float(parts[3]); total_r = float(parts[4])
+                throttle = float(parts[5]); servo_deg = float(parts[6])
+            elif kind == "IMU" and len(parts) == 4:
+                seq = int(parts[1]); t_ms = int(parts[2])
+                new_heading = float(parts[3])
+            elif kind in ("RAW", "RAW2"):
+                if not warned_old_xrp:
+                    print(f"[Sensor] {addr[0]} is sending the old combined {kind} packets; "
+                          "upload the new xrp_raw_sensors.py to it (ENC / IMU packets)")
+                    warned_old_xrp = True
+                continue
             else:
                 continue
         except ValueError:
@@ -722,63 +945,89 @@ def sensor_ekf_thread():
                     with ekf_lock:
                         ekf = None
                 xrp_ip = addr[0]
-                last_seq = None
+                last_enc_seq = last_imu_seq = None
                 print(f"[XRP] locked onto {xrp_ip}")
             xrp_last_seen = now
 
-        if seq is not None:
-            if last_seq is None:
+        if ekf is None:
+            with ekf_lock:
+                if ekf is None:
+                    ekf = new_ekf()
+                    heading_offset_set = False
+                    last_raw_heading = None
+                    pose_history = []
+                    print(f"[EKF] Initialized for {addr[0]}")
+
+        if kind == "ENC":
+            # ---- Encoder packet: how far each wheel turned, and over how long ----
+            if last_enc_seq is not None and seq <= last_enc_seq and now - last_enc_seq_time < 1.0:
+                continue   # arrived late or twice; its totals are already counted
+            if last_enc_seq is None or seq <= last_enc_seq:
+                # first packet, or the count started over after a gap: the XRP
+                # restarted (which takes several seconds), and its encoders did too.
+                # Just take this one as the starting point
                 new_enc_l = new_enc_r = 0.0
-            elif seq <= last_seq:
-                if now - last_seq_time < 1.0:
-                    continue   # arrived late or twice; its totals are already counted
-                # the count started over after a gap: the XRP restarted (which takes
-                # several seconds), and its encoders started over too
-                new_enc_l = new_enc_r = 0.0
+                enc_dt = 0.0
             else:
                 # (after a gap without a restart, e.g. briefly out of Wi-Fi range,
                 # the totals still include what was driven meanwhile)
                 new_enc_l = total_l - last_total_l
                 new_enc_r = total_r - last_total_r
-                lost_packets += seq - last_seq - 1
-            last_seq, last_total_l, last_total_r = seq, total_l, total_r
-            last_seq_time = now
-        enc_l, enc_r, heading = new_enc_l, new_enc_r, new_heading
-
-        # ---- Gyro drift ----
-        if last_raw_heading is not None:
+                enc_dt = ((t_ms - last_enc_ms) % XRP_TICKS_PERIOD_MS) / 1000.0
+                lost_enc += seq - last_enc_seq - 1
+            last_enc_seq, last_total_l, last_total_r, last_enc_ms = seq, total_l, total_r, t_ms
+            last_enc_seq_time = now
+            enc_l, enc_r = new_enc_l, new_enc_r
+            total_driven_m += (enc_l + enc_r) / 2 * 2 * math.pi * WHEEL_RADIUS
             if enc_l != 0.0 or enc_r != 0.0:
                 moved_time = now
-            if now - moved_time >= STILL_AFTER_S:
+            enc_count += 1
+        else:
+            # ---- IMU packet ----
+            if last_imu_seq is not None and seq <= last_imu_seq and now - last_imu_seq_time < 1.0:
+                continue   # arrived late or twice
+            if last_imu_seq is not None and seq > last_imu_seq:
+                lost_imu += seq - last_imu_seq - 1
+            last_imu_seq = seq
+            last_imu_seq_time = now
+            # IMU heading with its turns scaled by GYRO_SCALE; the raw turning is
+            # also added up for measuring GYRO_SCALE
+            if last_scale_src is None:
+                scaled_heading = new_heading
+            else:
+                d_raw = (new_heading - last_scale_src + math.pi) % (2 * math.pi) - math.pi
+                scaled_heading = (scaled_heading + GYRO_SCALE * d_raw + math.pi) % (2 * math.pi) - math.pi
+                total_turned_raw += d_raw
+            last_scale_src = new_heading
+            heading = scaled_heading
+
+            # ---- Gyro drift ----
+            if last_raw_heading is not None and now - moved_time >= STILL_AFTER_S:
                 # standing still: hold the heading
                 d_heading = (heading - last_raw_heading + math.pi) % (2 * math.pi) - math.pi
                 imu_heading_offset = (imu_heading_offset - d_heading + math.pi) % (2 * math.pi) - math.pi
-        last_raw_heading = heading
+            last_raw_heading = heading
 
-        if ekf is None:
-            with ekf_lock:
-                if ekf is None:
-                    ekf = ackermann_simple_ekf(
-                        wheel_radius=WHEEL_RADIUS,
-                        distance_between_wheels=CAR_WIDTH,
-                        initial_position_uncertainty=r_xy,
-                        initial_heading_uncertainty=r_th,
-                        sensor_uncertainty=q_th,
-                        initial_left_encoder_value=enc_l,
-                        initial_right_encoder_value=enc_r,
-                        initial_x=0.0, initial_y=0.0, initial_theta=np.pi/2,
-                    )
-                    # start facing 90° like the position starts at 0,0, even if the
-                    # XRP's heading drifted before fusion started
-                    imu_heading_offset = ekf.wrap_pi(np.pi/2 - heading)
-                    pose_history = []
-                    tag_residual = [0.0, 0.0, 0.0]
-                    print(f"[EKF] Initialized at heading={heading:.3f} rad from {addr[0]}")
-            continue
+            if not heading_offset_set:
+                # start facing 90° like the position starts at 0,0, even if the
+                # XRP's heading drifted before fusion started
+                imu_heading_offset = ekf.wrap_pi(np.pi/2 - heading)
+                heading_offset_set = True
+                print(f"[EKF] Heading set from IMU heading={heading:.3f} rad")
+            imu_count += 1
 
         with ekf_lock:
-            x, y, theta = ekf.predict(enc_l, enc_r)
-            x, y, theta = ekf.correct(ekf.wrap_pi(heading + imu_heading_offset))
+            # Model forward to now, then the correction for whichever sensor this is
+            x, y, theta, speed = ekf.predict()
+            if kind == "ENC":
+                if enc_dt > 0:
+                    x, y, theta, speed = ekf.encoder_correction(enc_l, enc_r, enc_dt)
+                    record_nis("encoder")
+                # the throttle and steering the XRP is applying from now on
+                ekf.set_input(throttle, math.radians(servo_deg))
+            else:
+                x, y, theta, speed = ekf.imu_correction(ekf.wrap_pi(heading + imu_heading_offset))
+                record_nis("IMU")
 
             with latest_robot_pose_lock:
                 pose_w = latest_robot_pose_world
@@ -792,53 +1041,119 @@ def sensor_ekf_thread():
             while pose_history and now - pose_history[0][0] > POSE_HISTORY_S:
                 pose_history.pop(0)
 
-            # A new tag pose: how far off the estimate was when its frame was taken
+            # A new tag pose: the EKF's camera correction
             if tag_is_fresh and APPLY_CAMERA_CORRECTION and pose_w["time"] != last_tag_time:
                 last_tag_time = pose_w["time"]
-                taken = pose_w["time"] - CAMERA_LATENCY_S
-                then = min(pose_history, key=lambda h: abs(h[0] - taken))
-                # Position from where the tag was relative to the robot, turned by the
-                # estimate's heading, so it doesn't move when the tag's angle flips
-                c, s = math.cos(then[3]), math.sin(then[3])
-                tag_pos_x = pose_w["tag_x"] - (c * pose_w["rel_x"] - s * pose_w["rel_y"])
-                tag_pos_y = pose_w["tag_y"] - (s * pose_w["rel_x"] + c * pose_w["rel_y"])
-                heading_diff = ekf.wrap_pi(pose_w["theta"] - then[3])
-                gate = math.radians(TAG_HEADING_GATE_DEG)
-                if abs(heading_diff) <= gate:
-                    tag_disagree_since = None
+                tag_dist = math.hypot(pose_w["rel_x"], pose_w["rel_y"])
+                st = tag_stats.setdefault(int(pose_w["tag_id"]), {
+                    "n": 0, "used_n": 0, "along": 0.0, "across": 0.0, "heading": 0.0, "dist": 0.0,
+                    "nis": 0.0, "rejected": 0, "heading_ignored": 0, "heading_consistent": 0, "too_far": 0})
+                st["n"] += 1
+                st["dist"] += tag_dist
+                if tag_dist > MAX_TAG_DISTANCE_M:
+                    # too far to trust: skipped entirely (no correction, and it doesn't
+                    # count towards the heading or rejection checks)
+                    st["too_far"] += 1
                 else:
-                    # Only a run of tags that keep disagreeing, and agree with each
-                    # other, for TAG_HEADING_RESYNC_S is trusted over the gyro. A gap
-                    # without tags starts the run over, so a single flipped reading
-                    # after a gap isn't taken as the truth
-                    if (tag_disagree_since is None
-                            or now - tag_disagree_last > TAG_HEADING_RESYNC_S
-                            or abs(ekf.wrap_pi(pose_w["theta"] - tag_disagree_heading)) > gate):
-                        tag_disagree_since = now
-                    tag_disagree_heading = pose_w["theta"]
-                    tag_disagree_last = now
-                    if now - tag_disagree_since < TAG_HEADING_RESYNC_S:
-                        heading_diff = 0.0   # probably the flipped answer
-                tag_residual = [tag_pos_x - then[1], tag_pos_y - then[2], heading_diff]
+                    # farther = trusted less
+                    noise_scale = max(1.0, (tag_dist / TAG_NOISE_REF_M) ** 2)
+                    taken = pose_w["time"] - CAMERA_LATENCY_S
+                    then = min(pose_history, key=lambda h: abs(h[0] - taken))
+                    # Position from where the tag was relative to the robot, turned by the
+                    # estimate's heading, so it doesn't move when the tag's angle flips
+                    c, s = math.cos(then[3]), math.sin(then[3])
+                    tag_pos_x = pose_w["tag_x"] - (c * pose_w["rel_x"] - s * pose_w["rel_y"])
+                    tag_pos_y = pose_w["tag_y"] - (s * pose_w["rel_x"] + c * pose_w["rel_y"])
+                    # that's the tags' point on the kart; the filter tracks the rear axle
+                    tag_pos_x -= TAG_POINT_AHEAD_OF_REAR_AXLE_M * c
+                    tag_pos_y -= TAG_POINT_AHEAD_OF_REAR_AXLE_M * s
+                    tag_theta = pose_w["theta"]
+                    heading_diff = ekf.wrap_pi(tag_theta - then[3])
+                    raw_heading_diff = heading_diff
+                    heading_ignored = heading_consistent = False
+                    recent_heading_diffs.append([now, raw_heading_diff])
+                    while recent_heading_diffs and now - recent_heading_diffs[0][0] > TAG_HEADING_WINDOW_S:
+                        recent_heading_diffs.pop(0)
+                    gate = math.radians(TAG_HEADING_GATE_DEG)
+                    if abs(heading_diff) > gate:
+                        diffs = [d for _, d in recent_heading_diffs]
+                        med = statistics.median(diffs)
+                        spread = statistics.median([abs(d - med) for d in diffs])
+                        consistent = (len(diffs) >= TAG_HEADING_MIN_READINGS and abs(med) > gate
+                                      and spread <= math.radians(TAG_HEADING_MAX_SPREAD_DEG))
+                        if consistent and abs(med) > math.radians(TAG_HEADING_MAX_CONSISTENT_DEG):
+                            # too big to be drift: probably this tag's facing in TAG_WORLD
+                            heading_diff = 0.0
+                            heading_ignored = True
+                            if now - last_facing_warning > 5.0:
+                                last_facing_warning = now
+                                print(f"[Tag]    WARNING tag {int(pose_w['tag_id'])}'s heading is a steady "
+                                      f"{math.degrees(med):+.0f} deg off the estimate: check its gate ends "
+                                      f"(facing) in laptop_fusion.py. Its headings are being ignored")
+                        elif consistent:
+                            # the recent tags agree: the estimate's heading is off
+                            heading_diff = med
+                            heading_consistent = True
+                        else:
+                            heading_diff = 0.0   # probably the flipped answer: no heading correction
+                            heading_ignored = True
+                    # The tag measured the pose at `then`; move it on by however far the
+                    # filter has moved since, so it's compared with the estimate now
+                    meas_x = tag_pos_x + (x - then[1])
+                    meas_y = tag_pos_y + (y - then[2])
+                    meas_theta = ekf.wrap_pi(theta + heading_diff)
 
-            # Work a little of it in on every packet
-            if APPLY_CAMERA_CORRECTION and any(tag_residual):
-                try:
-                    step = [TAG_GAIN * r for r in tag_residual]
-                    tag_residual = [r - st for r, st in zip(tag_residual, step)]
-                    x, y, theta = ekf.shift(step[0], step[1])
-                    # heading follows the IMU, so the IMU's offset is what gets corrected
-                    imu_heading_offset = ekf.wrap_pi(imu_heading_offset + step[2])
-                    # the past moves too, so the next tag isn't compared with stale history
-                    for h in pose_history:
-                        h[1] += step[0]; h[2] += step[1]; h[3] += step[2]
-                except Exception as e:
-                    print(f"[EKF] camera_correction error: {e}")
+                    # How far off the tag says the estimate is, along and across the
+                    # kart's heading, for the per-tag summary
+                    ix, iy = meas_x - x, meas_y - y
+                    c_now, s_now = math.cos(theta), math.sin(theta)
+                    cam_nis = ekf.camera_nis(meas_x, meas_y, meas_theta, noise_scale)
+                    record_nis("camera", cam_nis, 3)
+                    rejected = cam_nis > CAMERA_NIS_GATE
+                    if rejected:
+                        if cam_rejected_since is None:
+                            cam_rejected_since = now
+                        elif now - cam_rejected_since >= CAMERA_RESYNC_S:
+                            rejected = False   # every tag for a while: trust them
+                    st["used_n"] += 1
+                    st["along"] += ix * c_now + iy * s_now
+                    st["across"] += -ix * s_now + iy * c_now
+                    st["heading"] += math.degrees(raw_heading_diff)
+                    st["nis"] += cam_nis
+                    st["rejected"] += rejected
+                    st["heading_ignored"] += heading_ignored
+                    st["heading_consistent"] += heading_consistent
+                    if not rejected:
+                        cam_rejected_since = None
+                        try:
+                            theta_before = theta
+                            x, y, theta, speed = ekf.camera_correction(meas_x, meas_y, meas_theta, noise_scale)
+                            # The IMU's offset: a part of the heading difference that's left
+                            # (when the tag's heading is used at all, see TAG_HEADING_GAIN)
+                            if not heading_ignored:
+                                theta = ekf.shift_heading(TAG_HEADING_GAIN * ekf.wrap_pi(meas_theta - theta))
+                            # Heading follows the IMU, whose next correction would undo the
+                            # change, so the IMU's offset takes all of it (this is what
+                            # corrects gyro drift)
+                            imu_heading_offset = ekf.wrap_pi(imu_heading_offset + ekf.wrap_pi(theta - theta_before))
+                            # the past moves with it, so the next tag isn't compared with stale history
+                            dx, dy, dth = x - pose_history[-1][1], y - pose_history[-1][2], ekf.wrap_pi(theta - theta_before)
+                            for h in pose_history:
+                                h[1] += dx; h[2] += dy; h[3] += dth
+                            # and the stored heading differences are now that much smaller
+                            for e in recent_heading_diffs:
+                                e[1] -= dth
+                        except Exception as e:
+                            print(f"[EKF] camera_correction error: {e}")
 
+        # (only this thread changes the filter, so it can be read here unlocked)
+        cov = ekf.get_uncertainty()[:3, :3].tolist()
         with latest_fused_lock:
-            latest_fused = {"x": x, "y": y, "theta": theta}
+            # the output point (OUTPUT_POINT_AHEAD_OF_REAR_AXLE_M); the filter tracks the rear axle
+            latest_fused = {"x": x + OUTPUT_POINT_AHEAD_OF_REAR_AXLE_M * math.cos(theta),
+                            "y": y + OUTPUT_POINT_AHEAD_OF_REAR_AXLE_M * math.sin(theta),
+                            "theta": theta, "v": speed, "cov": cov}
 
-        pkt_count += 1
         now = time.time()
         if now - last_print >= 1.0:
             if pose_w is None:
@@ -850,9 +1165,28 @@ def sensor_ekf_thread():
                                 f"th={math.degrees(pose_w['theta']):+.0f} ({age*1000:.0f}ms)")
                 else:
                     tag_info = f"tag stale {age:.1f}s"
-            print(f"[EKF] {pkt_count} pkts/s ({lost_packets} lost) | "
-                  f"FUSED x={x:+.2f} y={y:+.2f} th={math.degrees(theta):+.0f} | {tag_info}")
-            pkt_count = 0; lost_packets = 0; last_print = now
+            print(f"[EKF] {enc_count} enc + {imu_count} imu pkts/s ({lost_enc}/{lost_imu} lost) | "
+                  f"FUSED x={x:+.2f} y={y:+.2f} th={math.degrees(theta):+.0f} v={speed:+.2f} | {tag_info}")
+            enc_count = imu_count = 0; lost_enc = lost_imu = 0; last_print = now
+            # Per tag, on average: where the tag put the kart compared with the
+            # estimate (ahead / left of it, and turned). A steady "ahead" while
+            # driving (and none while parked) = CAMERA_LATENCY_S is off; an offset
+            # for one tag only = that tag's entry in TAG_WORLD is off; offsets that
+            # grow with distance = tag size, camera calibration or lens distortion
+            for tid in sorted(tag_stats):
+                st = tag_stats[tid]
+                n, u = st["n"], st["used_n"]
+                line = f"[Tag]    tag {tid}: {n} seen, {st['dist']/n:.2f} m away"
+                if st["too_far"]:
+                    line += f", {st['too_far']} too far (> {MAX_TAG_DISTANCE_M:g} m)"
+                if u:
+                    line += (f" | puts the kart {st['along']/u*100:+.1f} cm ahead, "
+                             f"{st['across']/u*100:+.1f} cm left, {st['heading']/u:+.1f} deg turned "
+                             f"left of the estimate | NIS {st['nis']/u:.1f}, {st['rejected']} rejected, "
+                             f"{st['heading_ignored']} headings ignored, "
+                             f"{st['heading_consistent']} taken from consistent readings")
+                print(line)
+            tag_stats.clear()
 
     sensor_sock.close()
 
@@ -968,6 +1302,28 @@ def gamepad_relay_thread():
 # ============================================================
 # Main: starts the threads, then sends the fused pose to Godot
 # ============================================================
+def send_debug_pose(sock, fused):
+    """The estimate in the map frame (metres, radians) with its covariance, the
+    latest tag-only pose if it's fresh, and the NIS of the corrections since the
+    last packet, to DEBUG_POSE_PORT for pose_overlay.py."""
+    global nis_pending
+    msg = {"x": fused["x"], "y": fused["y"], "theta": fused["theta"],
+           "v": fused["v"], "cov": fused["cov"], "time": time.time()}
+    # the corrections' NIS since the last packet: {kind: {"dof", "values"}}
+    with latest_fused_lock:
+        pending, nis_pending = nis_pending, {}
+    if pending:
+        msg["nis"] = {k: {"dof": d, "values": v} for k, (d, v) in pending.items()}
+    with latest_robot_pose_lock:
+        tag = latest_robot_pose_world
+    if tag is not None and time.time() - tag["time"] < TAG_FRESHNESS_S:
+        msg["tag"] = {"x": tag["x"], "y": tag["y"], "theta": tag["theta"], "id": int(tag["tag_id"])}
+    try:
+        sock.sendto(json.dumps(msg).encode(), (DEBUG_POSE_HOST, DEBUG_POSE_PORT))
+    except OSError:
+        pass   # nothing listening is fine
+
+
 def main():
     global running
 
@@ -1004,6 +1360,7 @@ def main():
                         "angle": math.degrees(fused["theta"]),
                     })
                     pose_sock.sendto(payload.encode(), (GODOT_HOST, GODOT_POSE_PORT))
+                    send_debug_pose(pose_sock, fused)
                     sent_count += 1
             except Exception as e:
                 print("[Pose] send error:", e)
@@ -1021,9 +1378,11 @@ def main():
                         tag_info = f"tag STALE ({age:.1f}s old)"
                 rate = sent_count / (now - last_print)
                 print(f"[Sensor] enc_l={enc_l:+.3f} enc_r={enc_r:+.3f} rev | "
-                      f"heading={math.degrees(heading):+.1f}° | {rate:.0f} poses/s to game")
+                      f"heading={math.degrees(heading):+.1f}° | since start: turned "
+                      f"{math.degrees(total_turned_raw):+.1f}° (IMU, raw), drove {total_driven_m:.3f} m "
+                      f"(encoders) | {rate:.0f} poses/s to game")
                 print(f"[EKF]    fused x={x:.2f} y={y:.2f} m "
-                      f"th={math.degrees(theta):+.0f}° | {tag_info}")
+                      f"th={math.degrees(theta):+.0f}° v={speed:+.2f} m/s | {tag_info}")
                 sent_count = 0
                 last_print = now
 
