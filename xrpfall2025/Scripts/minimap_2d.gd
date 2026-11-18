@@ -1,10 +1,4 @@
 extends Control
-## XRP-styled minimap, drawn from the track's path instead of filmed by a 3D camera.
-## Everything is vector drawing, so it stays sharp at any resolution or window size.
-##
-## Setup: a Control on a CanvasLayer, sized and anchored where the minimap should sit
-## (see main.tscn), with this script attached. It finds the TrackLoader and
-## CarManager in the current scene by name.
 
 ## Space between the panel's edge and the track, in pixels.
 @export var padding: float = 26.0
@@ -14,6 +8,11 @@ extends Control
 @export var min_road_width: float = 10.0
 ## Show the rival karts as well as the player.
 @export var show_rivals: bool = true
+## Free play (no track): the minimap shows a square this many world units across,
+## centred on the start, with a grid instead of a road. 0 = a race (draw the track).
+@export var free_area: float = 0.0
+## Free play grid spacing in world units (50 = 1 m on the race tracks' scale).
+@export var grid_spacing: float = 50.0
 
 const NAVY := Color("#161C28")
 const DARKEST := Color("#0B0F17")
@@ -36,6 +35,9 @@ var _scale := 1.0
 var _offset := Vector2.ZERO
 var _panel: StyleBoxFlat
 var _panel_edge: StyleBoxFlat
+# The karts are drawn on their own layer every frame; the panel and track underneath
+# only redraw when they change
+var _markers: Control
 
 
 func _ready() -> void:
@@ -56,13 +58,20 @@ func _ready() -> void:
 	if scene:
 		_loader = scene.get_node_or_null("TrackLoader")
 		_car_manager = scene.get_node_or_null("CarManager")
+	_markers = Control.new()
+	_markers.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_markers.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_markers.draw.connect(_draw_markers)
+	add_child(_markers)
 	resized.connect(_fit)
+	if free_area > 0.0:
+		_fit()
 
 
 func _process(_delta: float) -> void:
-	if _track_world.is_empty():
+	if free_area <= 0.0 and _track_world.is_empty():
 		_try_read_track()
-	queue_redraw()
+	_markers.queue_redraw()
 
 
 # The track only exists after TrackLoader.Init() runs, so keep trying until it does
@@ -86,9 +95,14 @@ func _try_read_track() -> void:
 	_fit()
 
 
-# Same framing as the old overhead camera: world +X is right, world +Z is down,
-# so the start direction (-Z) points up the minimap
+
 func _fit() -> void:
+	if free_area > 0.0:
+		var free_rect := _map_rect().grow(-padding)
+		_scale = minf(free_rect.size.x, free_rect.size.y) / free_area
+		_offset = free_rect.get_center()
+		queue_redraw()
+		return
 	if _track_world.is_empty():
 		return
 	var lo := _track_world[0]
@@ -105,6 +119,7 @@ func _fit() -> void:
 	_track_map.clear()
 	for p in _track_world:
 		_track_map.append(p * _scale + _offset)
+	queue_redraw()
 
 
 func _map_rect() -> Rect2:
@@ -119,15 +134,22 @@ func _draw() -> void:
 	var rect := _map_rect()
 	draw_style_box(_panel_edge, Rect2(rect.position + Vector2(0, EDGE_DEPTH), rect.size))
 	draw_style_box(_panel, rect)
-	if _track_map.size() < 2:
+	if free_area > 0.0:
+		_draw_free_area()
+	elif _track_map.size() < 2:
 		return
+	else:
+		var road_w := maxf(_half_width * 2.0 * _scale, min_road_width)
+		_draw_round_line(_track_map, LIGHT_GREY, road_w + 6.0)   # white-grey outline
+		_draw_round_line(_track_map, ROAD, road_w)               # road
+		_draw_dashes(_track_map, maxf(road_w * 0.12, 1.5), road_w * 0.6)
+		_draw_start_line(road_w)
 
-	var road_w := maxf(_half_width * 2.0 * _scale, min_road_width)
-	_draw_round_line(_track_map, LIGHT_GREY, road_w + 6.0)   # white-grey outline
-	_draw_round_line(_track_map, ROAD, road_w)               # road
-	_draw_dashes(_track_map, maxf(road_w * 0.12, 1.5), road_w * 0.6)
-	_draw_start_line(road_w)
 
+func _draw_markers() -> void:
+	if free_area <= 0.0 and _track_map.size() < 2:
+		return
+	var rect := _map_rect()
 	var player_pos := Vector2.INF
 	var player_heading := Vector2.UP
 	for kart in _karts():
@@ -148,7 +170,6 @@ func _draw() -> void:
 			_draw_offmap_arrow(rect, player_pos)
 
 
-# Thick polylines get gaps on sharp bends; round dots at each point fill them in
 func _draw_round_line(points: PackedVector2Array, color: Color, width: float) -> void:
 	draw_polyline(points, color, width, true)
 	var step := maxi(1, points.size() / 120)
@@ -178,7 +199,6 @@ func _draw_dashes(points: PackedVector2Array, width: float, dash: float) -> void
 				phase -= dash + gap
 
 
-# Checkered start/finish line across the road at the first point of the path
 func _draw_start_line(road_w: float) -> void:
 	var p0 := _track_map[0]
 	var tangent := (_track_map[1] - p0).normalized()
@@ -196,26 +216,45 @@ func _draw_start_line(road_w: float) -> void:
 			draw_colored_polygon(quad, WHITE if (col + row) % 2 == 0 else NAVY)
 
 
+# Free play mode
+func _draw_free_area() -> void:
+	var half := free_area / 2.0
+	var top_left := _to_map(Vector3(-half, 0, -half))
+	var bottom_right := _to_map(Vector3(half, 0, half))
+	draw_rect(Rect2(top_left, bottom_right - top_left), ROAD)
+	var lines := int(round(free_area / grid_spacing))
+	for i in lines + 1:
+		var w := -half + i * grid_spacing
+		var through_start := absf(w) < 0.001
+		var color := Color(LIGHT_GREY, 0.35) if through_start else Color(LIGHT_GREY, 0.12)
+		var width := 2.0 if through_start else 1.0
+		draw_line(_to_map(Vector3(w, 0, -half)), _to_map(Vector3(w, 0, half)), color, width)
+		draw_line(_to_map(Vector3(-half, 0, w)), _to_map(Vector3(half, 0, w)), color, width)
+	draw_rect(Rect2(top_left, bottom_right - top_left), LIGHT_GREY, false, 2.0)
+	var c := _to_map(Vector3.ZERO)
+	var s := 6.0
+	for col in 2:
+		for row in 2:
+			draw_rect(Rect2(c + Vector2(col - 1, row - 1) * s, Vector2(s, s)), WHITE if (col + row) % 2 == 0 else NAVY)
+
+
 func _draw_rival(pos: Vector2) -> void:
-	draw_circle(pos, 9.0, WHITE)
-	draw_circle(pos, 6.5, XRP_BLUE)
+	_markers.draw_circle(pos, 9.0, WHITE)
+	_markers.draw_circle(pos, 6.5, XRP_BLUE)
 
 
 func _draw_player(pos: Vector2, heading: Vector2) -> void:
-	# slow pulse so the player is easy to spot at a glance
+	# slow pulse for player
 	var t := fmod(Time.get_ticks_msec() / 1000.0, 1.4) / 1.4
-	draw_arc(pos, 13.0 + 9.0 * t, 0.0, TAU, 40, Color(XRP_RED, 0.55 * (1.0 - t)), 3.0, true)
-	draw_circle(pos + Vector2(0, 2), 13.0, Color(DARKEST, 0.6))
-	draw_circle(pos, 13.0, WHITE)
-	draw_circle(pos, 10.0, XRP_RED)
+	_markers.draw_arc(pos, 13.0 + 9.0 * t, 0.0, TAU, 40, Color(XRP_RED, 0.55 * (1.0 - t)), 3.0, true)
+	_markers.draw_circle(pos + Vector2(0, 2), 13.0, Color(DARKEST, 0.6))
+	_markers.draw_circle(pos, 13.0, WHITE)
+	_markers.draw_circle(pos, 10.0, XRP_RED)
 	var side := heading.orthogonal()
-	draw_colored_polygon(PackedVector2Array([
+	_markers.draw_colored_polygon(PackedVector2Array([
 		pos + heading * 7.0, pos - heading * 4.0 + side * 5.0, pos - heading * 4.0 - side * 5.0,
 	]), WHITE)
 
-
-# Same idea as before: when the kart leaves the framed area, pin an arrow to the
-# minimap's edge pointing the way the kart is
 func _draw_offmap_arrow(rect: Rect2, target: Vector2) -> void:
 	var center := rect.get_center()
 	var dir := (target - center).normalized()
@@ -226,11 +265,9 @@ func _draw_offmap_arrow(rect: Rect2, target: Vector2) -> void:
 	var side := dir.orthogonal()
 	var outline := PackedVector2Array([tip + dir * 4.0, tip - dir * 15.0 + side * 12.0, tip - dir * 15.0 - side * 12.0])
 	var fill := PackedVector2Array([tip, tip - dir * 12.0 + side * 8.0, tip - dir * 12.0 - side * 8.0])
-	draw_colored_polygon(outline, WHITE)
-	draw_colored_polygon(fill, XRP_RED)
+	_markers.draw_colored_polygon(outline, WHITE)
+	_markers.draw_colored_polygon(fill, XRP_RED)
 
-
-# Each car scene (player.tscn / enemy_ai.tscn) keeps its body as a CharacterBody3D
 func _karts() -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	if _car_manager == null:

@@ -23,10 +23,8 @@ extends Node
 # with Player.cs.
 # ============================================================
 
-# Passed to laptop_fusion, which tries it first and then falls back to the
-# other addresses in its PI_CANDIDATES on its own, so the kart works on any of
-# the networks without changing this.
-const PI_IP: String = "cornellcup2.local"
+# The Pi's address, passed to laptop_fusion
+const PI_IP: String = "192.168.0.138"
 
 const POSE_PORT: int = 6000
 const VIDEO_PORT: int = 6001
@@ -40,6 +38,7 @@ var pose_last_received: float = 0.0
 const POSE_TIMEOUT: float = 8.0
 # The race scene, which AR mode attaches to and restarts when the camera comes or goes
 const RACE_SCENE: String = "res://Scenes/GameplayScenes/main.tscn"
+const FREE_PLAY_SCENE: String = "res://Scenes/GameplayScenes/free_play.tscn"
 
 # ---- Gamepad ----
 var udp_gamepad: PacketPeerUDP = PacketPeerUDP.new()
@@ -50,6 +49,10 @@ const GAMEPAD_HEADER: int = 0x55
 # Stick readings under this count as centered. Many sticks rest a little off
 # center (0.08-0.15), which used to get through and keep the kart creeping
 const DEADZONE: float = 0.15
+# Centred packets sent when gameplay ends (menu, pause, finish), so the robot
+# stops right away instead of waiting for its connection-loss failsafe
+const STOP_PACKETS: int = 5
+var _stop_packets_left: int = 0
 
 # ---- Steering wheel (Thrustmaster TMX) ----
 # macOS has no driver for the TMX, so Scripts/wheel_bridge.py reads it over USB
@@ -121,6 +124,8 @@ var fusion_pid: int = -1
 # Scripts/laptop_fusion.py directly. Empty = use $AR_KART_PYTHON, or look for
 # the ar-kart conda env in the usual places
 const FUSION_PYTHON: String = ""
+# The Python _find_fusion_python found, so it only searches once
+var _fusion_python: String = ""
 # How long fusion must stay running to count as started; if it exits sooner
 # (e.g. a missing package) the next way of launching it is tried
 const FUSION_STARTUP_CHECK_S: float = 3.0
@@ -191,7 +196,7 @@ const CAM_CALIB_H: float = 480.0
 # flips it both ways too), so the AR backdrop rotates the feed 180°
 const CAM_UPSIDE_DOWN: bool = true
 # How far the real camera is tilted up from level (negative = down)
-const CAM_TILT_UP_DEG: float = 2.0
+const CAM_TILT_UP_DEG: float = 3.0
 # Where the real camera's lens sits on the kart, in metres: height above the
 # floor, distance ahead of the kart's center, and sideways (positive = right).
 # Measure these on the robot; the defaults are where the camera sat on the kart model
@@ -204,9 +209,9 @@ const CAM_SIDEWAYS_M: float = 0.0
 # are moved to render layer 2, which no camera draws, off the kart camera (layer 1)
 const AR_HIDDEN_NODES: Array[String] = ["Ground", "TrackLoader", "Finishline"]
 const HIDDEN_LAYER: int = 2
-# ...except the track's edge lines, which stay on the kart camera too as an outline
-# of the track over the video
-const AR_KEPT_NODES: Array[String] = ["InnerEdge", "OuterEdge"]
+# Pieces kept on the kart camera anyway. Add "InnerEdge" and "OuterEdge" to draw the
+# track's edge lines over the video as an outline
+const AR_KEPT_NODES: Array[String] = []
 
 # ---- Debug ----
 var debug_timer: float = 0.0
@@ -254,8 +259,11 @@ func _fusion_launch_options() -> Array:
 
 
 # A Python that can run laptop_fusion.py: FUSION_PYTHON, then $AR_KART_PYTHON,
-# then the ar-kart conda env in the usual install locations
+# then the ar-kart conda env in the usual install locations, then wherever
+# conda itself says the env is
 func _find_fusion_python() -> String:
+	if _fusion_python != "":
+		return _fusion_python
 	var candidates = []
 	if FUSION_PYTHON != "":
 		candidates.append(FUSION_PYTHON)
@@ -263,12 +271,36 @@ func _find_fusion_python() -> String:
 		candidates.append(OS.get_environment("AR_KART_PYTHON"))
 	var windows = OS.get_name() == "Windows"
 	var home = OS.get_environment("USERPROFILE" if windows else "HOME")
-	for conda in ["anaconda3", "miniconda3", "miniforge3", "opt/anaconda3", "opt/miniconda3"]:
-		var env_dir = home.path_join(conda).path_join("envs").path_join("ar-kart")
+	var env_dirs = []
+	for conda in ["anaconda3", "miniconda3", "miniforge3", "mambaforge", "opt/anaconda3", "opt/miniconda3", ".conda", "micromamba"]:
+		env_dirs.append(home.path_join(conda).path_join("envs").path_join("ar-kart"))
+	if not windows:
+		for base in ["/opt/anaconda3", "/opt/miniconda3", "/opt/miniforge3",
+				"/opt/homebrew/Caskroom/miniconda/base", "/opt/homebrew/Caskroom/miniforge/base",
+				"/opt/homebrew/Caskroom/anaconda/base", "/usr/local/Caskroom/miniconda/base",
+				"/usr/local/Caskroom/miniforge/base", "/usr/local/anaconda3", "/usr/local/miniconda3"]:
+			env_dirs.append(base.path_join("envs").path_join("ar-kart"))
+	for env_dir in env_dirs:
 		candidates.append(env_dir.path_join("python.exe") if windows else env_dir.path_join("bin").path_join("python"))
 	for candidate in candidates:
 		if FileAccess.file_exists(candidate):
+			_fusion_python = candidate
 			return candidate
+
+	# Godot started from the Dock doesn't get the terminal's PATH, so ask conda
+	# through the user's shell, which sets conda up in its startup file
+	if not windows:
+		var output = []
+		OS.execute("/bin/zsh", ["-lic", "conda env list 2>/dev/null"], output)
+		for line in "\n".join(output).split("\n"):
+			var parts = line.strip_edges().split(" ", false)
+			if parts.size() >= 2 and parts[0] == "ar-kart":
+				var python = parts[-1].path_join("bin").path_join("python")
+				if FileAccess.file_exists(python):
+					_fusion_python = python
+					return python
+
+	push_warning("[NetworkReceiver] No ar-kart Python found. Looked in: %s. Set FUSION_PYTHON in NetworkReceiver.gd to the output of `conda activate ar-kart && which python`" % ", ".join(candidates))
 	return ""
 
 
@@ -336,6 +368,7 @@ func _process(_delta: float) -> void:
 		else:
 			_update_ar_camera_fov()
 			_place_ar_camera_in_past()
+	_update_kart_nose()
 
 	if not tcp_connected:
 		tcp_retry_timer += _delta
@@ -530,9 +563,9 @@ func _update_ar_mode() -> void:
 	ar_enabled = want_ar
 	print("[AR] Camera %s, AR mode %s" % ["connected" if want_ar else "lost", "on" if want_ar else "off"])
 	var scene = get_tree().current_scene
-	if scene != null and scene.scene_file_path == RACE_SCENE:
+	if scene != null and scene.scene_file_path in [RACE_SCENE, FREE_PLAY_SCENE]:
 		print("[AR] Restarting the race in %s mode" % ("AR" if want_ar else "regular"))
-		SceneTransition.change_scene(RACE_SCENE)
+		SceneTransition.change_scene(scene.scene_file_path)
 	elif want_ar:
 		_try_attach_ar()
 
@@ -660,11 +693,94 @@ func _units_per_metre() -> float:
 
 # The camera rides on the player's own kart model, whose wheels and body would
 # block part of the view. In real life it's the robot itself, so hide it from
-# the kart camera (and from shadows)
+# the kart camera (and from shadows), and show just its front instead
 func _hide_own_kart(cam: Camera3D) -> void:
-	var model = cam.get_parent()
-	for node in model.find_children("*", "VisualInstance3D", true, false):
-		node.layers &= ~1
+	show_kart_nose(cam)
+
+
+# The front of the kart along the bottom of the kart camera's view, like looking
+# over the hood, in both regular and AR mode. It's a copy of the kart model with
+# only the chassis and front wheels showing, riding on the camera, whose wheels
+# steer with the real ones
+const KART_NOSE_MODEL: String = "res://Assets/3dmodels/kart.glb"
+const KART_NOSE_PARTS: Array[String] = ["Chassis", "AxleStubs", "FrontWheel_L", "FrontWheel_R"]
+# Where the eye sits in the kart model (it faces +X with Y up). Further back or
+# higher shows less of the kart. The regular kart camera sees a much wider view
+# than the AR one (which matches the real camera), so each has its own
+const KART_NOSE_EYE: Vector3 = Vector3(-1.9, 1.95, 0.0)
+const KART_NOSE_EYE_AR: Vector3 = Vector3(-3.6, 1.8, 0.0)
+var _kart_nose: Node3D = null
+# The copy's front wheels, each paired with the real kart's, so they steer together
+var _kart_nose_wheels: Array = []
+
+# Called by Player.cs when the kart is ready, and again when AR attaches
+func show_kart_nose(cam: Camera3D) -> void:
+	if cam == null:
+		return
+	var own_model = cam.get_parent()
+	for node in own_model.find_children("*", "VisualInstance3D", true, false):
+		if not (is_instance_valid(_kart_nose) and _kart_nose.is_ancestor_of(node)):
+			node.layers &= ~1
+	if is_instance_valid(_kart_nose) and _kart_nose.get_parent() == cam:
+		return
+	_kart_nose_wheels.clear()
+	var scene = load(KART_NOSE_MODEL) as PackedScene
+	if scene == null:
+		return
+	_kart_nose = scene.instantiate() as Node3D
+	_kart_nose.name = "KartNose"
+	cam.add_child(_kart_nose)
+	for node in _kart_nose.find_children("*", "GeometryInstance3D", true, false):
+		node.visible = node.name in KART_NOSE_PARTS
+		node.layers = 1
+		node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for wheel in ["FrontWheel_L", "FrontWheel_R"]:
+		var copy = _pivot_nose_wheel(wheel)
+		var real = own_model.find_child(wheel, true, false)
+		if copy != null and real != null:
+			_kart_nose_wheels.append([copy, real])
+	_update_kart_nose()
+
+
+# Puts one of the nose's wheels under a node at its axle, like Player.cs does with
+# the real kart's, so copying the real wheel's steering and rolling lines up
+func _pivot_nose_wheel(wheel: String) -> Node3D:
+	var mesh = _kart_nose.find_child(wheel, true, false) as MeshInstance3D
+	if mesh == null:
+		return null
+	var centre = mesh.get_aabb().get_center()
+	var model = mesh.get_parent()
+	mesh.name = wheel + "Mesh"
+	var marks = ShaderMaterial.new()
+	marks.shader = load("res://Assets/wheel_marks.gdshader")
+	marks.set_shader_parameter("centre", centre)
+	marks.set_shader_parameter("radius", mesh.get_aabb().size.y / 2.0)
+	mesh.material_overlay = marks
+	var pivot = Node3D.new()
+	pivot.name = wheel
+	model.add_child(pivot)
+	pivot.position = mesh.position + centre
+	model.remove_child(mesh)
+	pivot.add_child(mesh)
+	mesh.position = -centre
+	return pivot
+
+
+# Keeps the nose in front of the camera's eye and its wheels turned like the
+# real kart's
+func _update_kart_nose() -> void:
+	if not is_instance_valid(_kart_nose):
+		return
+	var cam = _kart_nose.get_parent() as Camera3D
+	# AR mode switches the kart camera to an off-centre frustum
+	var eye = KART_NOSE_EYE_AR if cam.projection == Camera3D.PROJECTION_FRUSTUM else KART_NOSE_EYE
+	# the model faces +Z, so it's turned round to face the camera's -Z. Placed in
+	# world units, as the regular kart camera is scaled up with the kart model
+	_kart_nose.global_transform = cam.global_transform.orthonormalized() \
+		* Transform3D(Basis(Vector3.UP, PI), Vector3(0, -eye.y, eye.x))
+	for pair in _kart_nose_wheels:
+		if is_instance_valid(pair[0]) and is_instance_valid(pair[1]):
+			pair[0].rotation = pair[1].rotation
 
 
 func _setup_camera_backdrop(cam: Camera3D) -> void:
@@ -993,11 +1109,15 @@ func _process_gamepad_send(_delta: float) -> void:
 		rx = _apply_deadzone(Input.get_joy_axis(0, JOY_AXIS_RIGHT_X))
 	else:
 		return
-	# Hold the real kart still during the race countdown by sending a centered stick
-	if _in_race_countdown():
-		ly = 0.0
-		rx = 0.0
-	_send_gamepad(ly, rx)
+	# The robot is only driven during gameplay. Leaving it (menus, pause, the
+	# countdown, the finish) sends a few centred packets so it stops at once,
+	# then nothing, and the XRP's own failsafe keeps the motors off
+	if _in_gameplay():
+		_stop_packets_left = STOP_PACKETS
+		_send_gamepad(ly, rx)
+	elif _stop_packets_left > 0:
+		_stop_packets_left -= 1
+		_send_gamepad(0.0, 0.0)
 
 
 # True while wheel_bridge.py is sending (it only sends while the wheel is plugged in)
@@ -1116,12 +1236,16 @@ func _process_latency() -> void:
 
 
 # True while a race is loaded and its countdown hasn't finished yet
-func _in_race_countdown() -> bool:
+# True while the player is driving: a race or free play has started (countdown
+# over), isn't finished, and isn't paused. Menus have no CarManager/Player
+func _in_gameplay() -> bool:
+	if get_tree().paused:
+		return false
 	var scene = get_tree().current_scene
 	if scene == null:
 		return false
 	var player = scene.get_node_or_null("CarManager/Player")
-	return player != null and not player.HasRaceStarted
+	return player != null and player.HasRaceStarted and not player.FinishedRace
 
 
 # ============================================================

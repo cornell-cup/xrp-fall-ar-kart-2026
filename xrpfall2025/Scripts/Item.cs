@@ -37,9 +37,21 @@ public partial class Item : Node
 	private Vector3 lastHitDirection = Vector3.Forward;
 
 	//how much bigger than the model's own size the box is drawn and picked up
-	private const float BOXSCALE = 1.5f;
+	private const float BOXSCALE = 1.0f;
 	//how high the middle of the box floats above the item's position (it bobs around this)
 	private const float HOVERHEIGHT = 1.5f;
+
+	//the pieces a box bursts into, shared by every burst
+	private static readonly BoxMesh BurstPieceMesh = new BoxMesh { Size = new Vector3(0.4f, 0.4f, 0.4f) };
+	//bright rainbow colours like item box shards
+	private static readonly StandardMaterial3D[] BurstMaterials = {
+		new StandardMaterial3D { AlbedoColor = new Color(1, 0.2f, 0.2f) },    // red
+		new StandardMaterial3D { AlbedoColor = new Color(0.2f, 0.5f, 1) },    // blue
+		new StandardMaterial3D { AlbedoColor = new Color(1, 0.9f, 0.1f) },    // yellow
+		new StandardMaterial3D { AlbedoColor = new Color(0.2f, 1, 0.4f) },    // green
+		new StandardMaterial3D { AlbedoColor = new Color(1, 0.4f, 0.8f) },    // pink
+		new StandardMaterial3D { AlbedoColor = new Color(0.6f, 0.3f, 1) },    // purple
+	};
 
 	private Vector3 Position
 	{
@@ -234,21 +246,11 @@ public partial class Item : Node
 
 		for (int i = 0; i < 50; i++)
 		{
-			var piece = new CsgBox3D();
-			piece.Size = new Vector3(0.4f, 0.4f, 0.4f);
-
-			// Bright rainbow colors like MK item box shards
-			var mat = new StandardMaterial3D();
-			Color[] colors = {
-				new Color(1, 0.2f, 0.2f),    // red
-				new Color(0.2f, 0.5f, 1),     // blue
-				new Color(1, 0.9f, 0.1f),     // yellow
-				new Color(0.2f, 1, 0.4f),     // green
-				new Color(1, 0.4f, 0.8f),     // pink
-				new Color(0.6f, 0.3f, 1),     // purple
-			};
-			mat.AlbedoColor = colors[rng.Next(colors.Length)];
-			piece.Material = mat;
+			// A plain mesh sharing one box shape and one of a few materials: building
+			// 50 CSG boxes with a new material each made every pickup stutter
+			var piece = new MeshInstance3D();
+			piece.Mesh = BurstPieceMesh;
+			piece.MaterialOverride = BurstMaterials[rng.Next(BurstMaterials.Length)];
 
 			area3d.GetParent().AddChild(piece);
 			piece.GlobalPosition = area3d.GlobalPosition + new Vector3(0, HOVERHEIGHT, 0);

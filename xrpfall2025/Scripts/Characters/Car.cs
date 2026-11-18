@@ -312,6 +312,8 @@ public partial class Car : Node
 		charbody3d.LookAt(charbody3d.GlobalPosition + facingDirection, Vector3.Up);
 		this.track = track;
 		this.totalCheckpoints = totalCheckpoints;
+		//free play has no track: no progress, placements or off-track checks
+		if (track == null) return;
 
 		//cars on the grid behind the start line are at the very end of the loop,
 		//so count them as just behind the start instead of almost a full lap ahead

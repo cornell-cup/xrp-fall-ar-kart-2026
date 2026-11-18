@@ -175,7 +175,8 @@ public partial class EnemyAi : Car
 	private void NormalDriving(double delta)
 	{
 		seekPoint = GetLookAheadPoint();
-		DebugDraw3D.DrawSphere(seekPoint, 2, color);
+		//the DebugDraw3D add-on doesn't load on macOS, so this printed an error every frame (stutter)
+		//DebugDraw3D.DrawSphere(seekPoint, 2, color);
 		//need to get the correct angle for the car to turn
 		Vector3 targetVector = seekPoint - GlobalPosition;
 		targetVector.Y = 0;

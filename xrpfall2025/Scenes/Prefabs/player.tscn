@@ -1,7 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://cbhuwjvyk2t2t"]
+[gd_scene load_steps=4 format=3 uid="uid://cbhuwjvyk2t2t"]
 
-[ext_resource type="Script" uid="uid://ckroufi0l422b" path="res://Scripts/Characters/Player.cs" id="1_4flbx"]
-[ext_resource type="PackedScene" uid="uid://u7we301bvb4s" path="res://Assets/3dmodels/XRP_Car.fbx" id="2_0ctox"]
+[ext_resource type="Script" path="res://Scripts/Characters/Player.cs" id="1_4flbx"]
+[ext_resource type="PackedScene" path="res://Assets/3dmodels/kart.glb" id="2_pv3ct"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_onrkg"]
 size = Vector3(5.715, 3.16874, 11.43)
@@ -10,7 +10,7 @@ size = Vector3(5.715, 3.16874, 11.43)
 script = ExtResource("1_4flbx")
 csgBox3D = NodePath("Node3D/Player/CollisionShape3D/CSGBox3D")
 charbody3d = NodePath("Node3D/Player")
-carMesh = NodePath("Node3D/Player/CollisionShape3D/XRP_Car/SM_Car")
+carMesh = NodePath("Node3D/Player/CollisionShape3D/Kart/Kart/Chassis")
 
 [node name="Node3D" type="Node3D" parent="."]
 
@@ -22,20 +22,18 @@ collision_layer = 16
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Node3D/Player"]
 shape = SubResource("BoxShape3D_onrkg")
 
-[node name="XRP_Car" parent="Node3D/Player/CollisionShape3D" instance=ExtResource("2_0ctox")]
-transform = Transform3D(-17.84502, 0, 0, 0, 17.84502, 0, 0, 0, -17.84502, 0, -1.5071, 1.07305)
-
-[node name="fpsCamera" type="Camera3D" parent="Node3D/Player/CollisionShape3D/XRP_Car"]
-transform = Transform3D(-0.2, -6.54983e-09, 1.62114e-08, 0, 0.185437, 0.0749214, -1.74846e-08, 0.0749214, -0.185437, -2.01605e-08, 0.2, 0.230609)
-cull_mask = 1047553
-current = true
-
 [node name="CSGBox3D" type="CSGBox3D" parent="Node3D/Player/CollisionShape3D"]
 visible = false
 size = Vector3(5.715, 3.16874, 11.43)
 
+[node name="Kart" parent="Node3D/Player/CollisionShape3D" instance=ExtResource("2_pv3ct")]
+transform = Transform3D(-2.6, 0, -2.27299e-07, 0, 2.6, 0, 2.27299e-07, 0, -2.6, 0, -1.532, -0.585)
+
+[node name="fpsCamera" type="Camera3D" parent="Node3D/Player/CollisionShape3D/Kart"]
+transform = Transform3D(-1.37269, -8.99092e-08, 2.22533e-07, 0, 1.27274, 0.514221, -2.4001e-07, 0.514221, -1.27274, -2.20991e-07, 1.38227, 0.945066)
+cull_mask = 1047553
+current = true
+
 [node name="overheadCamera" type="Camera3D" parent="Node3D/Player"]
 transform = Transform3D(1, 0, 0, 0, 1.19249e-08, 1, 0, -1, 1.19249e-08, 0, 20, -5)
 cull_mask = 1048574
-
-[editable path="Node3D/Player/CollisionShape3D/XRP_Car"]

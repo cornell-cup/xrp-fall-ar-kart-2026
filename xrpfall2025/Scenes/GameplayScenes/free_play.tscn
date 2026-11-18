@@ -1,0 +1,66 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://Scripts/free_play.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://cbhuwjvyk2t2t" path="res://Scenes/Prefabs/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://drsnmi4pkc6t5" path="res://Scenes/Prefabs/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://Scenes/Prefabs/free_play_popup.tscn" id="4_popup"]
+[ext_resource type="Script" path="res://Scripts/minimap_2d.gd" id="5_minimap"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
+size = Vector3(1000, 1, 1000)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.520673, 0.458974, 0.658289, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
+material = SubResource("StandardMaterial3D_ground")
+size = Vector2(1000, 1000)
+
+[node name="FreePlay" type="Node"]
+script = ExtResource("1_script")
+
+[node name="CarManager" type="Node" parent="."]
+
+[node name="Player" parent="CarManager" instance=ExtResource("2_player")]
+
+[node name="Ground" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_ground")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+layers = 3
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("PlaneMesh_ground")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.35981, 0.0243341, 0.932709, -0.667748, -0.691474, 0.275637, 0.65165, -0.721991, -0.23255, 0, 18, 0)
+layers = 3
+shadow_enabled = true
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="HUD" parent="CanvasLayer" instance=ExtResource("3_hud")]
+free_play = true
+
+[node name="MinimapSystem" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="Minimap" type="Control" parent="MinimapSystem"]
+layout_mode = 3
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 52.0
+offset_top = -386.0
+offset_right = 372.0
+offset_bottom = -60.0
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("5_minimap")
+free_area = 1000.0
+
+[node name="PopupLayer" type="CanvasLayer" parent="."]
+layer = 3
+
+[node name="FreePlayPopup" parent="PopupLayer" instance=ExtResource("4_popup")]

@@ -27,9 +27,9 @@ var all_ready: bool = false
 @onready var gamepad_card = $Cards/GamepadCard
 @onready var heading: Label = $Heading
 @onready var subtitle: Label = $Subtitle
-@onready var retry_button: TextureButton = $Buttons/RetryButton
-@onready var play_offline_button: TextureButton = $Buttons/PlayOfflineButton
-@onready var continue_button: TextureButton = $Buttons/ContinueButton
+@onready var retry_button: Button = $Buttons/RetryButton
+@onready var play_offline_button: Button = $Buttons/PlayOfflineButton
+@onready var continue_button: Button = $Buttons/ContinueButton
 
 func _ready() -> void:
 	get_window().mode = Window.MODE_FULLSCREEN

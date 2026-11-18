@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://drsnmi4pkc6t5"]
+[gd_scene load_steps=14 format=3 uid="uid://drsnmi4pkc6t5"]
 
 [ext_resource type="Script" uid="uid://cvcplcwtt1s7c" path="res://Scripts/hud.gd" id="1_p8haq"]
 [ext_resource type="Theme" uid="uid://dtpq031k23ppy" path="res://Assets/ar_kart_ui/godot/ar_kart_theme.tres" id="2_theme"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://cm7pd0vorx8mf" path="res://Assets/ar_kart_ui/items/item_slot_empty@2x.png" id="5_slot"]
 [ext_resource type="Texture2D" uid="uid://b06g2fosl3thd" path="res://Assets/ar_kart_ui/items/item_fast@2x.png" id="6_fast"]
 [ext_resource type="Texture2D" uid="uid://bovox3g7w3ngu" path="res://Assets/ar_kart_ui/icons/icon_warning_white@2x.png" id="8_warning"]
+[ext_resource type="PackedScene" path="res://Scenes/Prefabs/status_bar.tscn" id="9_statusbar"]
 [ext_resource type="Script" uid="uid://op70qnfkwf5d" path="res://Scripts/hover_button.gd" id="hover_button"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dark_pill"]
@@ -337,8 +338,8 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_top = -164.0
-offset_bottom = -62.0
+offset_top = -256.0
+offset_bottom = -154.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
@@ -363,6 +364,20 @@ theme_override_font_sizes/font_size = 44
 text = "Off track! Drive back to the road"
 vertical_alignment = 1
 uppercase = true
+
+[node name="StatusBar" parent="." instance=ExtResource("9_statusbar")]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -684.0
+offset_top = -126.0
+offset_right = -60.0
+offset_bottom = -60.0
+grow_horizontal = 0
+grow_vertical = 0
 
 [node name="CountdownLabel" type="Label" parent="."]
 process_mode = 1

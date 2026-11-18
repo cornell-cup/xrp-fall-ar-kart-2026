@@ -106,17 +106,9 @@ Architecture:
 # Config
 # ============================================================
 
-# Where to look for the Pi's camera. The first address that answers on
-# the RTSP port wins, so the same build works whether the Pi is running
-# its own hotspot or is on CornellCup-Web. An address passed on the
-# command line (Godot's PI_IP) is tried first.
-PI_CANDIDATES = [a for a in sys.argv[1:2] if a] + [
-    "cornellcup2.local",   # works on any network (mDNS name)
-    "10.42.0.1",           # Pi hotspot
-    "192.168.4.95",        # last known CornellCup-Web address
-    "192.168.0.138",       # last known AR-Kart address
-    "192.168.0.193",       # another AR-Kart address the Pi has had
-]
+# Where the Pi's camera is: the address passed on the command line
+# (Godot's PI_IP), or 192.168.0.138 when run on its own
+PI_CANDIDATES = [a for a in sys.argv[1:2] if a] or ["192.168.0.138"]
 
 RTSP_PORT = 8554
 

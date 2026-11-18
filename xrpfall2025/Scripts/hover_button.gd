@@ -4,7 +4,7 @@ extends Control
 # that pops out and then pulses, and a small grow. Works on Buttons (pills and
 # cards), TextureButtons (the round back arrow) and PanelContainers (the logo cards)
 
-# Only the main buttons (Start, Quick Start, Track Builder, RACE!) also play the hover sound
+# Only the main buttons (Start, Free Play, Track Builder, RACE!) also play the hover sound
 @export var hover_sound := false
 # Corner radius of the button's shape, for image buttons whose shape the script
 # can't read (-1 = from the button's style, or round for image buttons)

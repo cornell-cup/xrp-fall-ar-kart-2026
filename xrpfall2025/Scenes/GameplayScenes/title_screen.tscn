@@ -72,7 +72,7 @@ text = "START"
 script = ExtResource("hover_button")
 hover_sound = true
 
-[node name="Quickstart" type="Button" parent="."]
+[node name="FreePlayButton" type="Button" parent="."]
 process_mode = 3
 layout_mode = 0
 offset_left = 1230.0
@@ -82,7 +82,7 @@ offset_bottom = 592.0
 theme_type_variation = &"BlueButton"
 theme_override_fonts/font = ExtResource("8_black")
 theme_override_font_sizes/font_size = 56
-text = "QUICK START"
+text = "FREE PLAY"
 script = ExtResource("hover_button")
 hover_sound = true
 
@@ -189,6 +189,6 @@ expand_mode = 1
 stretch_mode = 5
 
 [connection signal="pressed" from="StartButton" to="." method="_on_start_button_pressed"]
-[connection signal="pressed" from="Quickstart" to="." method="_on_quickstart_pressed"]
+[connection signal="pressed" from="FreePlayButton" to="." method="_on_free_play_pressed"]
 [connection signal="pressed" from="Track Builder" to="." method="_on_track_editor_pressed"]
 [connection signal="pressed" from="QuitButton" to="." method="_on_quit_pressed"]

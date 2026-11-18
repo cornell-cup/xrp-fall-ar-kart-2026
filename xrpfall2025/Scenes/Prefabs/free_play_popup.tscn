@@ -1,0 +1,172 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://Scripts/free_play_popup.gd" id="1_script"]
+[ext_resource type="Theme" uid="uid://dtpq031k23ppy" path="res://Assets/ar_kart_ui/godot/ar_kart_theme.tres" id="2_theme"]
+[ext_resource type="FontVariation" uid="uid://d37faedn21306" path="res://UI/rubik_black.tres" id="3_black"]
+[ext_resource type="FontFile" uid="uid://dkrwwpti7xy33" path="res://Assets/ar_kart_ui/fonts/Rubik.ttf" id="4_rubik"]
+[ext_resource type="Script" uid="uid://op70qnfkwf5d" path="res://Scripts/hover_button.gd" id="5_hover"]
+[ext_resource type="Texture2D" path="res://Assets/ar_kart_ui/free_play/free_play_icon@2x.png" id="6_icon"]
+[ext_resource type="Texture2D" path="res://Assets/ar_kart_ui/free_play/icon_no_laps@2x.png" id="7_no_laps"]
+[ext_resource type="Texture2D" path="res://Assets/ar_kart_ui/free_play/icon_steering@2x.png" id="8_steering"]
+[ext_resource type="Texture2D" path="res://Assets/ar_kart_ui/free_play/icon_pause@2x.png" id="9_pause"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+content_margin_left = 62.0
+content_margin_top = 52.0
+content_margin_right = 62.0
+content_margin_bottom = 50.0
+bg_color = Color(0.086, 0.11, 0.157, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.765, 0.8, 0.855, 1)
+corner_radius_top_left = 44
+corner_radius_top_right = 44
+corner_radius_bottom_right = 44
+corner_radius_bottom_left = 44
+corner_detail = 20
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 28
+shadow_offset = Vector2(0, 12)
+
+[sub_resource type="FontVariation" id="FontVariation_semibold"]
+base_font = ExtResource("4_rubik")
+variation_opentype = {
+2003265652: 600
+}
+
+[node name="FreePlayPopup" type="Control"]
+texture_filter = 4
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.043, 0.059, 0.09, 0.6)
+
+[node name="Card" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(896, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -448.0
+offset_top = -395.0
+offset_right = 448.0
+offset_bottom = 395.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="Column" type="VBoxContainer" parent="Card"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Icon" type="TextureRect" parent="Card/Column"]
+custom_minimum_size = Vector2(138, 148)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("6_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Card/Column"]
+custom_minimum_size = Vector2(0, 124)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.322, 0.761, 1)
+theme_override_constants/shadow_offset_x = -2
+theme_override_constants/shadow_offset_y = 6
+theme_override_fonts/font = ExtResource("3_black")
+theme_override_font_sizes/font_size = 88
+text = "FREE PLAY"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Rows" type="VBoxContainer" parent="Card/Column"]
+layout_mode = 2
+theme_override_constants/separation = 21
+
+[node name="NoLaps" type="HBoxContainer" parent="Card/Column/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 25
+
+[node name="Icon" type="TextureRect" parent="Card/Column/Rows/NoLaps"]
+custom_minimum_size = Vector2(66, 66)
+layout_mode = 2
+texture = ExtResource("7_no_laps")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Card/Column/Rows/NoLaps"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = SubResource("FontVariation_semibold")
+theme_override_font_sizes/font_size = 29
+text = "No laps, no clock, nobody to beat"
+
+[node name="Drive" type="HBoxContainer" parent="Card/Column/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 25
+
+[node name="Icon" type="TextureRect" parent="Card/Column/Rows/Drive"]
+custom_minimum_size = Vector2(66, 66)
+layout_mode = 2
+texture = ExtResource("8_steering")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Card/Column/Rows/Drive"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = SubResource("FontVariation_semibold")
+theme_override_font_sizes/font_size = 29
+text = "Zoom around and show off your best moves"
+
+[node name="Pause" type="HBoxContainer" parent="Card/Column/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 25
+
+[node name="Icon" type="TextureRect" parent="Card/Column/Rows/Pause"]
+custom_minimum_size = Vector2(66, 66)
+layout_mode = 2
+texture = ExtResource("9_pause")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="Card/Column/Rows/Pause"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = SubResource("FontVariation_semibold")
+theme_override_font_sizes/font_size = 29
+text = "Need a pit stop? Hit pause to head back"
+
+[node name="Gap" type="Control" parent="Card/Column"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+
+[node name="ButtonRow" type="CenterContainer" parent="Card/Column"]
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="Card/Column/ButtonRow" groups=["race_sfx"]]
+custom_minimum_size = Vector2(480, 124)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_black")
+theme_override_font_sizes/font_size = 56
+text = "LET'S ROLL!"
+script = ExtResource("5_hover")
+hover_sound = true

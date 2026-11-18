@@ -4,8 +4,14 @@ extends Control
 # There are possibly better solutions for this connection but it does work for now
 @onready var player_node = get_node("../../CarManager/Player")
 
+# Free play (free_play.tscn): no laps, places or items, so the HUD shows only the
+# timer (plus the status bar and pause menu, as in a race)
+@export var free_play := false
+# Free play's timer font size (the race timer's is 48)
+const FREE_PLAY_TIMER_SIZE := 100
+
 # Countdown variables
-@onready var countdown_label: Label = $CountdownLabel  
+@onready var countdown_label: Label = $CountdownLabel
 var counter: int = 3
 var countdown_active: bool = false
 signal countdown_finished
@@ -67,13 +73,36 @@ func _ready():
 	pause_menu.visible = false
 	
 	bounce_icon()
-	
+
+	if free_play:
+		# nothing but the timer, which shows once the countdown ends
+		for element in _race_elements():
+			element.visible = false
+		$Stopwatch.visible = false
+		stored_item_icon.visible = false
+		# the timer is all there is, so it goes top centre and bigger
+		stopwatch_label.add_theme_font_size_override("font_size", FREE_PLAY_TIMER_SIZE)
+		# just big enough for the time (it always has the same number of digits)
+		stopwatch_label.size = Vector2.ZERO
+		stopwatch_label.size = stopwatch_label.get_combined_minimum_size()
+		return
+
 	# Popups for when the player uses an item or gets hit by one
 	get_node("../../CarManager").connect("ItemUsed", Callable(self, "_on_item_used"))
-	
+
+
+# The parts of the HUD that only mean something in a race
+func _race_elements() -> Array:
+	return [$LapPanel, $PlaceBadge, $Images]
+
 
 # Constantly updating
 func _process(delta: float) -> void:
+	if free_play:
+		if stopwatch_running and not get_tree().paused:
+			race_time += delta
+			stopwatch_label.text = format_time(race_time)
+		return
 	if player_node:
 		# Set speed to absolute value
 		var current_speed = abs(player_node.Speed)
@@ -231,10 +260,13 @@ func _end_countdown():
 	countdown_active = false
 	
 	# Again could be done better if I want to keep this
-	$LapPanel.visible = true
-	$PlaceBadge.visible = true
 	$Stopwatch.visible = true
-	$Images.visible = true
+	if free_play:
+		# top centre of the HUD (laid out by now, unlike in _ready)
+		stopwatch_label.global_position = global_position + Vector2((size.x - stopwatch_label.size.x) / 2.0, 40.0)
+	else:
+		for element in _race_elements():
+			element.visible = true
 	
 	# Start Stopwatch
 	race_time = 0.0

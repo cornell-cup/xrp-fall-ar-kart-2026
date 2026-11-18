@@ -22,8 +22,8 @@ func _on_start_button_pressed() -> void:
 	pass
 
 
-func _on_quickstart_pressed() -> void:
-	SceneTransition.change_scene("res://Scenes/GameplayScenes/main.tscn")
+func _on_free_play_pressed() -> void:
+	SceneTransition.change_scene("res://Scenes/GameplayScenes/free_play.tscn")
 	pass
 	
 
