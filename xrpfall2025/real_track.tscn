@@ -1,4 +1,8 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=8 format=3 uid="uid://cbtsyym3wqevm"]
+
+[ext_resource type="PackedScene" uid="uid://dygqec8p2e14u" path="res://Assets/3dmodels/ModularRoads/road_barrier_1.glb" id="1_xdpa7"]
+[ext_resource type="PackedScene" uid="uid://8cmsqt3vfl8a" path="res://Assets/3dmodels/ModularRoads/tree_1_a.glb" id="2_h3bgq"]
+[ext_resource type="PackedScene" uid="uid://d1yiqab0aepkq" path="res://Assets/3dmodels/ModularRoads/Road1.glb" id="3_s4d1f"]
 
 [sub_resource type="Curve3D" id="Curve3D_final"]
 closed = true
@@ -13,10 +17,8 @@ point_count = 8
 albedo_color = Color(0.72, 0.72, 0.72, 1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_edge"]
-albedo_color = Color(1, 1, 1, 1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_start"]
-albedo_color = Color(1, 1, 1, 1)
 
 [node name="Track" type="Node3D"]
 
@@ -51,7 +53,10 @@ path_interval_type = 0
 path_interval = 0.02
 path_simplify_angle = 0.0
 path_rotation = 2
+path_rotation_accurate = false
 path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
 path_joined = true
 material = SubResource("StandardMaterial3D_edge")
 
@@ -64,12 +69,23 @@ path_interval_type = 0
 path_interval = 0.02
 path_simplify_angle = 0.0
 path_rotation = 2
+path_rotation_accurate = false
 path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
 path_joined = true
 material = SubResource("StandardMaterial3D_edge")
 
 [node name="StartLine" type="CSGBox3D" parent="."]
-layers = 3
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0101, 0)
+layers = 3
 size = Vector3(0.4445, 0.0002, 0.012)
 material = SubResource("StandardMaterial3D_start")
+
+[node name="road_barrier_12" parent="." instance=ExtResource("1_xdpa7")]
+
+[node name="tree_1_a" parent="." instance=ExtResource("2_h3bgq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.247932, 0)
+
+[node name="Road12" parent="." instance=ExtResource("3_s4d1f")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.517575, 0)
