@@ -82,6 +82,12 @@ layers = 3
 size = Vector3(0.4445, 0.0002, 0.012)
 material = SubResource("StandardMaterial3D_start")
 
+[node name="TestBarrier" parent="." instance=ExtResource("1_xdpa7")]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.26, 0.01, 0)
+
+[node name="TestTree" parent="." instance=ExtResource("2_h3bgq")]
+transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.5, 0, 0)
+
 [node name="road_barrier_12" parent="." instance=ExtResource("1_xdpa7")]
 transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.26, 0.01, 0)
 
