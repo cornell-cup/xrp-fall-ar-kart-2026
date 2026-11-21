@@ -36,3 +36,6 @@ xrpfall2025/fusion.log
 # repomix
 .repomixignore
 repomix-output.xml
+
+#helper scripts
+*helper*.ps1
