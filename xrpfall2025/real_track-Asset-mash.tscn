@@ -1,4 +1,4 @@
-[gd_scene load_steps=120 format=3 uid="uid://cbtsyym3wqevm"]
+[gd_scene load_steps=5 format=3 uid="uid://cbtsyym3wqevm"]
 
 [sub_resource type="Curve3D" id="Curve3D_final"]
 closed = true
