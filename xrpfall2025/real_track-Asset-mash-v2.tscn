@@ -1,0 +1,557 @@
+[gd_scene load_steps=122 format=3 uid="uid://d7s817tgod21"]
+
+[ext_resource type="PackedScene" uid="uid://dabfv5m73fj4o" path="res://Assets/3dmodels/KenneyRacing/bannerTowerGreen.glb" id="1_ofio0"]
+[ext_resource type="PackedScene" uid="uid://33jtn8q0t175" path="res://Assets/3dmodels/KenneyRacing/bannerTowerRed.glb" id="2_cw81t"]
+[ext_resource type="PackedScene" uid="uid://cpps1bk8gd7dm" path="res://Assets/3dmodels/KenneyRacing/barrierRed.glb" id="3_cscjo"]
+[ext_resource type="PackedScene" uid="uid://bmbffqdwg4wyr" path="res://Assets/3dmodels/KenneyRacing/barrierWall.glb" id="4_c2een"]
+[ext_resource type="PackedScene" uid="uid://68m7lhjuxjk7" path="res://Assets/3dmodels/KenneyRacing/barrierWhite.glb" id="5_e6ad5"]
+[ext_resource type="PackedScene" uid="uid://5xfoyxclp8cw" path="res://Assets/3dmodels/KenneyRacing/billboard.glb" id="6_anqj8"]
+[ext_resource type="PackedScene" uid="uid://uufuf6a2rm8e" path="res://Assets/3dmodels/KenneyRacing/billboardDouble_exclusive.glb" id="7_4tsbb"]
+[ext_resource type="PackedScene" uid="uid://fr5i6l4u43qp" path="res://Assets/3dmodels/KenneyRacing/billboardLow.glb" id="8_r8k45"]
+[ext_resource type="PackedScene" uid="uid://bp0iyj38ks1r0" path="res://Assets/3dmodels/KenneyRacing/billboardLower.glb" id="9_lewnt"]
+[ext_resource type="PackedScene" uid="uid://bhllqsyseq3ms" path="res://Assets/3dmodels/KenneyRacing/camera_exclusive.glb" id="10_u5v0n"]
+[ext_resource type="PackedScene" uid="uid://4cxt73aom3q6" path="res://Assets/3dmodels/KenneyRacing/fenceCurved.glb" id="11_4j528"]
+[ext_resource type="PackedScene" uid="uid://nuinw772audc" path="res://Assets/3dmodels/KenneyRacing/fenceStraight.glb" id="12_usvqq"]
+[ext_resource type="PackedScene" uid="uid://bxs587kqghti" path="res://Assets/3dmodels/KenneyRacing/flagCheckers.glb" id="13_4k1ec"]
+[ext_resource type="PackedScene" uid="uid://c8rr7k7tnpoa5" path="res://Assets/3dmodels/KenneyRacing/flagCheckersSmall.glb" id="14_vomje"]
+[ext_resource type="PackedScene" uid="uid://dyptmjwrqc00y" path="res://Assets/3dmodels/KenneyRacing/flagGreen.glb" id="15_bsybt"]
+[ext_resource type="PackedScene" uid="uid://cl4ki2c0qnumk" path="res://Assets/3dmodels/KenneyRacing/flagRed.glb" id="16_muax0"]
+[ext_resource type="PackedScene" uid="uid://cgehybs6uetg5" path="res://Assets/3dmodels/KenneyRacing/flagTankco.glb" id="17_h5apa"]
+[ext_resource type="PackedScene" uid="uid://c1r25it6r0uth" path="res://Assets/3dmodels/KenneyRacing/grandStand.glb" id="18_0rrvd"]
+[ext_resource type="PackedScene" uid="uid://by2ngrd5wuog0" path="res://Assets/3dmodels/KenneyRacing/grandStandAwning.glb" id="19_vcxeq"]
+[ext_resource type="PackedScene" uid="uid://cpyi8cr50jg7r" path="res://Assets/3dmodels/KenneyRacing/grandStandCovered.glb" id="20_a5lo1"]
+[ext_resource type="PackedScene" uid="uid://co2dt1q2hnmhi" path="res://Assets/3dmodels/KenneyRacing/grandStandCoveredRound.glb" id="21_x26ut"]
+[ext_resource type="PackedScene" uid="uid://dd1qvumjy1x51" path="res://Assets/3dmodels/KenneyRacing/grandStandRound.glb" id="22_mywfx"]
+[ext_resource type="PackedScene" uid="uid://cji6j3q6aqw6x" path="res://Assets/3dmodels/KenneyRacing/grass.glb" id="23_p8aco"]
+[ext_resource type="PackedScene" uid="uid://b40q86bm3ck3q" path="res://Assets/3dmodels/KenneyRacing/lightColored.glb" id="24_sccj1"]
+[ext_resource type="PackedScene" uid="uid://blkw6r6c6jeo" path="res://Assets/3dmodels/KenneyRacing/lightPostLarge.glb" id="25_clc2o"]
+[ext_resource type="PackedScene" uid="uid://yef3nb0fjxjq" path="res://Assets/3dmodels/KenneyRacing/lightPostModern.glb" id="26_acaoy"]
+[ext_resource type="PackedScene" uid="uid://dvmvf07tyr654" path="res://Assets/3dmodels/KenneyRacing/lightPost_exclusive.glb" id="27_1nbr3"]
+[ext_resource type="PackedScene" uid="uid://disf2vmymk4ch" path="res://Assets/3dmodels/KenneyRacing/lightRed.glb" id="28_i84jm"]
+[ext_resource type="PackedScene" uid="uid://crmn3oe28866e" path="res://Assets/3dmodels/KenneyRacing/lightRedDouble.glb" id="29_usvin"]
+[ext_resource type="PackedScene" uid="uid://vyb1cnmihju7" path="res://Assets/3dmodels/KenneyRacing/overhead.glb" id="30_0rl20"]
+[ext_resource type="PackedScene" uid="uid://cgwj2tpjojtt5" path="res://Assets/3dmodels/KenneyRacing/overheadLights.glb" id="31_m8el5"]
+[ext_resource type="PackedScene" uid="uid://chp2jxs2512f7" path="res://Assets/3dmodels/KenneyRacing/overheadRound.glb" id="32_bt8dt"]
+[ext_resource type="PackedScene" uid="uid://ihtmlssa7pya" path="res://Assets/3dmodels/KenneyRacing/overheadRoundColored.glb" id="33_mi4fl"]
+[ext_resource type="PackedScene" uid="uid://cdwbjvxo7g533" path="res://Assets/3dmodels/KenneyRacing/pitsGarage.glb" id="34_851mx"]
+[ext_resource type="PackedScene" uid="uid://r5wg75fiw4kt" path="res://Assets/3dmodels/KenneyRacing/pitsGarageClosed.glb" id="35_wiyfa"]
+[ext_resource type="PackedScene" uid="uid://b23v8suaner8v" path="res://Assets/3dmodels/KenneyRacing/pitsGarageCorner.glb" id="36_1s3bk"]
+[ext_resource type="PackedScene" uid="uid://c37jnxqwnbgmn" path="res://Assets/3dmodels/KenneyRacing/pitsOffice.glb" id="37_jwdhr"]
+[ext_resource type="PackedScene" uid="uid://cpyi3nn3x2fh2" path="res://Assets/3dmodels/KenneyRacing/pitsOfficeCorner.glb" id="38_wvpkd"]
+[ext_resource type="PackedScene" uid="uid://djyripcpsghdy" path="res://Assets/3dmodels/KenneyRacing/pitsOfficeRoof.glb" id="39_ncwah"]
+[ext_resource type="PackedScene" uid="uid://bpu5y8wdc5a0k" path="res://Assets/3dmodels/KenneyRacing/pylon.glb" id="40_i5004"]
+[ext_resource type="PackedScene" uid="uid://db7ttw6toy35j" path="res://Assets/3dmodels/KenneyRacing/raceCarGreen.glb" id="41_y7xhb"]
+[ext_resource type="PackedScene" uid="uid://b2g4pcj8is1l0" path="res://Assets/3dmodels/KenneyRacing/raceCarOrange.glb" id="42_rjvh5"]
+[ext_resource type="PackedScene" uid="uid://cupgg0odehd5d" path="res://Assets/3dmodels/KenneyRacing/raceCarRed.glb" id="43_8op0u"]
+[ext_resource type="PackedScene" uid="uid://dpuf2oeqabsj2" path="res://Assets/3dmodels/KenneyRacing/raceCarWhite.glb" id="44_3ay1h"]
+[ext_resource type="PackedScene" uid="uid://c6x7r1vql3auw" path="res://Assets/3dmodels/KenneyRacing/radarEquipment.glb" id="45_8jo6k"]
+[ext_resource type="PackedScene" uid="uid://bctjm65vq78up" path="res://Assets/3dmodels/KenneyRacing/rail.glb" id="46_sdrfg"]
+[ext_resource type="PackedScene" uid="uid://bbyu8d3pe0ot1" path="res://Assets/3dmodels/KenneyRacing/railDouble.glb" id="47_pqani"]
+[ext_resource type="PackedScene" uid="uid://ceslp1nxeqid7" path="res://Assets/3dmodels/KenneyRacing/ramp.glb" id="48_w0ceo"]
+[ext_resource type="PackedScene" uid="uid://d1fcvccbe3fmg" path="res://Assets/3dmodels/KenneyRacing/roadBump.glb" id="49_qqk13"]
+[ext_resource type="PackedScene" uid="uid://qnonrvisws2q" path="res://Assets/3dmodels/KenneyRacing/roadCornerBridgeLarge.glb" id="50_dpta3"]
+[ext_resource type="PackedScene" uid="uid://gc42uexoyoot" path="res://Assets/3dmodels/KenneyRacing/roadCornerBridgeLarger.glb" id="51_vnnt2"]
+[ext_resource type="PackedScene" uid="uid://bqeowonwxpufw" path="res://Assets/3dmodels/KenneyRacing/roadCornerBridgeSmall.glb" id="52_kns00"]
+[ext_resource type="PackedScene" uid="uid://bmrc6a6cr70pg" path="res://Assets/3dmodels/KenneyRacing/roadCornerLarge.glb" id="53_0gwlf"]
+[ext_resource type="PackedScene" uid="uid://6dofqhxngdw5" path="res://Assets/3dmodels/KenneyRacing/roadCornerLargeBorder.glb" id="54_1aj1w"]
+[ext_resource type="PackedScene" uid="uid://d1qnq46iw1qwr" path="res://Assets/3dmodels/KenneyRacing/roadCornerLargeBorderInner.glb" id="55_xgdd2"]
+[ext_resource type="PackedScene" uid="uid://bparins2nbwyy" path="res://Assets/3dmodels/KenneyRacing/roadCornerLarger.glb" id="56_v0uq3"]
+[ext_resource type="PackedScene" uid="uid://dg4oh5csom7ky" path="res://Assets/3dmodels/KenneyRacing/roadCornerLargerBorder.glb" id="57_1mbhq"]
+[ext_resource type="PackedScene" uid="uid://b5ed6wdj7s060" path="res://Assets/3dmodels/KenneyRacing/roadCornerLargerBorderInner.glb" id="58_qun3b"]
+[ext_resource type="PackedScene" uid="uid://bf718bitefatq" path="res://Assets/3dmodels/KenneyRacing/roadCornerLargerSand.glb" id="59_04pr4"]
+[ext_resource type="PackedScene" uid="uid://eoihrjkf6ppk" path="res://Assets/3dmodels/KenneyRacing/roadCornerLargerSandInner.glb" id="60_8dbto"]
+[ext_resource type="PackedScene" uid="uid://bhqtcaintco4i" path="res://Assets/3dmodels/KenneyRacing/roadCornerLargerWall.glb" id="61_0am33"]
+[ext_resource type="PackedScene" uid="uid://kidxtd11hbse" path="res://Assets/3dmodels/KenneyRacing/roadCornerLargerWallInner.glb" id="62_r6n3m"]
+[ext_resource type="PackedScene" uid="uid://bjity6raq5bu6" path="res://Assets/3dmodels/KenneyRacing/roadCornerLargeSand.glb" id="63_fuyi1"]
+[ext_resource type="PackedScene" uid="uid://bpw20woyjjmpn" path="res://Assets/3dmodels/KenneyRacing/roadCornerLargeSandInner.glb" id="64_hl238"]
+[ext_resource type="PackedScene" uid="uid://dyi4ide6s15xu" path="res://Assets/3dmodels/KenneyRacing/roadCornerLargeWall.glb" id="65_qbf6c"]
+[ext_resource type="PackedScene" uid="uid://w4pjdjockvap" path="res://Assets/3dmodels/KenneyRacing/roadCornerLargeWallInner.glb" id="66_3sko2"]
+[ext_resource type="PackedScene" uid="uid://cdbfl38la4sd" path="res://Assets/3dmodels/KenneyRacing/roadCornerSmall.glb" id="67_00b4s"]
+[ext_resource type="PackedScene" uid="uid://hyvuf5ejq67w" path="res://Assets/3dmodels/KenneyRacing/roadCornerSmallBorder.glb" id="68_vbto3"]
+[ext_resource type="PackedScene" uid="uid://dmp8cf3gwy1yo" path="res://Assets/3dmodels/KenneyRacing/roadCornerSmallSand.glb" id="69_ly7q2"]
+[ext_resource type="PackedScene" uid="uid://bvunmtycy7wvd" path="res://Assets/3dmodels/KenneyRacing/roadCornerSmallSquare.glb" id="70_4rqgu"]
+[ext_resource type="PackedScene" uid="uid://b7pteks58neuh" path="res://Assets/3dmodels/KenneyRacing/roadCornerSmallWall.glb" id="71_t2s3k"]
+[ext_resource type="PackedScene" uid="uid://b31dc5r66dqmm" path="res://Assets/3dmodels/KenneyRacing/roadCrossing.glb" id="72_kepn2"]
+[ext_resource type="PackedScene" uid="uid://ch1n2attg0nrk" path="res://Assets/3dmodels/KenneyRacing/roadCurved.glb" id="73_hokeg"]
+[ext_resource type="PackedScene" uid="uid://48tj2311522j" path="res://Assets/3dmodels/KenneyRacing/roadCurvedSplit.glb" id="74_qf28p"]
+[ext_resource type="PackedScene" uid="uid://c20aieotea6p3" path="res://Assets/3dmodels/KenneyRacing/roadEnd.glb" id="75_olbs2"]
+[ext_resource type="PackedScene" uid="uid://61crwsjb6ou5" path="res://Assets/3dmodels/KenneyRacing/roadPitEntry.glb" id="76_qdhyl"]
+[ext_resource type="PackedScene" uid="uid://dqf0dl85151vc" path="res://Assets/3dmodels/KenneyRacing/roadPitGarage.glb" id="77_3sgsu"]
+[ext_resource type="PackedScene" uid="uid://fbsigsoj175o" path="res://Assets/3dmodels/KenneyRacing/roadPitStraight.glb" id="78_15d3q"]
+[ext_resource type="PackedScene" uid="uid://fw0gvkxl0i7a" path="res://Assets/3dmodels/KenneyRacing/roadPitStraightLong.glb" id="79_3gneb"]
+[ext_resource type="PackedScene" uid="uid://ch3hkqb6y7plb" path="res://Assets/3dmodels/KenneyRacing/roadRamp.glb" id="80_5m2eq"]
+[ext_resource type="PackedScene" uid="uid://cvp5naj63h7g" path="res://Assets/3dmodels/KenneyRacing/roadRampLong.glb" id="81_ra6g8"]
+[ext_resource type="PackedScene" uid="uid://ckksreyao5mgh" path="res://Assets/3dmodels/KenneyRacing/roadRampLongCurved.glb" id="82_3ocqe"]
+[ext_resource type="PackedScene" uid="uid://ckwpqmwicdaco" path="res://Assets/3dmodels/KenneyRacing/roadRampLongCurvedWall.glb" id="83_r45r0"]
+[ext_resource type="PackedScene" uid="uid://bqmf8u3x4kmu6" path="res://Assets/3dmodels/KenneyRacing/roadRampLongWall.glb" id="84_edydd"]
+[ext_resource type="PackedScene" uid="uid://cgr34m7cvwbl1" path="res://Assets/3dmodels/KenneyRacing/roadRampWall.glb" id="85_mwqgd"]
+[ext_resource type="PackedScene" uid="uid://d1pxwjvgcgon4" path="res://Assets/3dmodels/KenneyRacing/roadSide.glb" id="86_7c8mc"]
+[ext_resource type="PackedScene" uid="uid://bddbhrbwcqgg8" path="res://Assets/3dmodels/KenneyRacing/roadSplit.glb" id="87_7clag"]
+[ext_resource type="PackedScene" uid="uid://bwy11shxktya5" path="res://Assets/3dmodels/KenneyRacing/roadSplitLarge.glb" id="88_670gy"]
+[ext_resource type="PackedScene" uid="uid://cbptj1hukgas3" path="res://Assets/3dmodels/KenneyRacing/roadSplitLarger.glb" id="89_u6dig"]
+[ext_resource type="PackedScene" uid="uid://s05wpo3ct15g" path="res://Assets/3dmodels/KenneyRacing/roadSplitRound.glb" id="90_d61ek"]
+[ext_resource type="PackedScene" uid="uid://rtgb64r4x4td" path="res://Assets/3dmodels/KenneyRacing/roadSplitRoundLarge.glb" id="91_85b2s"]
+[ext_resource type="PackedScene" uid="uid://g3ac6byq8kkd" path="res://Assets/3dmodels/KenneyRacing/roadSplitSmall.glb" id="92_nu4mr"]
+[ext_resource type="PackedScene" uid="uid://lcurj3md7hcj" path="res://Assets/3dmodels/KenneyRacing/roadStart.glb" id="93_l0qc4"]
+[ext_resource type="PackedScene" uid="uid://dq8m0ntb5v35w" path="res://Assets/3dmodels/KenneyRacing/roadStartPositions.glb" id="94_mncaa"]
+[ext_resource type="PackedScene" uid="uid://bpvlmlnvigppc" path="res://Assets/3dmodels/KenneyRacing/roadStraight.glb" id="95_uw65x"]
+[ext_resource type="PackedScene" uid="uid://cskcjmgywbbyt" path="res://Assets/3dmodels/KenneyRacing/roadStraightArrow.glb" id="96_bb8mp"]
+[ext_resource type="PackedScene" uid="uid://cm5rag2ix00vq" path="res://Assets/3dmodels/KenneyRacing/roadStraightBridge.glb" id="97_10370"]
+[ext_resource type="PackedScene" uid="uid://cg72vqiveo3q0" path="res://Assets/3dmodels/KenneyRacing/roadStraightBridgeMid.glb" id="98_x003e"]
+[ext_resource type="PackedScene" uid="uid://m1iy3aqr0c0u" path="res://Assets/3dmodels/KenneyRacing/roadStraightBridgeStart.glb" id="99_waccf"]
+[ext_resource type="PackedScene" uid="uid://bt1qfo2nkj8ei" path="res://Assets/3dmodels/KenneyRacing/roadStraightLong.glb" id="100_3ae1b"]
+[ext_resource type="PackedScene" uid="uid://cg70m06iynhqm" path="res://Assets/3dmodels/KenneyRacing/roadStraightLongBump.glb" id="101_3t5ht"]
+[ext_resource type="PackedScene" uid="uid://b74fgymrh6016" path="res://Assets/3dmodels/KenneyRacing/roadStraightLongBumpRound.glb" id="102_2sg2w"]
+[ext_resource type="PackedScene" uid="uid://cl01jgojalblm" path="res://Assets/3dmodels/KenneyRacing/roadStraightLongMid.glb" id="103_jvj6x"]
+[ext_resource type="PackedScene" uid="uid://bsd5v6bm7le5d" path="res://Assets/3dmodels/KenneyRacing/roadStraightSkew.glb" id="104_6qn7i"]
+[ext_resource type="PackedScene" uid="uid://bumd85o4xboj1" path="res://Assets/3dmodels/KenneyRacing/tent.glb" id="105_h6xh6"]
+[ext_resource type="PackedScene" uid="uid://c8p8jk7s8hfpx" path="res://Assets/3dmodels/KenneyRacing/tentClosed.glb" id="106_c1rjf"]
+[ext_resource type="PackedScene" uid="uid://cmlhvvt48pgid" path="res://Assets/3dmodels/KenneyRacing/tentClosedLong.glb" id="107_ubxiy"]
+[ext_resource type="PackedScene" uid="uid://bslfjwi6qnm24" path="res://Assets/3dmodels/KenneyRacing/tentLong.glb" id="108_vjm7d"]
+[ext_resource type="PackedScene" uid="uid://d2aeaxnphfu7e" path="res://Assets/3dmodels/KenneyRacing/tentRoof.glb" id="109_3cmg5"]
+[ext_resource type="PackedScene" uid="uid://dxuk036lckeev" path="res://Assets/3dmodels/KenneyRacing/tentRoofDouble.glb" id="110_kqs7v"]
+[ext_resource type="PackedScene" uid="uid://da7wn8hd0ny1k" path="res://Assets/3dmodels/KenneyRacing/treeLarge.glb" id="111_xvaly"]
+[ext_resource type="PackedScene" uid="uid://cxp5wadgpdc4o" path="res://Assets/3dmodels/KenneyRacing/treeSmall.glb" id="112_utjym"]
+
+[sub_resource type="Curve3D" id="Curve3D_final"]
+closed = true
+bake_interval = 0.01
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.277054, 0, 0, -0.4953, -0.277054, 0, 0, 0.277054, 0, 0, 0.50165, 0, -0.99695, 0, 0, -0.277054, 0, 0, 0, 1.0033, 0, -0.4953, 0, 0, 0, 0, 0, 0, 1.0033, 0, 0, 0, 0, 0, 0, 0, 0.277054, 1.0033, 0, 0.4953, 0.277054, 0, 0, -0.277054, 0, 0, 0.50165, 0, 0.99695, 0, 0, 0.277054, 0, 0, 0, 0, 0, 0.4953),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0)
+}
+point_count = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_road"]
+albedo_color = Color(0.72, 0.72, 0.72, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_edge"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_start"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ofio0"]
+albedo_color = Color(0.407843, 0.756863, 0.317647, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_cw81t"]
+size = Vector2(100, 100)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_cscjo"]
+sky_top_color = Color(0.415686, 0.682353, 1, 1)
+sky_horizon_color = Color(1, 1, 1, 1)
+ground_bottom_color = Color(0.407843, 0.756863, 0.317647, 1)
+ground_horizon_color = Color(0.407843, 0.756863, 0.317647, 1)
+
+[sub_resource type="Sky" id="Sky_c2een"]
+sky_material = SubResource("ProceduralSkyMaterial_cscjo")
+
+[sub_resource type="Environment" id="Environment_e6ad5"]
+background_mode = 2
+sky = SubResource("Sky_c2een")
+
+[node name="Track" type="Node3D"]
+
+[node name="Final Path" type="Path3D" parent="."]
+curve = SubResource("Curve3D_final")
+
+[node name="CSGPolygon3D" type="CSGPolygon3D" parent="."]
+layers = 3
+use_collision = true
+collision_layer = 3
+collision_mask = 3
+polygon = PackedVector2Array(-0.22225, 0, -0.22225, 0.01, 0.22225, 0.01, 0.22225, 0)
+mode = 2
+path_node = NodePath("../Final Path")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_road")
+
+[node name="InnerEdge" type="CSGPolygon3D" parent="."]
+layers = 3
+polygon = PackedVector2Array(-0.22225, 0.01, -0.22225, 0.0102, -0.21425, 0.0102, -0.21425, 0.01)
+mode = 2
+path_node = NodePath("../Final Path")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_edge")
+
+[node name="OuterEdge" type="CSGPolygon3D" parent="."]
+layers = 3
+polygon = PackedVector2Array(0.21425, 0.01, 0.21425, 0.0102, 0.22225, 0.0102, 0.22225, 0.01)
+mode = 2
+path_node = NodePath("../Final Path")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_edge")
+
+[node name="StartLine" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0101, 0)
+layers = 3
+size = Vector3(0.4445, 0.0002, 0.012)
+material = SubResource("StandardMaterial3D_start")
+
+[node name="Grass" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0)
+material_override = SubResource("StandardMaterial3D_ofio0")
+mesh = SubResource("PlaneMesh_cw81t")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_e6ad5")
+
+[node name="KenneyAssetGrid" type="Node3D" parent="."]
+
+[node name="bannerTowerGreen" parent="KenneyAssetGrid" instance=ExtResource("1_ofio0")]
+transform = Transform3D(0, 0, 0.444, 0, 0.444, 0, -0.444, 0, 0, 2.1, 0, 0)
+
+[node name="bannerTowerRed" parent="KenneyAssetGrid" instance=ExtResource("2_cw81t")]
+transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, 0.5, 0, 1.6)
+
+[node name="barrierRed" parent="KenneyAssetGrid" instance=ExtResource("3_cscjo")]
+transform = Transform3D(-0.444, 0, 0, 0, 0.444, 0, 0, 0, -0.444, 0.5, 0, -1.6)
+
+[node name="barrierWall" parent="KenneyAssetGrid" instance=ExtResource("4_c2een")]
+transform = Transform3D(0, 0, -0.444, 0, 0.444, 0, 0.444, 0, 0, -1.1, 0, 0)
+
+[node name="barrierWhite" parent="KenneyAssetGrid" instance=ExtResource("5_e6ad5")]
+transform = Transform3D(-0.198563, 0, 0.397126, 0, 0.444, 0, -0.397126, 0, -0.198563, 2.1, 0, -0.8)
+
+[node name="billboard" parent="KenneyAssetGrid" instance=ExtResource("6_anqj8")]
+transform = Transform3D(-0.397126, 0, 0.198563, 0, 0.444, 0, -0.198563, 0, -0.397126, 1.3, 0, -1.6)
+
+[node name="billboardDouble_exclusive" parent="KenneyAssetGrid" instance=ExtResource("7_4tsbb")]
+transform = Transform3D(0.397126, 0, 0.198563, 0, 0.444, 0, -0.198563, 0, 0.397126, 1.3, 0, 1.6)
+
+[node name="billboardLow" parent="KenneyAssetGrid" instance=ExtResource("8_r8k45")]
+transform = Transform3D(0.198563, 0, 0.397126, 0, 0.444, 0, -0.397126, 0, 0.198563, 2.1, 0, 0.8)
+
+[node name="billboardLower" parent="KenneyAssetGrid" instance=ExtResource("9_lewnt")]
+transform = Transform3D(0.397126, 0, -0.198563, 0, 0.444, 0, 0.198563, 0, 0.397126, -0.3, 0, 1.6)
+
+[node name="camera_exclusive" parent="KenneyAssetGrid" instance=ExtResource("10_u5v0n")]
+transform = Transform3D(-0.397126, 0, -0.198563, 0, 0.444, 0, 0.198563, 0, -0.397126, -0.3, 0, -1.6)
+
+[node name="fenceCurved" parent="KenneyAssetGrid" instance=ExtResource("11_4j528")]
+transform = Transform3D(-0.198563, 0, -0.397126, 0, 0.444, 0, 0.397126, 0, -0.198563, -1.1, 0, -0.8)
+
+[node name="fenceStraight" parent="KenneyAssetGrid" instance=ExtResource("12_usvqq")]
+transform = Transform3D(0.198563, 0, -0.397126, 0, 0.444, 0, 0.397126, 0, 0.198563, -1.1, 0, 0.8)
+
+[node name="flagCheckers" parent="KenneyAssetGrid" instance=ExtResource("13_4k1ec")]
+transform = Transform3D(0.313955, 0, 0.313955, 0, 0.444, 0, -0.313955, 0, 0.313955, 2.1, 0, 1.6)
+
+[node name="flagCheckersSmall" parent="KenneyAssetGrid" instance=ExtResource("14_vomje")]
+transform = Transform3D(-0.313955, 0, 0.313955, 0, 0.444, 0, -0.313955, 0, -0.313955, 2.1, 0, -1.6)
+
+[node name="flagGreen" parent="KenneyAssetGrid" instance=ExtResource("15_bsybt")]
+transform = Transform3D(0.313955, 0, -0.313955, 0, 0.444, 0, 0.313955, 0, 0.313955, -1.1, 0, 1.6)
+
+[node name="flagRed" parent="KenneyAssetGrid" instance=ExtResource("16_muax0")]
+transform = Transform3D(-0.313955, 0, -0.313955, 0, 0.444, 0, 0.313955, 0, -0.313955, -1.1, 0, -1.6)
+
+[node name="flagTankco" parent="KenneyAssetGrid" instance=ExtResource("17_h5apa")]
+transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, 0.5, 0, 2.4)
+
+[node name="grandStand" parent="KenneyAssetGrid" instance=ExtResource("18_0rrvd")]
+transform = Transform3D(0, 0, -0.444, 0, 0.444, 0, 0.444, 0, 0, -1.9, 0, 0)
+
+[node name="grandStandAwning" parent="KenneyAssetGrid" instance=ExtResource("19_vcxeq")]
+transform = Transform3D(0, 0, 0.444, 0, 0.444, 0, -0.444, 0, 0, 2.9, 0, 0)
+
+[node name="grandStandCovered" parent="KenneyAssetGrid" instance=ExtResource("20_a5lo1")]
+transform = Transform3D(-0.444, 0, 0, 0, 0.444, 0, 0, 0, -0.444, 0.5, 0, -2.4)
+
+[node name="grandStandCoveredRound" parent="KenneyAssetGrid" instance=ExtResource("21_x26ut")]
+transform = Transform3D(-0.421215, 0, -0.140405, 0, 0.444, 0, 0.140405, 0, -0.421215, -0.3, 0, -2.4)
+
+[node name="grandStandRound" parent="KenneyAssetGrid" instance=ExtResource("22_mywfx")]
+transform = Transform3D(-0.421215, 0, 0.140405, 0, 0.444, 0, -0.140405, 0, -0.421215, 1.3, 0, -2.4)
+
+[node name="grass" parent="KenneyAssetGrid" instance=ExtResource("23_p8aco")]
+transform = Transform3D(-0.140405, 0, -0.421215, 0, 0.444, 0, 0.421215, 0, -0.140405, -1.9, 0, -0.8)
+
+[node name="lightColored" parent="KenneyAssetGrid" instance=ExtResource("24_sccj1")]
+transform = Transform3D(0.140405, 0, -0.421215, 0, 0.444, 0, 0.421215, 0, 0.140405, -1.9, 0, 0.8)
+
+[node name="lightPostLarge" parent="KenneyAssetGrid" instance=ExtResource("25_clc2o")]
+transform = Transform3D(-0.140405, 0, 0.421215, 0, 0.444, 0, -0.421215, 0, -0.140405, 2.9, 0, -0.8)
+
+[node name="lightPostModern" parent="KenneyAssetGrid" instance=ExtResource("26_acaoy")]
+transform = Transform3D(0.140405, 0, 0.421215, 0, 0.444, 0, -0.421215, 0, 0.140405, 2.9, 0, 0.8)
+
+[node name="lightPost_exclusive" parent="KenneyAssetGrid" instance=ExtResource("27_1nbr3")]
+transform = Transform3D(0.421215, 0, 0.140405, 0, 0.444, 0, -0.140405, 0, 0.421215, 1.3, 0, 2.4)
+
+[node name="lightRed" parent="KenneyAssetGrid" instance=ExtResource("28_i84jm")]
+transform = Transform3D(0.421215, 0, -0.140405, 0, 0.444, 0, 0.140405, 0, 0.421215, -0.3, 0, 2.4)
+
+[node name="lightRedDouble" parent="KenneyAssetGrid" instance=ExtResource("29_usvin")]
+transform = Transform3D(-0.36943, 0, 0.246287, 0, 0.444, 0, -0.246287, 0, -0.36943, 2.1, 0, -2.4)
+
+[node name="overhead" parent="KenneyAssetGrid" instance=ExtResource("30_0rl20")]
+transform = Transform3D(0.36943, 0, 0.246287, 0, 0.444, 0, -0.246287, 0, 0.36943, 2.1, 0, 2.4)
+
+[node name="overheadLights" parent="KenneyAssetGrid" instance=ExtResource("31_m8el5")]
+transform = Transform3D(-0.36943, 0, -0.246287, 0, 0.444, 0, 0.246287, 0, -0.36943, -1.1, 0, -2.4)
+
+[node name="overheadRound" parent="KenneyAssetGrid" instance=ExtResource("32_bt8dt")]
+transform = Transform3D(-0.246287, 0, 0.36943, 0, 0.444, 0, -0.36943, 0, -0.246287, 2.9, 0, -1.6)
+
+[node name="overheadRoundColored" parent="KenneyAssetGrid" instance=ExtResource("33_mi4fl")]
+transform = Transform3D(-0.246287, 0, -0.36943, 0, 0.444, 0, 0.36943, 0, -0.246287, -1.9, 0, -1.6)
+
+[node name="pitsGarage" parent="KenneyAssetGrid" instance=ExtResource("34_851mx")]
+transform = Transform3D(0.246287, 0, 0.36943, 0, 0.444, 0, -0.36943, 0, 0.246287, 2.9, 0, 1.6)
+
+[node name="pitsGarageClosed" parent="KenneyAssetGrid" instance=ExtResource("35_wiyfa")]
+transform = Transform3D(0.36943, 0, -0.246287, 0, 0.444, 0, 0.246287, 0, 0.36943, -1.1, 0, 2.4)
+
+[node name="pitsGarageCorner" parent="KenneyAssetGrid" instance=ExtResource("36_1s3bk")]
+transform = Transform3D(0.246287, 0, -0.36943, 0, 0.444, 0, 0.36943, 0, 0.246287, -1.9, 0, 1.6)
+
+[node name="pitsOffice" parent="KenneyAssetGrid" instance=ExtResource("37_jwdhr")]
+transform = Transform3D(0, 0, 0.444, 0, 0.444, 0, -0.444, 0, 0, 3.7, 0, 0)
+
+[node name="pitsOfficeCorner" parent="KenneyAssetGrid" instance=ExtResource("38_wvpkd")]
+transform = Transform3D(-0.444, 0, 0, 0, 0.444, 0, 0, 0, -0.444, 0.5, 0, -3.2)
+
+[node name="pitsOfficeRoof" parent="KenneyAssetGrid" instance=ExtResource("39_ncwah")]
+transform = Transform3D(0, 0, -0.444, 0, 0.444, 0, 0.444, 0, 0, -2.7, 0, 0)
+
+[node name="pylon" parent="KenneyAssetGrid" instance=ExtResource("40_i5004")]
+transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, 0.5, 0, 3.2)
+
+[node name="raceCarGreen" parent="KenneyAssetGrid" instance=ExtResource("41_y7xhb")]
+transform = Transform3D(0.107686, 0, 0.430743, 0, 0.444, 0, -0.430743, 0, 0.107686, 3.7, 0, 0.8)
+
+[node name="raceCarOrange" parent="KenneyAssetGrid" instance=ExtResource("42_rjvh5")]
+transform = Transform3D(0.430743, 0, 0.107686, 0, 0.444, 0, -0.107686, 0, 0.430743, 1.3, 0, 3.2)
+
+[node name="raceCarRed" parent="KenneyAssetGrid" instance=ExtResource("43_8op0u")]
+transform = Transform3D(0.430743, 0, -0.107686, 0, 0.444, 0, 0.107686, 0, 0.430743, -0.3, 0, 3.2)
+
+[node name="raceCarWhite" parent="KenneyAssetGrid" instance=ExtResource("44_3ay1h")]
+transform = Transform3D(-0.430743, 0, -0.107686, 0, 0.444, 0, 0.107686, 0, -0.430743, -0.3, 0, -3.2)
+
+[node name="radarEquipment" parent="KenneyAssetGrid" instance=ExtResource("45_8jo6k")]
+transform = Transform3D(0.107686, 0, -0.430743, 0, 0.444, 0, 0.430743, 0, 0.107686, -2.7, 0, 0.8)
+
+[node name="rail" parent="KenneyAssetGrid" instance=ExtResource("46_sdrfg")]
+transform = Transform3D(-0.107686, 0, -0.430743, 0, 0.444, 0, 0.430743, 0, -0.107686, -2.7, 0, -0.8)
+
+[node name="railDouble" parent="KenneyAssetGrid" instance=ExtResource("47_pqani")]
+transform = Transform3D(-0.430743, 0, 0.107686, 0, 0.444, 0, -0.107686, 0, -0.430743, 1.3, 0, -3.2)
+
+[node name="ramp" parent="KenneyAssetGrid" instance=ExtResource("48_w0ceo")]
+transform = Transform3D(-0.107686, 0, 0.430743, 0, 0.444, 0, -0.430743, 0, -0.107686, 3.7, 0, -0.8)
+
+[node name="roadBump" parent="KenneyAssetGrid" instance=ExtResource("49_qqk13")]
+transform = Transform3D(0.313955, 0, -0.313955, 0, 0.444, 0, 0.313955, 0, 0.313955, -1.9, 0, 2.4)
+
+[node name="roadCornerBridgeLarge" parent="KenneyAssetGrid" instance=ExtResource("50_dpta3")]
+transform = Transform3D(0.313955, 0, 0.313955, 0, 0.444, 0, -0.313955, 0, 0.313955, 2.9, 0, 2.4)
+
+[node name="roadCornerBridgeLarger" parent="KenneyAssetGrid" instance=ExtResource("51_vnnt2")]
+transform = Transform3D(-0.313955, 0, 0.313955, 0, 0.444, 0, -0.313955, 0, -0.313955, 2.9, 0, -2.4)
+
+[node name="roadCornerBridgeSmall" parent="KenneyAssetGrid" instance=ExtResource("52_kns00")]
+transform = Transform3D(-0.313955, 0, -0.313955, 0, 0.444, 0, 0.313955, 0, -0.313955, -1.9, 0, -2.4)
+
+[node name="roadCornerLarge" parent="KenneyAssetGrid" instance=ExtResource("53_0gwlf")]
+transform = Transform3D(-0.397126, 0, 0.198563, 0, 0.444, 0, -0.198563, 0, -0.397126, 2.1, 0, -3.2)
+
+[node name="roadCornerLargeBorder" parent="KenneyAssetGrid" instance=ExtResource("54_1aj1w")]
+transform = Transform3D(0.397126, 0, 0.198563, 0, 0.444, 0, -0.198563, 0, 0.397126, 2.1, 0, 3.2)
+
+[node name="roadCornerLargeBorderInner" parent="KenneyAssetGrid" instance=ExtResource("55_xgdd2")]
+transform = Transform3D(-0.198563, 0, -0.397126, 0, 0.444, 0, 0.397126, 0, -0.198563, -2.7, 0, -1.6)
+
+[node name="roadCornerLarger" parent="KenneyAssetGrid" instance=ExtResource("56_v0uq3")]
+transform = Transform3D(0.397126, 0, -0.198563, 0, 0.444, 0, 0.198563, 0, 0.397126, -1.1, 0, 3.2)
+
+[node name="roadCornerLargerBorder" parent="KenneyAssetGrid" instance=ExtResource("57_1mbhq")]
+transform = Transform3D(-0.397126, 0, -0.198563, 0, 0.444, 0, 0.198563, 0, -0.397126, -1.1, 0, -3.2)
+
+[node name="roadCornerLargerBorderInner" parent="KenneyAssetGrid" instance=ExtResource("58_qun3b")]
+transform = Transform3D(-0.198563, 0, 0.397126, 0, 0.444, 0, -0.397126, 0, -0.198563, 3.7, 0, -1.6)
+
+[node name="roadCornerLargerSand" parent="KenneyAssetGrid" instance=ExtResource("59_04pr4")]
+transform = Transform3D(0.198563, 0, 0.397126, 0, 0.444, 0, -0.397126, 0, 0.198563, 3.7, 0, 1.6)
+
+[node name="roadCornerLargerSandInner" parent="KenneyAssetGrid" instance=ExtResource("60_8dbto")]
+transform = Transform3D(0.198563, 0, -0.397126, 0, 0.444, 0, 0.397126, 0, 0.198563, -2.7, 0, 1.6)
+
+[node name="roadCornerLargerWall" parent="KenneyAssetGrid" instance=ExtResource("61_0am33")]
+transform = Transform3D(-0.3552, 0, -0.2664, 0, 0.444, 0, 0.2664, 0, -0.3552, -1.9, 0, -3.2)
+
+[node name="roadCornerLargerWallInner" parent="KenneyAssetGrid" instance=ExtResource("62_r6n3m")]
+transform = Transform3D(0.3552, 0, 0.2664, 0, 0.444, 0, -0.2664, 0, 0.3552, 2.9, 0, 3.2)
+
+[node name="roadCornerLargeSand" parent="KenneyAssetGrid" instance=ExtResource("63_fuyi1")]
+transform = Transform3D(-0.2664, 0, -0.3552, 0, 0.444, 0, 0.3552, 0, -0.2664, -2.7, 0, -2.4)
+
+[node name="roadCornerLargeSandInner" parent="KenneyAssetGrid" instance=ExtResource("64_hl238")]
+transform = Transform3D(0.3552, 0, -0.2664, 0, 0.444, 0, 0.2664, 0, 0.3552, -1.9, 0, 3.2)
+
+[node name="roadCornerLargeWall" parent="KenneyAssetGrid" instance=ExtResource("65_qbf6c")]
+transform = Transform3D(0.2664, 0, 0.3552, 0, 0.444, 0, -0.3552, 0, 0.2664, 3.7, 0, 2.4)
+
+[node name="roadCornerLargeWallInner" parent="KenneyAssetGrid" instance=ExtResource("66_3sko2")]
+transform = Transform3D(-0.2664, 0, 0.3552, 0, 0.444, 0, -0.3552, 0, -0.2664, 3.7, 0, -2.4)
+
+[node name="roadCornerSmall" parent="KenneyAssetGrid" instance=ExtResource("67_00b4s")]
+transform = Transform3D(0.2664, 0, -0.3552, 0, 0.444, 0, 0.3552, 0, 0.2664, -2.7, 0, 2.4)
+
+[node name="roadCornerSmallBorder" parent="KenneyAssetGrid" instance=ExtResource("68_vbto3")]
+transform = Transform3D(0, 0, 0.444, 0, 0.444, 0, -0.444, 0, 0, 4.5, 0, 0)
+
+[node name="roadCornerSmallSand" parent="KenneyAssetGrid" instance=ExtResource("69_ly7q2")]
+transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, 0.5, 0, 4)
+
+[node name="roadCornerSmallSquare" parent="KenneyAssetGrid" instance=ExtResource("70_4rqgu")]
+transform = Transform3D(-0.444, 0, 0, 0, 0.444, 0, 0, 0, -0.444, 0.5, 0, -4)
+
+[node name="roadCornerSmallWall" parent="KenneyAssetGrid" instance=ExtResource("71_t2s3k")]
+transform = Transform3D(0, 0, -0.444, 0, 0.444, 0, 0.444, 0, 0, -3.5, 0, 0)
+
+[node name="roadCrossing" parent="KenneyAssetGrid" instance=ExtResource("72_kepn2")]
+transform = Transform3D(-0.3552, 0, 0.2664, 0, 0.444, 0, -0.2664, 0, -0.3552, 2.9, 0, -3.2)
+
+[node name="roadCurved" parent="KenneyAssetGrid" instance=ExtResource("73_hokeg")]
+transform = Transform3D(0.435378, 0, 0.0870756, 0, 0.444, 0, -0.0870756, 0, 0.435378, 1.3, 0, 4)
+
+[node name="roadCurvedSplit" parent="KenneyAssetGrid" instance=ExtResource("74_qf28p")]
+transform = Transform3D(0.435378, 0, -0.0870756, 0, 0.444, 0, 0.0870756, 0, 0.435378, -0.3, 0, 4)
+
+[node name="roadEnd" parent="KenneyAssetGrid" instance=ExtResource("75_olbs2")]
+transform = Transform3D(0.0870756, 0, -0.435378, 0, 0.444, 0, 0.435378, 0, 0.0870756, -3.5, 0, 0.8)
+
+[node name="roadPitEntry" parent="KenneyAssetGrid" instance=ExtResource("76_qdhyl")]
+transform = Transform3D(-0.0870756, 0, -0.435378, 0, 0.444, 0, 0.435378, 0, -0.0870756, -3.5, 0, -0.8)
+
+[node name="roadPitGarage" parent="KenneyAssetGrid" instance=ExtResource("77_3sgsu")]
+transform = Transform3D(-0.435378, 0, 0.0870756, 0, 0.444, 0, -0.0870756, 0, -0.435378, 1.3, 0, -4)
+
+[node name="roadPitStraight" parent="KenneyAssetGrid" instance=ExtResource("78_15d3q")]
+transform = Transform3D(-0.435378, 0, -0.0870756, 0, 0.444, 0, 0.0870756, 0, -0.435378, -0.3, 0, -4)
+
+[node name="roadPitStraightLong" parent="KenneyAssetGrid" instance=ExtResource("79_3gneb")]
+transform = Transform3D(0.0870756, 0, 0.435378, 0, 0.444, 0, -0.435378, 0, 0.0870756, 4.5, 0, 0.8)
+
+[node name="roadRamp" parent="KenneyAssetGrid" instance=ExtResource("80_5m2eq")]
+transform = Transform3D(-0.0870756, 0, 0.435378, 0, 0.444, 0, -0.435378, 0, -0.0870756, 4.5, 0, -0.8)
+
+[node name="roadRampLong" parent="KenneyAssetGrid" instance=ExtResource("81_ra6g8")]
+transform = Transform3D(-0.412244, 0, 0.164897, 0, 0.444, 0, -0.164897, 0, -0.412244, 2.1, 0, -4)
+
+[node name="roadRampLongCurved" parent="KenneyAssetGrid" instance=ExtResource("82_3ocqe")]
+transform = Transform3D(0.412244, 0, -0.164897, 0, 0.444, 0, 0.164897, 0, 0.412244, -1.1, 0, 4)
+
+[node name="roadRampLongCurvedWall" parent="KenneyAssetGrid" instance=ExtResource("83_r45r0")]
+transform = Transform3D(-0.164897, 0, 0.412244, 0, 0.444, 0, -0.412244, 0, -0.164897, 4.5, 0, -1.6)
+
+[node name="roadRampLongWall" parent="KenneyAssetGrid" instance=ExtResource("84_edydd")]
+transform = Transform3D(-0.412244, 0, -0.164897, 0, 0.444, 0, 0.164897, 0, -0.412244, -1.1, 0, -4)
+
+[node name="roadRampWall" parent="KenneyAssetGrid" instance=ExtResource("85_mwqgd")]
+transform = Transform3D(0.412244, 0, 0.164897, 0, 0.444, 0, -0.164897, 0, 0.412244, 2.1, 0, 4)
+
+[node name="roadSide" parent="KenneyAssetGrid" instance=ExtResource("86_7c8mc")]
+transform = Transform3D(0.164897, 0, -0.412244, 0, 0.444, 0, 0.412244, 0, 0.164897, -3.5, 0, 1.6)
+
+[node name="roadSplit" parent="KenneyAssetGrid" instance=ExtResource("87_7clag")]
+transform = Transform3D(-0.164897, 0, -0.412244, 0, 0.444, 0, 0.412244, 0, -0.164897, -3.5, 0, -1.6)
+
+[node name="roadSplitLarge" parent="KenneyAssetGrid" instance=ExtResource("88_670gy")]
+transform = Transform3D(0.164897, 0, 0.412244, 0, 0.444, 0, -0.412244, 0, 0.164897, 4.5, 0, 1.6)
+
+[node name="roadSplitLarger" parent="KenneyAssetGrid" instance=ExtResource("89_u6dig")]
+transform = Transform3D(0.313955, 0, -0.313955, 0, 0.444, 0, 0.313955, 0, 0.313955, -2.7, 0, 3.2)
+
+[node name="roadSplitRound" parent="KenneyAssetGrid" instance=ExtResource("90_d61ek")]
+transform = Transform3D(-0.313955, 0, 0.313955, 0, 0.444, 0, -0.313955, 0, -0.313955, 3.7, 0, -3.2)
+
+[node name="roadSplitRoundLarge" parent="KenneyAssetGrid" instance=ExtResource("91_85b2s")]
+transform = Transform3D(0.313955, 0, 0.313955, 0, 0.444, 0, -0.313955, 0, 0.313955, 3.7, 0, 3.2)
+
+[node name="roadSplitSmall" parent="KenneyAssetGrid" instance=ExtResource("92_nu4mr")]
+transform = Transform3D(-0.313955, 0, -0.313955, 0, 0.444, 0, 0.313955, 0, -0.313955, -2.7, 0, -3.2)
+
+[node name="roadStart" parent="KenneyAssetGrid" instance=ExtResource("93_l0qc4")]
+transform = Transform3D(-0.228436, 0, -0.380727, 0, 0.444, 0, 0.380727, 0, -0.228436, -3.5, 0, -2.4)
+
+[node name="roadStartPositions" parent="KenneyAssetGrid" instance=ExtResource("94_mncaa")]
+transform = Transform3D(0.380727, 0, 0.228436, 0, 0.444, 0, -0.228436, 0, 0.380727, 2.9, 0, 4)
+
+[node name="roadStraight" parent="KenneyAssetGrid" instance=ExtResource("95_uw65x")]
+transform = Transform3D(0.228436, 0, -0.380727, 0, 0.444, 0, 0.380727, 0, 0.228436, -3.5, 0, 2.4)
+
+[node name="roadStraightArrow" parent="KenneyAssetGrid" instance=ExtResource("96_bb8mp")]
+transform = Transform3D(0.380727, 0, -0.228436, 0, 0.444, 0, 0.228436, 0, 0.380727, -1.9, 0, 4)
+
+[node name="roadStraightBridge" parent="KenneyAssetGrid" instance=ExtResource("97_10370")]
+transform = Transform3D(-0.380727, 0, -0.228436, 0, 0.444, 0, 0.228436, 0, -0.380727, -1.9, 0, -4)
+
+[node name="roadStraightBridgeMid" parent="KenneyAssetGrid" instance=ExtResource("98_x003e")]
+transform = Transform3D(0.228436, 0, 0.380727, 0, 0.444, 0, -0.380727, 0, 0.228436, 4.5, 0, 2.4)
+
+[node name="roadStraightBridgeStart" parent="KenneyAssetGrid" instance=ExtResource("99_waccf")]
+transform = Transform3D(-0.228436, 0, 0.380727, 0, 0.444, 0, -0.380727, 0, -0.228436, 4.5, 0, -2.4)
+
+[node name="roadStraightLong" parent="KenneyAssetGrid" instance=ExtResource("100_3ae1b")]
+transform = Transform3D(-0.380727, 0, 0.228436, 0, 0.444, 0, -0.228436, 0, -0.380727, 2.9, 0, -4)
+
+[node name="roadStraightLongBump" parent="KenneyAssetGrid" instance=ExtResource("101_3t5ht")]
+transform = Transform3D(0, 0, -0.444, 0, 0.444, 0, 0.444, 0, 0, -4.3, 0, 0)
+
+[node name="roadStraightLongBumpRound" parent="KenneyAssetGrid" instance=ExtResource("102_2sg2w")]
+transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, 0.5, 0, 4.8)
+
+[node name="roadStraightLongMid" parent="KenneyAssetGrid" instance=ExtResource("103_jvj6x")]
+transform = Transform3D(0, 0, 0.444, 0, 0.444, 0, -0.444, 0, 0, 5.3, 0, 0)
+
+[node name="roadStraightSkew" parent="KenneyAssetGrid" instance=ExtResource("104_6qn7i")]
+transform = Transform3D(-0.444, 0, 0, 0, 0.444, 0, 0, 0, -0.444, 0.5, 0, -4.8)
+
+[node name="tent" parent="KenneyAssetGrid" instance=ExtResource("105_h6xh6")]
+transform = Transform3D(-0.437959, 0, 0.0729932, 0, 0.444, 0, -0.0729932, 0, -0.437959, 1.3, 0, -4.8)
+
+[node name="tentClosed" parent="KenneyAssetGrid" instance=ExtResource("106_c1rjf")]
+transform = Transform3D(-0.437959, 0, -0.0729932, 0, 0.444, 0, 0.0729932, 0, -0.437959, -0.3, 0, -4.8)
+
+[node name="tentClosedLong" parent="KenneyAssetGrid" instance=ExtResource("107_ubxiy")]
+transform = Transform3D(0.437959, 0, -0.0729932, 0, 0.444, 0, 0.0729932, 0, 0.437959, -0.3, 0, 4.8)
+
+[node name="tentLong" parent="KenneyAssetGrid" instance=ExtResource("108_vjm7d")]
+transform = Transform3D(0.437959, 0, 0.0729932, 0, 0.444, 0, -0.0729932, 0, 0.437959, 1.3, 0, 4.8)
+
+[node name="tentRoof" parent="KenneyAssetGrid" instance=ExtResource("109_3cmg5")]
+transform = Transform3D(-0.0729932, 0, 0.437959, 0, 0.444, 0, -0.437959, 0, -0.0729932, 5.3, 0, -0.8)
+
+[node name="tentRoofDouble" parent="KenneyAssetGrid" instance=ExtResource("110_kqs7v")]
+transform = Transform3D(0.0729932, 0, 0.437959, 0, 0.444, 0, -0.437959, 0, 0.0729932, 5.3, 0, 0.8)
+
+[node name="treeLarge" parent="KenneyAssetGrid" instance=ExtResource("111_xvaly")]
+transform = Transform3D(0.0729932, 0, -0.437959, 0, 0.444, 0, 0.437959, 0, 0.0729932, -4.3, 0, 0.8)
+
+[node name="treeSmall" parent="KenneyAssetGrid" instance=ExtResource("112_utjym")]
+transform = Transform3D(-0.0729932, 0, -0.437959, 0, 0.444, 0, 0.437959, 0, -0.0729932, -4.3, 0, -0.8)
