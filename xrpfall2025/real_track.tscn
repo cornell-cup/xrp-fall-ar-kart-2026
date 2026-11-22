@@ -1,8 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cbtsyym3wqevm"]
-
-[ext_resource type="PackedScene" uid="uid://dygqec8p2e14u" path="res://Assets/3dmodels/ModularRoads/road_barrier_1.glb" id="1_xdpa7"]
-[ext_resource type="PackedScene" uid="uid://8cmsqt3vfl8a" path="res://Assets/3dmodels/ModularRoads/tree_1_a.glb" id="2_h3bgq"]
-[ext_resource type="PackedScene" uid="uid://d1yiqab0aepkq" path="res://Assets/3dmodels/ModularRoads/Road1.glb" id="3_s4d1f"]
+[gd_scene load_steps=5 format=3 uid="uid://cbtsyym3wqevm"]
 
 [sub_resource type="Curve3D" id="Curve3D_final"]
 closed = true
@@ -81,20 +77,3 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0101, 0)
 layers = 3
 size = Vector3(0.4445, 0.0002, 0.012)
 material = SubResource("StandardMaterial3D_start")
-
-[node name="TestBarrier" parent="." instance=ExtResource("1_xdpa7")]
-transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.26, 0.01, 0)
-
-[node name="TestTree" parent="." instance=ExtResource("2_h3bgq")]
-transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.5, 0, 0)
-
-[node name="road_barrier_12" parent="." instance=ExtResource("1_xdpa7")]
-transform = Transform3D(0.15, 0, 0, 0, 0.15, 0, 0, 0, 0.15, 0.26, 0.01, 0)
-
-[node name="tree_1_a" parent="." instance=ExtResource("2_h3bgq")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.247932, 0)
-visible = false
-
-[node name="Road12" parent="." instance=ExtResource("3_s4d1f")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.517575, 0)
-visible = false
