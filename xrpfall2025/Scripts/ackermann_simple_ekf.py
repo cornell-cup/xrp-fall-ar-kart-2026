@@ -3,6 +3,8 @@ import time
 
 import numpy as np
 
+import car_model
+
 
 class ackermann_simple_ekf:
     """
@@ -16,7 +18,8 @@ class ackermann_simple_ekf:
         u      throttle command, -1..1 (the XRP turns it into a wheel speed)
         gamma  steering servo angle in radians (pi/2 = 90° = straight ahead)
 
-    Motion model (kinematic bicycle, with the speed following the throttle):
+    Motion model (kinematic bicycle, with the speed following the throttle;
+    the equations themselves are in car_model.py, shared with the digital twin):
         x'     = v cos(theta)
         y'     = v sin(theta)
         theta' = s v tan(r (gamma - 90°)) / L
@@ -46,7 +49,7 @@ class ackermann_simple_ekf:
     PREDICT_STEP_S = 0.02
     MAX_PREDICT_S = 1.0
     # gamma - 90° is cut off short of ±90°, where tan() would blow up
-    MAX_STEER_RAD = math.radians(80)
+    MAX_STEER_RAD = car_model.MAX_STEER_RAD
 
     def __init__(self, wheel_radius, distance_between_wheels, L,
                  model_position_uncertainty=0.01, model_heading_uncertainty=0.05,
@@ -117,6 +120,9 @@ class ackermann_simple_ekf:
         self._top_speed = alpha / beta if beta > 0 and alpha > 0 else None
         self._lastPredictedTime = None
 
+        # The motion model's parameters, for car_model
+        self._model = car_model.params(L, steer_ratio, steer_sign, beta, alpha)
+
         # Correction
         self._I = np.identity(4)
         self._Qi = np.array([[sensor_uncertainty]])
@@ -158,9 +164,7 @@ class ackermann_simple_ekf:
     def _turn_per_metre(self):
         """theta' / v = steer_sign * tan(steer_ratio * (gamma - 90°)) / L for the
         current servo angle gamma."""
-        steer = self._steer_ratio * (self._input[1, 0] - math.pi / 2)
-        steer = max(-self.MAX_STEER_RAD, min(self.MAX_STEER_RAD, steer))
-        return self._steer_sign * math.tan(steer) / self._length_of_car
+        return car_model.turn_per_metre(self._input[1, 0], self._model)
 
     def _nis(self, z, h, H, Q, angle_rows=()):
         """NIS this measurement would have, without applying it."""
@@ -204,22 +208,13 @@ class ackermann_simple_ekf:
 
         u = self._input[0, 0]
         k = self._turn_per_metre()
-        beta = self._damping
-        alpha = self._pwm_v_mapping
         steps = max(1, int(math.ceil(total / self.PREDICT_STEP_S)))
         dt = total / steps
         for _ in range(steps):
-            x, y, th, v = self._state[:, 0]
-            c, s = math.cos(th), math.sin(th)
-            self._state = np.array([[x + v * c * dt],
-                                    [y + v * s * dt],
-                                    [self.wrap_pi(th + v * k * dt)],
-                                    [v + (-beta * v + alpha * u) * dt]])
-            # Jacobian of the step, at the state before it
-            G = np.array([[1, 0, -v * s * dt, c * dt],
-                          [0, 1,  v * c * dt, s * dt],
-                          [0, 0,  1,          k * dt],
-                          [0, 0,  0,          1 - beta * dt]])
+            x, y, th, v = (float(a) for a in self._state[:, 0])
+            # the model step (car_model.py), and its Jacobian at the state before it
+            self._state = np.array(car_model.step(x, y, th, v, u, k, self._model, dt)).reshape(4, 1)
+            G = np.array(car_model.jacobian(th, v, k, self._model, dt))
             if self._speed_scaled_noise and self._top_speed:
                 Rk = self._R_motion * (abs(v) / self._top_speed) + self._R_time
             else:
