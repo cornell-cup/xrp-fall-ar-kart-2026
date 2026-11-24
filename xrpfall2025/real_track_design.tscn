@@ -1,0 +1,141 @@
+[gd_scene load_steps=15 format=3 uid="uid://cw16af2bbyq6g"]
+
+[ext_resource type="PackedScene" uid="uid://vyb1cnmihju7" path="res://Assets/3dmodels/KenneyRacing/overhead.glb" id="1_q2ibc"]
+[ext_resource type="PackedScene" uid="uid://bxs587kqghti" path="res://Assets/3dmodels/KenneyRacing/flagCheckers.glb" id="2_djqrh"]
+[ext_resource type="PackedScene" uid="uid://by2ngrd5wuog0" path="res://Assets/3dmodels/KenneyRacing/grandStandAwning.glb" id="3_x6aiq"]
+[ext_resource type="PackedScene" uid="uid://da7wn8hd0ny1k" path="res://Assets/3dmodels/KenneyRacing/treeLarge.glb" id="4_cvjy6"]
+[ext_resource type="PackedScene" uid="uid://cxp5wadgpdc4o" path="res://Assets/3dmodels/KenneyRacing/treeSmall.glb" id="5_w0i11"]
+
+[sub_resource type="Curve3D" id="Curve3D_final"]
+closed = true
+bake_interval = 0.01
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.277054, 0, 0, -0.4953, -0.277054, 0, 0, 0.277054, 0, 0, 0.50165, 0, -0.99695, 0, 0, -0.277054, 0, 0, 0, 1.0033, 0, -0.4953, 0, 0, 0, 0, 0, 0, 1.0033, 0, 0, 0, 0, 0, 0, 0, 0.277054, 1.0033, 0, 0.4953, 0.277054, 0, 0, -0.277054, 0, 0, 0.50165, 0, 0.99695, 0, 0, 0.277054, 0, 0, 0, 0, 0, 0.4953),
+"tilts": PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0)
+}
+point_count = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_road"]
+albedo_color = Color(0.72, 0.72, 0.72, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_edge"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_start"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4mc2e"]
+albedo_color = Color(0.407843, 0.756863, 0.317647, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_iaaej"]
+size = Vector2(100, 100)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_r31hr"]
+sky_top_color = Color(0.415686, 0.682353, 1, 1)
+sky_horizon_color = Color(1, 1, 1, 1)
+ground_bottom_color = Color(0.407843, 0.756863, 0.317647, 1)
+ground_horizon_color = Color(0.407843, 0.756863, 0.317647, 1)
+
+[sub_resource type="Sky" id="Sky_c1gfe"]
+sky_material = SubResource("ProceduralSkyMaterial_r31hr")
+
+[sub_resource type="Environment" id="Environment_yxai5"]
+background_mode = 2
+sky = SubResource("Sky_c1gfe")
+
+[node name="Track" type="Node3D"]
+
+[node name="Final Path" type="Path3D" parent="."]
+curve = SubResource("Curve3D_final")
+
+[node name="CSGPolygon3D" type="CSGPolygon3D" parent="."]
+layers = 3
+use_collision = true
+collision_layer = 3
+collision_mask = 3
+polygon = PackedVector2Array(-0.22225, 0, -0.22225, 0.01, 0.22225, 0.01, 0.22225, 0)
+mode = 2
+path_node = NodePath("../Final Path")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_road")
+
+[node name="InnerEdge" type="CSGPolygon3D" parent="."]
+layers = 3
+polygon = PackedVector2Array(-0.22225, 0.01, -0.22225, 0.0102, -0.21425, 0.0102, -0.21425, 0.01)
+mode = 2
+path_node = NodePath("../Final Path")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_edge")
+
+[node name="OuterEdge" type="CSGPolygon3D" parent="."]
+layers = 3
+polygon = PackedVector2Array(0.21425, 0.01, 0.21425, 0.0102, 0.22225, 0.0102, 0.22225, 0.01)
+mode = 2
+path_node = NodePath("../Final Path")
+path_interval_type = 0
+path_interval = 0.02
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_edge")
+
+[node name="StartLine" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0101, 0)
+layers = 3
+size = Vector3(0.4445, 0.0002, 0.012)
+material = SubResource("StandardMaterial3D_start")
+
+[node name="Grass" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.01, 0)
+material_override = SubResource("StandardMaterial3D_4mc2e")
+mesh = SubResource("PlaneMesh_iaaej")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_yxai5")
+
+[node name="EnvironmentProps" type="Node3D" parent="."]
+
+[node name="overhead" type="Node3D" parent="EnvironmentProps" instance=ExtResource("1_q2ibc")]
+transform = Transform3D(-1.94079e-08, 0, 0.444, 0, 0.444, 0, -0.444, 0, -1.94079e-08, 0, 0, 0)
+
+[node name="flagCheckers" type="Node3D" parent="EnvironmentProps" instance=ExtResource("2_djqrh")]
+transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, -0.25, 0, 0)
+
+[node name="@Node3D@23320" type="Node3D" parent="EnvironmentProps" instance=ExtResource("2_djqrh")]
+transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, 0.25, 0, 0)
+
+[node name="grandStandAwning" type="Node3D" parent="EnvironmentProps" instance=ExtResource("3_x6aiq")]
+transform = Transform3D(-1.94079e-08, 0, 0.444, 0, 0.444, 0, -0.444, 0, -1.94079e-08, 0.32, 0, 0.3)
+
+[node name="@Node3D@23321" type="Node3D" parent="EnvironmentProps" instance=ExtResource("3_x6aiq")]
+transform = Transform3D(-1.94079e-08, 0, -0.444, 0, 0.444, 0, 0.444, 0, -1.94079e-08, 0.68, 0, 0.3)
+
+[node name="treeLarge" type="Node3D" parent="EnvironmentProps" instance=ExtResource("4_cvjy6")]
+transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, -0.4, 0, 0.4)
+
+[node name="treeSmall" type="Node3D" parent="EnvironmentProps" instance=ExtResource("5_w0i11")]
+transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, -0.35, 0, -0.4)
+
+[node name="@Node3D@23322" type="Node3D" parent="EnvironmentProps" instance=ExtResource("4_cvjy6")]
+transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, 1.4, 0, 0.2)
+
+[node name="@Node3D@23323" type="Node3D" parent="EnvironmentProps" instance=ExtResource("5_w0i11")]
+transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, 1.35, 0, -0.3)
