@@ -21,6 +21,21 @@ func Init():
 	startingPoint = innerPath.curve.get_point_position(0)
 	roadHalfWidth = get_road_half_width()
 	generate_checkpoints()
+	setup_environment_props()
+
+func setup_environment_props() -> void:
+	# Hide preview-only grass/sky inside the track prefab if main.tscn provides them
+	var preview_grass = $Track.get_node_or_null("Grass")
+	if preview_grass:
+		preview_grass.visible = false
+	var props = $Track.get_node_or_null("EnvironmentProps")
+	if props == null:
+		return
+	if NetworkReceiver.ar_enabled:
+		props.queue_free()
+		return
+	for mesh in props.find_children("*", "MeshInstance3D", true, false):
+		mesh.create_trimesh_collision()
 
 # all pieces are (currently) only 3 points long, so taking every other point
 # gives us the joints between them
