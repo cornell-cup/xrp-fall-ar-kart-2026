@@ -227,4 +227,4 @@ transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 1.75, 0, 0.7)
 transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 1.65, 0, 1.05)
 
 [node name="pitsOfficeCorner" parent="EnvironmentProps" instance=ExtResource("10_4mc2e")]
-transform = Transform3D(1.04365, 0, 0, 0, 0.446562, 0, 0, 0, 0.575143, 0.220761, 0, 2.28897)
+transform = Transform3D(1.04644, 0, 0, 0, 0.447756, 0, 0, 0, 0.57668, 0.220761, 0, 2.28897)
