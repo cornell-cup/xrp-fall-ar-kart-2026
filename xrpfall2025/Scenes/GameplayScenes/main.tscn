@@ -14,7 +14,7 @@
 size = Vector3(400, 1, 400)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
-albedo_color = Color(0.520673, 0.458974, 0.658289, 1)
+albedo_color = Color(0.408, 0.757, 0.318, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
 material = SubResource("StandardMaterial3D_ground")
