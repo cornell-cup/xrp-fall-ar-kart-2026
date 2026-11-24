@@ -1,10 +1,15 @@
-[gd_scene load_steps=15 format=3 uid="uid://cw16af2bbyq6g"]
+[gd_scene load_steps=20 format=3 uid="uid://cw16af2bbyq6g"]
 
 [ext_resource type="PackedScene" uid="uid://vyb1cnmihju7" path="res://Assets/3dmodels/KenneyRacing/overhead.glb" id="1_q2ibc"]
 [ext_resource type="PackedScene" uid="uid://bxs587kqghti" path="res://Assets/3dmodels/KenneyRacing/flagCheckers.glb" id="2_djqrh"]
 [ext_resource type="PackedScene" uid="uid://by2ngrd5wuog0" path="res://Assets/3dmodels/KenneyRacing/grandStandAwning.glb" id="3_x6aiq"]
 [ext_resource type="PackedScene" uid="uid://da7wn8hd0ny1k" path="res://Assets/3dmodels/KenneyRacing/treeLarge.glb" id="4_cvjy6"]
 [ext_resource type="PackedScene" uid="uid://cxp5wadgpdc4o" path="res://Assets/3dmodels/KenneyRacing/treeSmall.glb" id="5_w0i11"]
+[ext_resource type="PackedScene" uid="uid://cpps1bk8gd7dm" path="res://Assets/3dmodels/KenneyRacing/barrierRed.glb" id="6_barR"]
+[ext_resource type="PackedScene" uid="uid://68m7lhjuxjk7" path="res://Assets/3dmodels/KenneyRacing/barrierWhite.glb" id="7_barW"]
+[ext_resource type="PackedScene" uid="uid://bumd85o4xboj1" path="res://Assets/3dmodels/KenneyRacing/tent.glb" id="8_tent"]
+[ext_resource type="PackedScene" uid="uid://yef3nb0fjxjq" path="res://Assets/3dmodels/KenneyRacing/lightPostModern.glb" id="9_lamp"]
+[ext_resource type="PackedScene" uid="uid://cpyi3nn3x2fh2" path="res://Assets/3dmodels/KenneyRacing/pitsOfficeCorner.glb" id="10_4mc2e"]
 
 [sub_resource type="Curve3D" id="Curve3D_final"]
 closed = true
@@ -16,7 +21,7 @@ _data = {
 point_count = 8
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_road"]
-albedo_color = Color(0.72, 0.72, 0.72, 1)
+albedo_color = Color(0.196, 0.22, 0.267, 1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_edge"]
 
@@ -113,29 +118,113 @@ environment = SubResource("Environment_yxai5")
 
 [node name="EnvironmentProps" type="Node3D" parent="."]
 
-[node name="overhead" type="Node3D" parent="EnvironmentProps" instance=ExtResource("1_q2ibc")]
-transform = Transform3D(-1.94079e-08, 0, 0.444, 0, 0.444, 0, -0.444, 0, -1.94079e-08, 0, 0, 0)
+[node name="StartLineGate" parent="EnvironmentProps" instance=ExtResource("1_q2ibc")]
+transform = Transform3D(0.549972, 0, -0.00449451, 0, 0.444, 0, 0.00556752, 0, 0.443977, -0.0713767, 0, -0.300752)
 
-[node name="flagCheckers" type="Node3D" parent="EnvironmentProps" instance=ExtResource("2_djqrh")]
-transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, -0.25, 0, 0)
+[node name="FlagLeft" parent="EnvironmentProps" instance=ExtResource("2_djqrh")]
+transform = Transform3D(-0.399999, 0, -0.000760924, 0, 0.4, 0, 0.000760924, 0, -0.399999, -0.372853, 0, -0.627739)
 
-[node name="@Node3D@23320" type="Node3D" parent="EnvironmentProps" instance=ExtResource("2_djqrh")]
-transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, 0.25, 0, 0)
+[node name="FlagRight" parent="EnvironmentProps" instance=ExtResource("2_djqrh")]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0.360328, 0, -0.08)
 
-[node name="grandStandAwning" type="Node3D" parent="EnvironmentProps" instance=ExtResource("3_x6aiq")]
-transform = Transform3D(-1.94079e-08, 0, 0.444, 0, 0.444, 0, -0.444, 0, -1.94079e-08, 0.32, 0, 0.3)
+[node name="GrandstandLeft" parent="EnvironmentProps" instance=ExtResource("3_x6aiq")]
+transform = Transform3D(0, 0, 0.35, 0, 0.35, 0, -0.35, 0, 0, -0.0209933, 0, 0.226465)
 
-[node name="@Node3D@23321" type="Node3D" parent="EnvironmentProps" instance=ExtResource("3_x6aiq")]
-transform = Transform3D(-1.94079e-08, 0, -0.444, 0, 0.444, 0, 0.444, 0, -1.94079e-08, 0.68, 0, 0.3)
+[node name="GrandstandLeft2" parent="EnvironmentProps" instance=ExtResource("3_x6aiq")]
+transform = Transform3D(0, 0, 0.35, 0, 0.35, 0, -0.35, 0, 0, -0.0209933, 0, 0.566815)
 
-[node name="treeLarge" type="Node3D" parent="EnvironmentProps" instance=ExtResource("4_cvjy6")]
-transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, -0.4, 0, 0.4)
+[node name="GrandstandLeft3" parent="EnvironmentProps" instance=ExtResource("3_x6aiq")]
+transform = Transform3D(0, 0, 0.35, 0, 0.35, 0, -0.35, 0, 0, -0.0133823, 0, -0.100205)
 
-[node name="treeSmall" type="Node3D" parent="EnvironmentProps" instance=ExtResource("5_w0i11")]
-transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, -0.35, 0, -0.4)
+[node name="GrandstandRight" parent="EnvironmentProps" instance=ExtResource("3_x6aiq")]
+transform = Transform3D(0, 0, -0.35, 0, 0.35, 0, 0.35, 0, 0, 1.05043, 0, 0.140059)
 
-[node name="@Node3D@23322" type="Node3D" parent="EnvironmentProps" instance=ExtResource("4_cvjy6")]
-transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, 1.4, 0, 0.2)
+[node name="GrandstandRight2" parent="EnvironmentProps" instance=ExtResource("3_x6aiq")]
+transform = Transform3D(0, 0, -0.35, 0, 0.35, 0, 0.35, 0, 0, 1.05043, 0, 0.482685)
 
-[node name="@Node3D@23323" type="Node3D" parent="EnvironmentProps" instance=ExtResource("5_w0i11")]
-transform = Transform3D(0.444, 0, 0, 0, 0.444, 0, 0, 0, 0.444, 1.35, 0, -0.3)
+[node name="GrandstandRight3" parent="EnvironmentProps" instance=ExtResource("3_x6aiq")]
+transform = Transform3D(0, 0, -0.35, 0, 0.35, 0, 0.35, 0, 0, 1.05043, 0, -0.1884)
+
+[node name="BarrierTop1" parent="EnvironmentProps" instance=ExtResource("6_barR")]
+transform = Transform3D(0.077646, 0, 0.289778, 0, 0.3, 0, -0.289778, 0, 0.077646, 0.00242427, 0, -0.629067)
+
+[node name="BarrierTop2" parent="EnvironmentProps" instance=ExtResource("7_barW")]
+transform = Transform3D(0.192836, 0, 0.229813, 0, 0.3, 0, -0.229813, 0, 0.192836, 0.0927401, 0, -0.838416)
+
+[node name="BarrierTop3" parent="EnvironmentProps" instance=ExtResource("6_barR")]
+transform = Transform3D(0.271892, 0, 0.126785, 0, 0.3, 0, -0.126785, 0, 0.271892, 0.271548, 0, -0.988756)
+
+[node name="BarrierTop4" parent="EnvironmentProps" instance=ExtResource("7_barW")]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0.50165, 0, -1.01134)
+
+[node name="BarrierTop5" parent="EnvironmentProps" instance=ExtResource("6_barR")]
+transform = Transform3D(0.271892, 0, -0.126785, 0, 0.3, 0, 0.126785, 0, 0.271892, 0.728293, 0, -0.981338)
+
+[node name="BarrierTop6" parent="EnvironmentProps" instance=ExtResource("7_barW")]
+transform = Transform3D(0.192836, 0, -0.229813, 0, 0.3, 0, 0.229813, 0, 0.192836, 0.915564, 0, -0.842615)
+
+[node name="BarrierTop7" parent="EnvironmentProps" instance=ExtResource("6_barR")]
+transform = Transform3D(0.077646, 0, -0.289778, 0, 0.3, 0, 0.289778, 0, 0.077646, 1.01966, 0, -0.634099)
+
+[node name="BarrierBot1" parent="EnvironmentProps" instance=ExtResource("6_barR")]
+transform = Transform3D(0.077646, 0, -0.289778, 0, 0.3, 0, 0.289778, 0, 0.077646, -0.384278, 0, 0.732684)
+
+[node name="BarrierBot2" parent="EnvironmentProps" instance=ExtResource("7_barW")]
+transform = Transform3D(0.192836, 0, -0.229813, 0, 0.3, 0, 0.229813, 0, 0.192836, -0.191894, 0, 1.07725)
+
+[node name="BarrierBot3" parent="EnvironmentProps" instance=ExtResource("6_barR")]
+transform = Transform3D(0.271892, 0, -0.126785, 0, 0.3, 0, 0.126785, 0, 0.271892, 0.116927, 0, 1.32034)
+
+[node name="BarrierBot4" parent="EnvironmentProps" instance=ExtResource("7_barW")]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0.50165, 0, 1.40088)
+
+[node name="BarrierBot5" parent="EnvironmentProps" instance=ExtResource("6_barR")]
+transform = Transform3D(0.271892, 0, 0.126785, 0, 0.3, 0, -0.126785, 0, 0.271892, 0.889405, 0, 1.32684)
+
+[node name="BarrierBot6" parent="EnvironmentProps" instance=ExtResource("7_barW")]
+transform = Transform3D(0.192836, 0, 0.229813, 0, 0.3, 0, -0.229813, 0, 0.192836, 1.18849, 0, 1.07163)
+
+[node name="BarrierBot7" parent="EnvironmentProps" instance=ExtResource("6_barR")]
+transform = Transform3D(0.077646, 0, 0.289778, 0, 0.3, 0, -0.289778, 0, 0.077646, 1.38248, 0, 0.731318)
+
+[node name="InfieldTent" parent="EnvironmentProps" instance=ExtResource("8_tent")]
+transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, 0.5, 0, 0)
+
+[node name="InfieldTreeNorth" parent="EnvironmentProps" instance=ExtResource("5_w0i11")]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0.5, 0, -0.35)
+
+[node name="InfieldTreeSouth" parent="EnvironmentProps" instance=ExtResource("5_w0i11")]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0.5, 0, 0.35)
+
+[node name="LampLeft" parent="EnvironmentProps" instance=ExtResource("9_lamp")]
+transform = Transform3D(0, 0, 0.35, 0, 0.35, 0, -0.35, 0, 0, -0.3, 0, -0.4)
+
+[node name="LampRight" parent="EnvironmentProps" instance=ExtResource("9_lamp")]
+transform = Transform3D(0, 0, -0.35, 0, 0.35, 0, 0.35, 0, 0, 1.3, 0, -0.4)
+
+[node name="TreeOuterL1" parent="EnvironmentProps" instance=ExtResource("4_cvjy6")]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, -0.463228, 0, -1.04351)
+
+[node name="TreeOuterL2" parent="EnvironmentProps" instance=ExtResource("5_w0i11")]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, -0.555878, 0, -0.713795)
+
+[node name="TreeOuterL3" parent="EnvironmentProps" instance=ExtResource("5_w0i11")]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, -0.317892, 0, 1.40673)
+
+[node name="TreeOuterL4" parent="EnvironmentProps" instance=ExtResource("4_cvjy6")]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, -0.205541, 0, 1.17811)
+
+[node name="TreeOuterR1" parent="EnvironmentProps" instance=ExtResource("4_cvjy6")]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 1.7, 0, -0.65)
+
+[node name="TreeOuterR2" parent="EnvironmentProps" instance=ExtResource("5_w0i11")]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 1.65, 0, -0.25)
+
+[node name="TreeOuterR3" parent="EnvironmentProps" instance=ExtResource("5_w0i11")]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 1.75, 0, 0.7)
+
+[node name="TreeOuterR4" parent="EnvironmentProps" instance=ExtResource("4_cvjy6")]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 1.65, 0, 1.05)
+
+[node name="pitsOfficeCorner" parent="EnvironmentProps" instance=ExtResource("10_4mc2e")]
+transform = Transform3D(1.04365, 0, 0, 0, 0.446562, 0, 0, 0, 0.575143, 0.220761, 0, 2.28897)
